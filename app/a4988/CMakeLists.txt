@@ -5,7 +5,6 @@ target_sources(a4988 PRIVATE
 )
 
 target_include_directories(a4988 PUBLIC 
-    "."
     ${CMAKE_CURRENT_SOURCE_DIR}/a4988
 )
 

@@ -4,9 +4,8 @@ target_sources(step_driver PRIVATE
     "step_driver.cpp"
 )
 
-target_include_directories(step_driver PUBLIC 
-    "."
-    ${CMAKE_CURRENT_SOURCE_DIR}/step_driver
+target_include_directories(step_driver PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/a4988
 )
 
 target_link_libraries(step_driver PRIVATE

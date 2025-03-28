@@ -4,8 +4,8 @@ namespace Segway {
 
     void Segway::update_step_count() noexcept
     {
-        for (auto& step_driver : this->step_drivers) {
-            step_driver.update_step_count();
+        for (auto& driver : this->drivers) {
+            driver.update_step_count();
         }
     }
 
@@ -20,8 +20,8 @@ namespace Segway {
         //  auto const error_speed = this->angle_to_angular_speed(error_angle, sampling_time);
         auto const control_speed = this->regulator(error_angle, sampling_time);
 
-        for (auto& step_driver : this->step_drivers) {
-            step_driver.set_speed(control_speed, sampling_time);
+        for (auto& driver : this->drivers) {
+            driver.set_speed(control_speed, sampling_time);
         }
     }
 

@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.30)
 
 include("cmake/gcc-arm-none-eabi.cmake")
-message(STATUS "Include directories: ${CMAKE_INCLUDE_PATH}")
-
 
 project(stm32_cubemx_segway LANGUAGES C CXX ASM)
 
@@ -22,6 +20,11 @@ message("Build type: ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
+include_directories(
+    ${CMAKE_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Inc
+    ${CMAKE_SOURCE_DIR}/CMSIS/Include
+)
+
 add_subdirectory(cmake/stm32cubemx)
 add_subdirectory(app/main)
 add_subdirectory(app/utility)
@@ -30,8 +33,11 @@ add_subdirectory(app/a4988)
 add_subdirectory(app/icm20948)
 add_subdirectory(app/segway)
 add_subdirectory(app/step_driver)
-add_subdirectory(app/hardware)
 
 target_compile_options(stm32cubemx INTERFACE 
     -w
+)
+
+target_include_directories(main INTERFACE 
+    ${CMAKE_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Inc
 )

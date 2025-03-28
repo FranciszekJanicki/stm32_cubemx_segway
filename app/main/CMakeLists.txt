@@ -1,24 +1,22 @@
-add_executable(app)
+add_executable(main)
 
-target_sources(app PRIVATE 
+target_sources(main PRIVATE 
     "main.cpp"
 )
 
-target_include_directories(app PRIVATE 
+target_include_directories(main PRIVATE 
     "." 
 )
 
-target_link_libraries(app PUBLIC
+target_link_libraries(main PUBLIC
     stm32cubemx
     utility
     segway
     icm20948
     a4988
-    unit_test
-    hardware
 )
 
-target_compile_options(app PUBLIC
+target_compile_options(main PUBLIC
     -std=c++23
     -Wall
     -Wextra

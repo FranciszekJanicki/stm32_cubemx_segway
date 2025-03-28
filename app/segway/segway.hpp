@@ -2,14 +2,17 @@
 #define SEGWAY_HPP
 
 #include "../step_driver/step_driver.hpp"
+#include "../utility/pid.hpp"
 #include "icm20948.hpp"
-#include "pid.hpp"
+#include <stdfloat>
 
 namespace Segway {
 
-    using StepDriver = StepDriver::StepDriver;
+    using namespace STM32_Utility;
+    using A4988 = A4988::A4988;
     using ICM20948 = ICM20948::ICM20948;
     using PID = Utility::PID<float>;
+    using StepDriver = StepDriver::StepDriver;
 
     struct Segway {
         void update_step_count() noexcept;
@@ -22,7 +25,7 @@ namespace Segway {
 
         ICM20948 imu{};
         PID regulator{};
-        std::array<StepDriver, 2UL> step_drivers{};
+        std::array<StepDriver, 2UL> drivers{};
 
         float prev_control_speed{};
     };

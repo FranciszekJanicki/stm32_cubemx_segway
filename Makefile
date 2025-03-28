@@ -45,4 +45,4 @@ remove_stm32_utility:
 
 .PHONY: all
 all:
-	make clang_format && make build && make flash && make serial
+	 make build && make flash && make serial

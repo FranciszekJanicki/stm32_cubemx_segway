@@ -13,6 +13,8 @@ namespace Segway {
 
     void test_step_driver_2() noexcept;
 
+    void test_segway() noexcept;
+
 }; // namespace Segway
 
 #endif // UNIT_TEST_HPP
