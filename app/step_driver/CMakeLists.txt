@@ -1,24 +1,20 @@
-add_executable(app)
+add_library(step_driver STATIC)
 
-target_sources(app PRIVATE 
-    "main.cpp"
+target_sources(step_driver PRIVATE 
+    "step_driver.cpp"
 )
 
-target_include_directories(app PRIVATE 
-    "." 
+target_include_directories(step_driver PUBLIC 
+    "."
+    ${CMAKE_CURRENT_SOURCE_DIR}/step_driver
 )
 
-target_link_libraries(app PUBLIC
-    stm32cubemx
-    utility
-    segway
-    icm20948
+target_link_libraries(step_driver PRIVATE
     a4988
-    unit_test
-    hardware
+    utility
 )
 
-target_compile_options(app PUBLIC
+target_compile_options(step_driver PUBLIC
     -std=c++23
     -Wall
     -Wextra

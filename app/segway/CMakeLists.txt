@@ -1,24 +1,25 @@
-add_executable(app)
+add_library(segway STATIC)
 
-target_sources(app PRIVATE 
-    "main.cpp"
+target_sources(segway PRIVATE 
+    "segway.cpp"
+    "unit_test.cpp"
+    "balance_segway.cpp"
 )
 
-target_include_directories(app PRIVATE 
-    "." 
+target_include_directories(segway PUBLIC 
+    "."
+    ${CMAKE_CURRENT_SOURCE_DIR}/segway
 )
 
-target_link_libraries(app PUBLIC
+target_link_libraries(segway PRIVATE
     stm32cubemx
-    utility
-    segway
     icm20948
-    a4988
-    unit_test
+    step_driver
     hardware
+    stm32_utility
 )
 
-target_compile_options(app PUBLIC
+target_compile_options(segway PUBLIC
     -std=c++23
     -Wall
     -Wextra

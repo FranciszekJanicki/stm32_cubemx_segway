@@ -1,8 +1,10 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.30)
 
 include("cmake/gcc-arm-none-eabi.cmake")
+message(STATUS "Include directories: ${CMAKE_INCLUDE_PATH}")
 
-project(stm32-cubemx-clean LANGUAGES C CXX ASM)
+
+project(stm32_cubemx_segway LANGUAGES C CXX ASM)
 
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -22,6 +24,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 add_subdirectory(cmake/stm32cubemx)
 add_subdirectory(app/main)
+add_subdirectory(app/utility)
+add_subdirectory(app/stm32_utility)
+add_subdirectory(app/a4988)
+add_subdirectory(app/icm20948)
+add_subdirectory(app/segway)
+add_subdirectory(app/step_driver)
+add_subdirectory(app/hardware)
 
 target_compile_options(stm32cubemx INTERFACE 
     -w

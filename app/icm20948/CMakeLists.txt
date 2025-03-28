@@ -1,24 +1,21 @@
-add_executable(app)
+add_library(icm20948 STATIC)
 
-target_sources(app PRIVATE 
-    "main.cpp"
+target_sources(icm20948 PRIVATE 
+  "ICM_20948_C.c"
+  "icm20948.cpp"
 )
 
-target_include_directories(app PRIVATE 
-    "." 
+target_include_directories(icm20948 PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(app PUBLIC
+target_link_libraries(icm20948 PRIVATE
     stm32cubemx
+    stm32_utility
     utility
-    segway
-    icm20948
-    a4988
-    unit_test
-    hardware
 )
 
-target_compile_options(app PUBLIC
+target_compile_options(icm20948 PUBLIC
     -std=c++23
     -Wall
     -Wextra

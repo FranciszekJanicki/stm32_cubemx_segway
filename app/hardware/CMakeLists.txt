@@ -1,24 +1,23 @@
-add_executable(app)
+add_library(hardware STATIC)
 
-target_sources(app PRIVATE 
-    "main.cpp"
+target_sources(hardware PRIVATE 
+    "gpio.cpp"
+    "uart.cpp"
+    "tim.cpp"
+    "i2c.cpp"
 )
 
-target_include_directories(app PRIVATE 
-    "." 
+target_include_directories(hardware PUBLIC 
+    "."
+    ${CMAKE_CURRENT_SOURCE_DIR}/hardware
 )
 
-target_link_libraries(app PUBLIC
+target_link_libraries(hardware PRIVATE
     stm32cubemx
     utility
-    segway
-    icm20948
-    a4988
-    unit_test
-    hardware
 )
 
-target_compile_options(app PUBLIC
+target_compile_options(hardware PUBLIC
     -std=c++23
     -Wall
     -Wextra

@@ -4,7 +4,7 @@ APP_DIR := ${PROJECT_DIR}/app
 DRIVERS_DIR := ${PROJECT_DIR}/Drivers
 REQUIREMENTS_DIR := ${PROJECT_DIR}/requirements
 STM32CUBEMX_DIR := ${PROJECT_DIR}/cmake/stm32cubemx
-UTILITY_DIR := ${APP_DIR}/utility
+STM32_UTILITY_DIR := ${APP_DIR}/stm32_utility
 
 .PHONY: build
 build: 
@@ -26,27 +26,23 @@ flash:
 serial:
 	minicom -D /dev/ttyACM0 -b 115200
 
-.PHONY: clang-format
-clang-format:
+.PHONY: clang_format
+clang_format:
 	for ext in h c cpp hpp; do \
 		find $(SOURCE_DIR) -iname "*.$$ext" -print0 | xargs -0 -r clang-format -i; \
 	done
 
-.PHONY: add-utility
-add-utility:
-	git submodule add -f https://github.com/franciszekjanicki/stm32-utility.git ${UTILITY_DIR}
+.PHONY: add_stm32_utility
+add_stm32_utility:
+	git submodule add -f https://github.com/franciszekjanicki/stm32_utility.git ${STM32_UTILITY_DIR}
 
-.PHONY: update-utility
-update-utility:
-	git submodule update --init --recursive
-
-.PHONY: remove-utility
-remove-utility:
-	git submodule deinit -f ${UTILITY_DIR}
-	git rm -rf ${UTILITY_DIR}
-	rm -rf ${UTILITY_DIR}
-	rm -rf .git/modules/app/utility
+.PHONY: remove_stm32_utility
+remove_stm32_utility:
+	git submodule deinit -f ${STM32_UTILITY_DIR}
+	git rm -rf ${STM32_UTILITY_DIR}
+	rm -rf ${STM32_UTILITY_DIR}
+	rm -rf .git/modules/app/stm32_utility
 
 .PHONY: all
 all:
-	make clang-format && make build && make flash && make serial
+	make clang_format && make build && make flash && make serial

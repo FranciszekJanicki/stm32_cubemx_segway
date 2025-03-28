@@ -1,0 +1,3 @@
+[submodule "/home/franek/Documents/stm32_cubemx/stm32f401ccu6/stm32_cubemx_segway/app/stm32_utility"]
+	path = /home/franek/Documents/stm32_cubemx/stm32f401ccu6/stm32_cubemx_segway/app/stm32_utility
+	url = https://github.com/franciszekjanicki/stm32_utility.git

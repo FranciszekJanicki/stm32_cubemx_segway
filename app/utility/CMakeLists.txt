@@ -1,24 +1,20 @@
-add_executable(app)
+add_library(utility INTERFACE)
 
-target_sources(app PRIVATE 
-    "main.cpp"
+target_sources(utility INTERFACE 
+    "pid.hpp"
+    "utility.hpp"
+    "vector3d.hpp"
+    "quaternion3d.hpp"
 )
 
-target_include_directories(app PRIVATE 
-    "." 
+target_include_directories(utility INTERFACE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/utility
 )
 
-target_link_libraries(app PUBLIC
-    stm32cubemx
-    utility
-    segway
-    icm20948
-    a4988
-    unit_test
-    hardware
+target_link_libraries(utility INTERFACE
 )
 
-target_compile_options(app PUBLIC
+target_compile_options(utility INTERFACE
     -std=c++23
     -Wall
     -Wextra
