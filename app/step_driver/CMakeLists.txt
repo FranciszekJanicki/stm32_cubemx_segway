@@ -17,6 +17,7 @@ target_compile_options(step_driver PUBLIC
     -std=c++23
     -Wall
     -Wextra
+    -fexceptions
     -Wconversion
     -Wshadow
     -Wpedantic
