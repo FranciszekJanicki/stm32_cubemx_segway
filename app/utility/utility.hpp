@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <cstring>
 #include <numbers>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
 
@@ -30,7 +31,7 @@ namespace Utility {
                            T const time_constant)
     {
         if (time_constant + sampling_time == static_cast<T>(0)) {
-            assert(true);
+            throw std::runtime_error{"Division by 0"};
         }
         return (value - prev_value + prev_derivative * time_constant) / (time_constant + sampling_time);
     }
@@ -39,7 +40,7 @@ namespace Utility {
     inline T differentiate(T const value, T const prev_value, T const sampling_time)
     {
         if (sampling_time == static_cast<T>(0)) {
-            assert(true);
+            throw std::runtime_error{"Division by 0"};
         }
         return (value - prev_value) / sampling_time;
     }
@@ -60,24 +61,6 @@ namespace Utility {
     inline T radians_to_degrees(T const radians) noexcept
     {
         return radians * static_cast<T>(360.0) / std::numbers::pi_v<T>;
-    }
-
-    template <Trivial Value>
-    inline std::array<std::uint8_t, sizeof(Value)> value_to_bytes(Value const& value) noexcept
-    {
-        auto bytes = std::array<std::uint8_t, sizeof(Value)>{};
-        std::memcpy(bytes.data(), std::addressof(value), sizeof(Value));
-
-        return bytes;
-    }
-
-    template <Trivial Value>
-    inline Value bytes_to_value(std::array<std::uint8_t, sizeof(Value)> const& bytes) noexcept
-    {
-        auto value = Value{};
-        std::memcpy(std::addressof(value), bytes.data(), sizeof(Value));
-
-        return value;
     }
 
     template <std::unsigned_integral UInt>
@@ -160,157 +143,6 @@ namespace Utility {
                 static_cast<std::uint8_t>(dword >> 8UL),
                 static_cast<std::uint8_t>(dword >> 16UL),
                 static_cast<std::uint8_t>(dword >> 24UL)};
-    }
-
-    template <std::size_t SIZE>
-    inline std::array<std::uint16_t, SIZE / 2>
-    big_endian_bytes_to_words(std::array<std::uint8_t, SIZE> const& bytes) noexcept
-    {
-        static_assert(SIZE % 2 == 0);
-        auto words = std::array<std::uint16_t, SIZE / 2>{};
-
-        for (std::size_t i{}; i < words.size(); ++i) {
-            words[i] = static_cast<std::uint16_t>(bytes[2 * i] << 8) | static_cast<std::uint16_t>(bytes[2 * i + 1]);
-        }
-
-        return words;
-    }
-
-    template <std::size_t SIZE>
-    inline std::array<std::uint16_t, SIZE / 2>
-    little_endian_bytes_endian_to_words(std::array<std::uint8_t, SIZE> const& bytes) noexcept
-    {
-        static_assert(SIZE % 2 == 0);
-        auto words = std::array<std::uint16_t, SIZE / 2>{};
-
-        for (std::size_t i{}; i < words.size(); ++i) {
-            words[i] = static_cast<std::uint16_t>(bytes[2 * i]) | static_cast<std::uint16_t>(bytes[2 * i + 1] << 8);
-        }
-
-        return words;
-    }
-
-    template <std::size_t SIZE>
-    inline std::array<std::uint16_t, SIZE / 2> bytes_to_words(std::array<std::uint8_t, SIZE> const& bytes,
-                                                              std::endian const endian = std::endian::big) noexcept
-    {
-        return endian == std::endian::little ? little_endian_bytes_endian_to_words(bytes)
-                                             : big_endian_bytes_to_words(bytes);
-    }
-
-    template <std::size_t SIZE>
-    inline std::array<std::uint8_t, 2 * SIZE>
-    words_to_big_endian_bytes(std::array<std::uint16_t, SIZE> const& words) noexcept
-    {
-        auto bytes = std::array<std::uint8_t, 2 * SIZE>{};
-
-        for (std::size_t i{}; i < words.size(); ++i) {
-            bytes[2 * i] = static_cast<std::uint8_t>(words[i] >> 8);
-            bytes[2 * i + 1] = static_cast<std::uint8_t>(words[i]);
-        }
-
-        return bytes;
-    }
-
-    template <std::size_t SIZE>
-    inline std::array<std::uint8_t, 2 * SIZE>
-    words_to_little_endian_bytes(std::array<std::uint16_t, SIZE> const& words) noexcept
-    {
-        auto bytes = std::array<std::uint8_t, 2 * SIZE>{};
-
-        for (std::size_t i{}; i < words.size(); ++i) {
-            bytes[2 * i] = static_cast<std::uint8_t>(words[i]);
-            bytes[2 * i + 1] = static_cast<std::uint8_t>(words[i] >> 8);
-        }
-
-        return bytes;
-    }
-
-    template <std::size_t SIZE>
-    inline std::array<std::uint8_t, 2 * SIZE> words_to_bytes(std::array<std::uint16_t, SIZE> const& words,
-                                                             std::endian const endian = std::endian::big) noexcept
-    {
-        return endian == std::endian::little ? words_to_little_endian_bytes(words) : words_to_big_endian_bytes(words);
-    }
-
-    template <std::size_t SIZE>
-    inline std::array<std::uint32_t, SIZE / 4>
-    big_endian_bytes_to_dwords(std::array<std::uint8_t, SIZE> const& bytes) noexcept
-    {
-        static_assert(SIZE % 4 == 0);
-        auto dwords = std::array<std::uint32_t, SIZE / 4>{};
-
-        for (std::size_t i{}; i < dwords.size(); ++i) {
-            dwords[i] =
-                static_cast<std::uint32_t>(bytes[2 * i] << 24) | static_cast<std::uint32_t>(bytes[2 * i + 1] << 16) |
-                static_cast<std::uint32_t>(bytes[2 * i + 2] << 8) | static_cast<std::uint32_t>(bytes[2 * i + 3]);
-        }
-
-        return dwords;
-    }
-
-    template <std::size_t SIZE>
-    inline std::array<std::uint32_t, SIZE / 4>
-    little_endian_bytes_endian_to_dwords(std::array<std::uint8_t, SIZE> const& bytes) noexcept
-    {
-        static_assert(SIZE % 4 == 0);
-        auto dwords = std::array<std::uint32_t, SIZE / 4>{};
-
-        for (std::size_t i{}; i < dwords.size(); ++i) {
-            dwords[i] = static_cast<std::uint32_t>(bytes[2 * i]) | static_cast<std::uint32_t>(bytes[2 * i + 1] << 8) |
-                        static_cast<std::uint32_t>(bytes[2 * i + 2] << 16) |
-                        static_cast<std::uint32_t>(bytes[2 * i + 3] << 24);
-        }
-
-        return dwords;
-    }
-
-    template <std::size_t SIZE>
-    inline std::array<std::uint32_t, SIZE / 4> bytes_to_dwords(std::array<std::uint8_t, SIZE> const& bytes,
-                                                               std::endian const endian = std::endian::big) noexcept
-    {
-        return endian == std::endian::little ? little_endian_bytes_endian_to_dwords(bytes)
-                                             : big_endian_bytes_to_dwords(bytes);
-    }
-
-    template <std::size_t SIZE>
-    inline std::array<std::uint8_t, 4 * SIZE>
-    dwords_to_big_endian_bytes(std::array<std::uint32_t, SIZE> const& dwords) noexcept
-    {
-        auto bytes = std::array<std::uint8_t, 4 * SIZE>{};
-
-        for (std::size_t i{}; i < dwords.size(); ++i) {
-            bytes[2 * i] = static_cast<std::uint8_t>(dwords[i] >> 24);
-            bytes[2 * i + 1] = static_cast<std::uint8_t>(dwords[i] >> 16);
-            bytes[2 * i + 2] = static_cast<std::uint8_t>(dwords[i] >> 8);
-            bytes[2 * i + 3] = static_cast<std::uint8_t>(dwords[i]);
-        }
-
-        return bytes;
-    }
-
-    template <std::size_t SIZE>
-    inline std::array<std::uint8_t, 4 * SIZE>
-    dwords_to_little_endian_bytes_endian(std::array<std::uint32_t, SIZE> const& dwords) noexcept
-    {
-        auto bytes = std::array<std::uint8_t, 4 * SIZE>{};
-
-        for (std::size_t i{}; i < dwords.size(); ++i) {
-            bytes[2 * i] = static_cast<std::uint8_t>(dwords[i]);
-            bytes[2 * i + 1] = static_cast<std::uint8_t>(dwords[i] >> 8);
-            bytes[2 * i + 2] = static_cast<std::uint8_t>(dwords[i] >> 16);
-            bytes[2 * i + 3] = static_cast<std::uint8_t>(dwords[i] >> 24);
-        }
-
-        return bytes;
-    }
-
-    template <std::size_t SIZE>
-    inline std::array<std::uint8_t, 4 * SIZE> dwords_to_bytes(std::array<std::uint32_t, SIZE> const& dwords,
-                                                              std::endian const endian = std::endian::big) noexcept
-    {
-        return endian == std::endian::little ? dwords_to_little_endian_bytes_endian(dwords)
-                                             : dwords_to_big_endian_bytes(dwords);
     }
 
     template <Arithmetic From, Arithmetic To>

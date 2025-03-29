@@ -1,13 +1,11 @@
 #ifndef QUATERNION3D_HPP
 #define QUATERNION3D_HPP
 
-#include <cassert>
 #include <cmath>
 #include <compare>
 #include <concepts>
 #include <cstdlib>
 #include <stdexcept>
-#include <tuple>
 #include <utility>
 
 namespace Utility {
@@ -82,7 +80,7 @@ namespace Utility {
         Quaternion3D& operator/=(T const factor)
         {
             if (factor == static_cast<T>(0)) {
-                assert(true);
+                throw std::runtime_error{"Division by 0"};
             }
 
             this->w /= factor;
@@ -149,7 +147,7 @@ namespace Utility {
     Quaternion3D<T> operator/(Quaternion3D<T> const& quaternion, T const factor)
     {
         if (factor == static_cast<T>(0)) {
-            assert(true);
+            throw std::runtime_error{"Division by 0"};
         }
 
         return Quaternion3D<T>{quaternion.w / factor,

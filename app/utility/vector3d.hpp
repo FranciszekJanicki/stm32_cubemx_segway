@@ -2,10 +2,8 @@
 #define VECTOR3D_HPP
 
 #include "quaternion3d.hpp"
-#include <cassert>
 #include <cmath>
 #include <compare>
-#include <concepts>
 #include <exception>
 #include <stdexcept>
 #include <utility>
@@ -82,7 +80,7 @@ namespace Utility {
         Vector3D& operator/=(T const factor)
         {
             if (factor == static_cast<T>(0)) {
-                assert(true);
+                throw std::runtime_error{"Division by 0"};
             }
 
             this->x *= factor;
@@ -132,7 +130,7 @@ namespace Utility {
     inline Vector3D<T> operator/(Vector3D<T> const& vector, T const factor)
     {
         if (factor == static_cast<T>(0)) {
-            assert(true);
+            throw std::runtime_error{"Division by 0"};
         }
 
         return Vector3D<T>{vector.x / factor, vector.y / factor, vector.z / factor};

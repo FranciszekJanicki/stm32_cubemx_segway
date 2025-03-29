@@ -16,15 +16,6 @@ namespace StepDriver {
 
     std::uint16_t speed_to_frequency(float const speed, float const step_change) noexcept;
 
-    float get_processed_speed(float const speed,
-                              float const prev_speed,
-                              float const step_change,
-                              float const sampling_time,
-                              float const max_speed,
-                              float const max_acceleration) noexcept;
-
-    auto constexpr MIN_SPEED = 10.0F; // degrees per second
-
     struct StepDriver {
     public:
         void update_step_count() noexcept;

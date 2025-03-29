@@ -5,6 +5,9 @@ target_sources(utility INTERFACE
     "utility.hpp"
     "vector3d.hpp"
     "quaternion3d.hpp"
+    "state_regulator.hpp"
+    "stack_matrix.hpp"
+    "rotation3d.hpp"
 )
 
 target_include_directories(utility INTERFACE 
@@ -16,6 +19,7 @@ target_link_libraries(utility INTERFACE
 
 target_compile_options(utility INTERFACE
     -std=c++23
+    -fexceptions
     -Wall
     -Wextra
     -Wconversion

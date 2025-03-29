@@ -23,20 +23,6 @@ namespace StepDriver {
         return static_cast<std::uint16_t>(std::abs(speed / step_change));
     }
 
-    float get_processed_speed(float const speed,
-                              float const prev_speed,
-                              float const step_change,
-                              float const sampling_time,
-                              float const max_speed,
-                              float const max_acceleration) noexcept
-    {
-        auto const clamped_speed = std::clamp(speed, -max_speed, max_speed);
-        auto const acceleration = Utility::differentiate(clamped_speed, prev_speed, sampling_time);
-        auto const clamped_acceleration = std::clamp(acceleration, -max_acceleration, max_acceleration);
-
-        return clamped_acceleration * sampling_time + prev_speed;
-    }
-
     void StepDriver::update_step_count() noexcept
     {
         auto const counter_period = this->driver.pwm_device_.get_counter_period();
@@ -64,7 +50,7 @@ namespace StepDriver {
 
         auto static stopped = false;
 
-        if (std::abs(control_speed) < MIN_SPEED) {
+        if (std::abs(control_speed) < 10.0F) {
             this->stop_pwm();
         } else {
             if (this->stopped) {
@@ -126,7 +112,7 @@ namespace StepDriver {
 
     float StepDriver::get_position(float const sampling_time) noexcept
     {
-        return std::fmodf(this->step_change() * this->step_count, 360.0F);
+        return std::fmodf(this->step_change() * static_cast<float>(this->step_count), 360.0F);
     }
 
     float StepDriver::get_speed(float const sampling_time) noexcept
