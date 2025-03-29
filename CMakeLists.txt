@@ -20,11 +20,6 @@ message("Build type: ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Inc
-    ${CMAKE_SOURCE_DIR}/CMSIS/Include
-)
-
 add_subdirectory(cmake/stm32cubemx)
 add_subdirectory(app/main)
 add_subdirectory(app/utility)
@@ -36,8 +31,4 @@ add_subdirectory(app/step_driver)
 
 target_compile_options(stm32cubemx INTERFACE 
     -w
-)
-
-target_include_directories(main INTERFACE 
-    ${CMAKE_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Inc
 )

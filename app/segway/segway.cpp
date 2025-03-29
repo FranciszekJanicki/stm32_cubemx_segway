@@ -9,12 +9,12 @@ namespace Segway {
         }
     }
 
-    void Segway::operator()(float const angle, float const sampling_time) noexcept
+    void Segway::operator()(std::float32_t const angle, std::float32_t const sampling_time) noexcept
     {
         this->set_angle(angle, sampling_time);
     }
 
-    void Segway::set_angle(float const angle, float const sampling_time) noexcept
+    void Segway::set_angle(std::float32_t const angle, std::float32_t const sampling_time) noexcept
     {
         auto const error_angle = angle - this->imu.get_roll().value_or(0.0F);
         //  auto const error_speed = this->angle_to_angular_speed(error_angle, sampling_time);
@@ -25,7 +25,8 @@ namespace Segway {
         }
     }
 
-    float Segway::angle_to_angular_speed(float const angle, float const sampling_time) noexcept
+    std::float32_t Segway::angle_to_angular_speed(std::float32_t const angle,
+                                                  std::float32_t const sampling_time) noexcept
     {
         return Utility::differentiate(angle, std::exchange(this->prev_control_speed, angle), sampling_time);
     }

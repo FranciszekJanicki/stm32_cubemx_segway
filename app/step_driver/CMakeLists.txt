@@ -5,7 +5,8 @@ target_sources(step_driver PRIVATE
 )
 
 target_include_directories(step_driver PRIVATE 
-    ${CMAKE_CURRENT_SOURCE_DIR}/a4988
+    ${CMAKE_SOURCE_DIR}/app/a4988
+    ${CMAKE_SOURCE_DIR}/app/utility
 )
 
 target_link_libraries(step_driver PRIVATE

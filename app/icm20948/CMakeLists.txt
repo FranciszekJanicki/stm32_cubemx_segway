@@ -6,13 +6,11 @@ target_sources(icm20948 PRIVATE
 )
 
 target_include_directories(icm20948 PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/stm32_utility
 )
 
 target_link_libraries(icm20948 PRIVATE
-    stm32cubemx
     stm32_utility
-    utility
 )
 
 target_compile_options(icm20948 PUBLIC

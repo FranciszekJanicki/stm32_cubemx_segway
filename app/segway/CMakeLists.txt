@@ -7,14 +7,21 @@ target_sources(segway PRIVATE
 )
 
 target_include_directories(segway PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR}/segway
-    ${CMAKE_CURRENT_SOURCE_DIR}/icm20948
-    ${CMAKE_CURRENT_SOURCE_DIR}/a4988
+    ${CMAKE_SOURCE_DIR}/app/segway
+    ${CMAKE_SOURCE_DIR}/app/icm20948
+    ${CMAKE_SOURCE_DIR}/app/a4988
+    ${CMAKE_SOURCE_DIR}/app/step_driver
+    ${CMAKE_SOURCE_DIR}/app/stm32_utility
+    ${CMAKE_SOURCE_DIR}/cmake/stm32cubemx
+    ${CMAKE_SOURCE_DIR}/app/utility
 )
 
 target_link_libraries(segway PRIVATE
     icm20948
     step_driver
+    stm32cubemx
+    stm32_utility
+    a4988
 )
 
 target_compile_options(segway PUBLIC

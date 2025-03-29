@@ -1,33 +1,32 @@
 #ifndef SEGWAY_HPP
 #define SEGWAY_HPP
 
-#include "../step_driver/step_driver.hpp"
-#include "../utility/pid.hpp"
 #include "icm20948.hpp"
-#include <stdfloat>
+#include "pid.hpp"
+#include "step_driver.hpp"
 
 namespace Segway {
 
     using namespace STM32_Utility;
     using A4988 = A4988::A4988;
     using ICM20948 = ICM20948::ICM20948;
-    using PID = Utility::PID<float>;
+    using PID = Utility::PID<std::float32_t>;
     using StepDriver = StepDriver::StepDriver;
 
     struct Segway {
         void update_step_count() noexcept;
 
-        void operator()(float const angle, float const sampling_time) noexcept;
+        void operator()(std::float32_t const angle, std::float32_t const sampling_time) noexcept;
 
-        void set_angle(float const angle, float const sampling_time) noexcept;
+        void set_angle(std::float32_t const angle, std::float32_t const sampling_time) noexcept;
 
-        float angle_to_angular_speed(float const angle, float const sampling_time) noexcept;
+        std::float32_t angle_to_angular_speed(std::float32_t const angle, std::float32_t const sampling_time) noexcept;
 
         ICM20948 imu{};
         PID regulator{};
         std::array<StepDriver, 2UL> drivers{};
 
-        float prev_control_speed{};
+        std::float32_t prev_control_speed{};
     };
 
 }; // namespace Segway

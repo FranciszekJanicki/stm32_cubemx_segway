@@ -1,8 +1,8 @@
 #ifndef A4988_CONFIG_HPP
 #define A4988_CONFIG_HPP
 
-#include "../stm32_utility/gpio.hpp"
-#include "../stm32_utility/pwm_device.hpp"
+#include "gpio.hpp"
+#include "pwm_device.hpp"
 
 namespace A4988 {
 
@@ -21,7 +21,7 @@ namespace A4988 {
         BACKWARD,
     };
 
-    inline float microstep_to_fraction(Microstep const microstep) noexcept
+    inline std::float32_t microstep_to_fraction(Microstep const microstep) noexcept
     {
         switch (microstep) {
             case Microstep::FULL:

@@ -1,25 +1,25 @@
 #include "unit_test.hpp"
-#include "../../Core/Inc/gpio.h"
-#include "../../Core/Inc/i2c.h"
-#include "../../Core/Inc/tim.h"
-#include "../../Core/Inc/usart.h"
-#include "../a4988/a4988.hpp"
-#include "../icm20948/icm20948.hpp"
-#include "../step_driver/step_driver.hpp"
-#include "../stm32_utility/gpio.hpp"
-#include "../stm32_utility/i2c_device.hpp"
-#include "../stm32_utility/pwm_device.hpp"
+#include "a4988.hpp"
+#include "gpio.h"
+#include "gpio.hpp"
+#include "i2c.h"
+#include "i2c_device.hpp"
+#include "icm20948.hpp"
 #include "nvic.hpp"
+#include "pwm_device.hpp"
 #include "segway.hpp"
+#include "step_driver.hpp"
+#include "tim.h"
+#include "usart.h"
 
 namespace Segway {
 
     void test_a4988_1() noexcept
     {
-        auto constexpr MS1 = GPIO::PA11;
-        auto constexpr MS2 = GPIO::PA10;
-        auto constexpr MS3 = GPIO::PA9;
-        auto constexpr DIR = GPIO::PB15;
+        constexpr auto MS1 = GPIO::PA11;
+        constexpr auto MS2 = GPIO::PA10;
+        constexpr auto MS3 = GPIO::PA9;
+        constexpr auto DIR = GPIO::PB15;
 
         auto pwm_device = PWMDevice{&htim1, TIM_CHANNEL_1, 65535U, 3.3F};
 
@@ -41,10 +41,10 @@ namespace Segway {
 
     void test_a4988_2() noexcept
     {
-        auto constexpr MS1 = GPIO::PA3;
-        auto constexpr MS2 = GPIO::PA4;
-        auto constexpr MS3 = GPIO::PA5;
-        auto constexpr DIR = GPIO::PA7;
+        constexpr auto MS1 = GPIO::PA3;
+        constexpr auto MS2 = GPIO::PA4;
+        constexpr auto MS3 = GPIO::PA5;
+        constexpr auto DIR = GPIO::PA7;
 
         auto pwm_device = PWMDevice{&htim3, TIM_CHANNEL_1, 65535U, 3.3F};
 
@@ -83,11 +83,11 @@ namespace Segway {
 
     void test_step_driver_1() noexcept
     {
-        auto constexpr MS1 = GPIO::PB4;
-        auto constexpr MS2 = GPIO::PB5;
-        auto constexpr MS3 = GPIO::PB6;
-        auto constexpr DIR = GPIO::PB7;
-        auto constexpr SAMPLING_TIME = 1.0F;
+        constexpr auto MS1 = GPIO::PB4;
+        constexpr auto MS2 = GPIO::PB5;
+        constexpr auto MS3 = GPIO::PB6;
+        constexpr auto DIR = GPIO::PB7;
+        constexpr auto SAMPLING_TIME = 1.0F;
 
         auto pwm_device = PWMDevice{&htim3, TIM_CHANNEL_1, 65535U, 3.3F};
 
@@ -126,11 +126,11 @@ namespace Segway {
 
     void test_step_driver_2() noexcept
     {
-        auto constexpr MS1 = GPIO::PA3;
-        auto constexpr MS2 = GPIO::PA4;
-        auto constexpr MS3 = GPIO::PA5;
-        auto constexpr DIR = GPIO::PA7;
-        auto constexpr SAMPLING_TIME = 1.0F;
+        constexpr auto MS1 = GPIO::PA3;
+        constexpr auto MS2 = GPIO::PA4;
+        constexpr auto MS3 = GPIO::PA5;
+        constexpr auto DIR = GPIO::PA7;
+        constexpr auto SAMPLING_TIME = 1.0F;
 
         auto pwm_device = PWMDevice{&htim3, TIM_CHANNEL_1, 65535U, 3.3F};
 
@@ -169,18 +169,18 @@ namespace Segway {
 
     void test_segway() noexcept
     {
-        auto constexpr MS1_1 = GPIO::PB4;
-        auto constexpr MS2_1 = GPIO::PB5;
-        auto constexpr MS3_1 = GPIO::PB6;
-        auto constexpr DIR_1 = GPIO::PB7;
+        constexpr auto MS1_1 = GPIO::PB4;
+        constexpr auto MS2_1 = GPIO::PB5;
+        constexpr auto MS3_1 = GPIO::PB6;
+        constexpr auto DIR_1 = GPIO::PB7;
 
-        auto constexpr MS1_2 = GPIO::PA3;
-        auto constexpr MS2_2 = GPIO::PA4;
-        auto constexpr MS3_2 = GPIO::PA5;
-        auto constexpr DIR_2 = GPIO::PA7;
+        constexpr auto MS1_2 = GPIO::PA3;
+        constexpr auto MS2_2 = GPIO::PA4;
+        constexpr auto MS3_2 = GPIO::PA5;
+        constexpr auto DIR_2 = GPIO::PA7;
 
-        auto constexpr ANGLE = 0.0F;
-        auto constexpr SAMPLING_TIME = 1.0F;
+        constexpr auto ANGLE = 0.0F;
+        constexpr auto SAMPLING_TIME = 1.0F;
 
         auto pwm_device_1 = PWMDevice{&htim1, TIM_CHANNEL_1, 65535U, 3.3F};
 

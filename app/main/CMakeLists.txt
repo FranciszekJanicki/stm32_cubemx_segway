@@ -5,15 +5,13 @@ target_sources(main PRIVATE
 )
 
 target_include_directories(main PRIVATE 
-    "." 
+    ${CMAKE_SOURCE_DIR}/cmake/stm32cubemx
+    ${CMAKE_SOURCE_DIR}/app/segway
 )
 
 target_link_libraries(main PUBLIC
     stm32cubemx
-    utility
     segway
-    icm20948
-    a4988
 )
 
 target_compile_options(main PUBLIC

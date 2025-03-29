@@ -1,6 +1,6 @@
 #include "nvic.hpp"
-#include "../../Core/Inc/gpio.h"
-#include "../../Core/Inc/tim.h"
+#include "gpio.h"
+#include "tim.h"
 
 using namespace Segway;
 

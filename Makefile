@@ -5,6 +5,8 @@ DRIVERS_DIR := ${PROJECT_DIR}/Drivers
 REQUIREMENTS_DIR := ${PROJECT_DIR}/requirements
 STM32CUBEMX_DIR := ${PROJECT_DIR}/cmake/stm32cubemx
 STM32_UTILITY_DIR := ${APP_DIR}/stm32_utility
+UTILITY_DIR := ${APP_DIR}/utility
+SCRIPTS_DIR := ${PROJECT_DIR}/scripts
 
 .PHONY: build
 build: 
@@ -43,6 +45,22 @@ remove_stm32_utility:
 	rm -rf ${STM32_UTILITY_DIR}
 	rm -rf .git/modules/app/stm32_utility
 
+.PHONY: add_utility
+add_utility:
+	git submodule add -f https://github.com/franciszekjanicki/utility.git ${UTILITY_DIR}
+
+.PHONY: remove_utility
+remove_utility:
+	git submodule deinit -f ${UTILITY_DIR}
+	git rm -rf ${UTILITY_DIR}
+	rm -rf ${UTILITY_DIR}
+	rm -rf .git/modules/app/utility
+
+.PHONY: fix_hal
+fix_hal:
+	chmod u=rwx ${SCRIPTS_DIR}/fix_hal.sh
+	./scripts/fix_hal.sh
+
 .PHONY: all
 all:
-	 make build && make flash && make serial
+	make build && make flash && make serial

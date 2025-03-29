@@ -5,13 +5,11 @@ target_sources(a4988 PRIVATE
 )
 
 target_include_directories(a4988 PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR}/a4988
+    ${CMAKE_SOURCE_DIR}/app/stm32_utility
 )
 
 target_link_libraries(a4988 PRIVATE
-    stm32cubemx
     stm32_utility
-    utility
 )
 
 target_compile_options(a4988 PUBLIC
