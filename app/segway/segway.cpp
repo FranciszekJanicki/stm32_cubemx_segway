@@ -40,7 +40,7 @@ namespace Segway {
 
     Driver& Segway::get_driver(Channel const channel) noexcept
     {
-        auto it = std::ranges::find_if(this->drivers, [channel](DriverChannel const& driver_channel) {
+        auto it = std::ranges::find_if(this->driver_channels, [channel](DriverChannel const& driver_channel) {
             return driver_channel.channel == channel;
         });
 

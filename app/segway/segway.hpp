@@ -32,7 +32,7 @@ namespace Segway {
 
         ICM20948 imu{};
         PID regulator{};
-        std::array<DriverChannel, 2UL> drivers{};
+        std::array<DriverChannel, 2UL> driver_channels{};
 
         std::float32_t prev_control_speed{};
 
