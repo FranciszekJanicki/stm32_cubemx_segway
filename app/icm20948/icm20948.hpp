@@ -1,9 +1,9 @@
 #ifndef ICM20948_HPP
 #define ICM20948_HPP
 
-#include "i2c_device.hpp"
-#include "utility.hpp"
-#include "vector3d.hpp"
+#include "../stm32_utility/i2c_device.hpp"
+#include "../utility/utility.hpp"
+#include "../utility/vector3d.hpp"
 #include "AK09916_ENUMERATIONS.h"
 #include "AK09916_REGISTERS.h"
 #include "ICM_20948_C.h"

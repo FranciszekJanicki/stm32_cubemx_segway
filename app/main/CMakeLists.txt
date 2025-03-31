@@ -11,7 +11,7 @@ target_include_directories(main PRIVATE
 
 target_link_libraries(main PUBLIC
     stm32cubemx
-    segway
+    # segway
 )
 
 target_compile_options(main PUBLIC

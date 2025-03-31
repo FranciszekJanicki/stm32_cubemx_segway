@@ -17,5 +17,5 @@ int main()
     MX_TIM2_Init();
     MX_TIM3_Init();
 
-    Segway::test_step_driver_1();
+    // Segway::test_step_driver_1();
 }

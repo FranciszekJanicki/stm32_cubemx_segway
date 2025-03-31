@@ -21,13 +21,13 @@ message("Build type: ${CMAKE_BUILD_TYPE}")
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 add_subdirectory(cmake/stm32cubemx)
-add_subdirectory(app/main)
 add_subdirectory(app/utility)
 add_subdirectory(app/stm32_utility)
 add_subdirectory(app/a4988)
 add_subdirectory(app/icm20948)
-add_subdirectory(app/segway)
 add_subdirectory(app/step_driver)
+add_subdirectory(app/segway)
+add_subdirectory(app/main)
 
 target_compile_options(stm32cubemx INTERFACE 
     -w

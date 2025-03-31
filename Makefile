@@ -56,11 +56,6 @@ remove_utility:
 	rm -rf ${UTILITY_DIR}
 	rm -rf .git/modules/app/utility
 
-.PHONY: fix_hal
-fix_hal:
-	chmod u=rwx ${SCRIPTS_DIR}/fix_hal.sh
-	./scripts/fix_hal.sh
-
 .PHONY: all
 all:
 	make build && make flash && make serial
