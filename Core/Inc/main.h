@@ -57,8 +57,6 @@ void SystemClock_Config(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define MOT2_MS1_Pin GPIO_PIN_3
-#define MOT2_MS1_GPIO_Port GPIOA
 #define MOT2_MS2_Pin GPIO_PIN_4
 #define MOT2_MS2_GPIO_Port GPIOA
 #define MOT2_MS3_Pin GPIO_PIN_5

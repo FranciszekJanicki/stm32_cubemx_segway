@@ -31,6 +31,7 @@ namespace A4988 {
     void A4988::set_frequency(std::uint32_t const frequency) noexcept
     {
         this->pwm_device_.set_frequency(frequency);
+        this->set_step();
     }
 
     void A4988::set_microstep(Microstep const microstep) const noexcept

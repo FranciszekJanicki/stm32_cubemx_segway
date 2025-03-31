@@ -2,11 +2,17 @@
 
 namespace Segway {
 
-    void Segway::update_step_count() noexcept
+    void Segway::update_step_count(Channel const channel) noexcept
     {
-        for (auto& driver : this->drivers) {
-            driver.update_step_count();
-        }
+        auto& driver = this->get_driver(channel);
+        driver.update_step_count();
+    }
+
+    void
+    Segway::set_speed(Channel const channel, std::float32_t const speed, std::float32_t const sampling_time) noexcept
+    {
+        auto& driver = this->get_driver(channel);
+        driver.set_speed(speed, sampling_time);
     }
 
     void Segway::operator()(std::float32_t const angle, std::float32_t const sampling_time) noexcept
@@ -16,19 +22,29 @@ namespace Segway {
 
     void Segway::set_angle(std::float32_t const angle, std::float32_t const sampling_time) noexcept
     {
-        auto const error_angle = angle - this->imu.get_roll().value_or(0.0F);
-        //  auto const error_speed = this->angle_to_angular_speed(error_angle, sampling_time);
+        auto const measured_angle = 100.0F;
+        // this->imu.get_roll().value_or(0.0F);
+        auto const error_angle = angle - measured_angle;
+        //   auto const error_speed = this->angle_to_angular_speed(error_angle, sampling_time);
         auto const control_speed = this->regulator(error_angle, sampling_time);
 
-        for (auto& driver : this->drivers) {
-            driver.set_speed(control_speed, sampling_time);
-        }
+        this->set_speed(Channel::CHANNEL_1, control_speed, sampling_time);
+        this->set_speed(Channel::CHANNEL_2, control_speed, sampling_time);
     }
 
     std::float32_t Segway::angle_to_angular_speed(std::float32_t const angle,
                                                   std::float32_t const sampling_time) noexcept
     {
         return Utility::differentiate(angle, std::exchange(this->prev_control_speed, angle), sampling_time);
+    }
+
+    Driver& Segway::get_driver(Channel const channel) noexcept
+    {
+        auto it = std::ranges::find_if(this->drivers, [channel](DriverChannel const& driver_channel) {
+            return driver_channel.channel == channel;
+        });
+
+        return it->driver;
     }
 
 }; // namespace Segway

@@ -7,7 +7,6 @@ target_sources(segway PRIVATE
 )
 
 target_include_directories(segway PUBLIC 
-    ${CMAKE_SOURCE_DIR}/app/segway
     ${CMAKE_SOURCE_DIR}/app/icm20948
     ${CMAKE_SOURCE_DIR}/app/a4988
     ${CMAKE_SOURCE_DIR}/app/step_driver

@@ -9,9 +9,7 @@ namespace Segway {
 
     void test_icm20948() noexcept;
 
-    void test_step_driver_1() noexcept;
-
-    void test_step_driver_2() noexcept;
+    void test_motors() noexcept;
 
     void test_segway() noexcept;
 

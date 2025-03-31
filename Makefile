@@ -22,11 +22,11 @@ cmake:
 
 .PHONY: flash
 flash: 
-	STM32_Programmer_CLI -c port=swd -d ${BUILD_DIR}/app/main/app.elf -rst
+	STM32_Programmer_CLI -c port=swd -d ${BUILD_DIR}/app/main/main.elf -rst
 
 .PHONY: serial
 serial:
-	minicom -D /dev/ttyACM0 -b 115200
+	minicom -D /dev/ttyUSB0 -b 115200
 
 .PHONY: clang_format
 clang_format:

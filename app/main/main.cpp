@@ -4,6 +4,7 @@
 #include "tim.h"
 #include "unit_test.hpp"
 #include "usart.h"
+#include <cstdio>
 
 int main()
 {
@@ -17,5 +18,5 @@ int main()
     MX_TIM2_Init();
     MX_TIM3_Init();
 
-    // Segway::test_step_driver_1();
+    Segway::test_segway();
 }
