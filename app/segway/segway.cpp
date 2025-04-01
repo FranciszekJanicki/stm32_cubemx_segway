@@ -22,11 +22,10 @@ namespace Segway {
 
     void Segway::set_angle(std::float32_t const angle, std::float32_t const sampling_time) noexcept
     {
-        auto const measured_angle = 100.0F;
-        // this->imu.get_roll().value_or(0.0F);
+        auto const measured_angle = std::visit([](auto& imu) { return imu.get_roll(); }, this->imu);
         auto const error_angle = angle - measured_angle;
-        //   auto const error_speed = this->angle_to_angular_speed(error_angle, sampling_time);
-        auto const control_speed = this->regulator(error_angle, sampling_time);
+        auto const error_speed = this->angle_to_angular_speed(error_angle, sampling_time);
+        auto const control_speed = this->regulator(error_angle /*error_speed*/, sampling_time);
 
         this->set_speed(Channel::CHANNEL_1, control_speed, sampling_time);
         this->set_speed(Channel::CHANNEL_2, control_speed, sampling_time);
@@ -40,11 +39,14 @@ namespace Segway {
 
     Driver& Segway::get_driver(Channel const channel) noexcept
     {
-        auto it = std::ranges::find_if(this->driver_channels, [channel](DriverChannel const& driver_channel) {
-            return driver_channel.channel == channel;
-        });
-
-        return it->driver;
+        if (auto it = std::ranges::find_if(
+                this->driver_channels,
+                [channel](DriverChannel const& driver_channel) { return driver_channel.channel == channel; });
+            it != this->driver_channels.end()) {
+            return it->driver;
+        } else {
+            std::unreachable();
+        }
     }
 
 }; // namespace Segway

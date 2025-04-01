@@ -11,6 +11,7 @@ target_include_directories(segway PUBLIC
     ${CMAKE_SOURCE_DIR}/app/a4988
     ${CMAKE_SOURCE_DIR}/app/step_driver
     ${CMAKE_SOURCE_DIR}/app/stm32_utility
+    ${CMAKE_SOURCE_DIR}/app/mpu6050
     ${CMAKE_SOURCE_DIR}/cmake/stm32cubemx
     ${CMAKE_SOURCE_DIR}/app/utility
 )
@@ -19,6 +20,7 @@ target_link_libraries(segway PRIVATE
     icm20948
     step_driver
     stm32cubemx
+    mpu6050
     stm32_utility
     a4988
 )

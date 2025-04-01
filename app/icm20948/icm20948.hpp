@@ -43,10 +43,18 @@ namespace ICM20948 {
 
         void deinitialize() noexcept;
 
-        std::optional<std::float32_t> get_roll() noexcept;
-        std::optional<std::float32_t> get_pitch() noexcept;
-        std::optional<std::float32_t> get_yaw() noexcept;
-        std::optional<Vec3D<std::float32_t>> get_roll_pitch_yaw() noexcept;
+#ifdef USE_OPTIONAL
+        std::optional<float> get_roll() noexcept;
+        std::optional<float> get_pitch() noexcept;
+        std::optional<float> get_yaw() noexcept;
+        std::optional<Vec3D<float>> get_roll_pitch_yaw() noexcept;
+#else
+        float get_roll() noexcept;
+        float get_pitch() noexcept;
+        float get_yaw() noexcept;
+        Vec3D<float> get_roll_pitch_yaw() noexcept;
+
+#endif
 
     private:
         bool initialized_{false};

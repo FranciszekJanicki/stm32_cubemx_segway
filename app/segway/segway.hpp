@@ -2,15 +2,19 @@
 #define SEGWAY_HPP
 
 #include "icm20948.hpp"
+#include "mpu6050.hpp"
 #include "pid.hpp"
 #include "step_driver.hpp"
+#include <variant>
 
 namespace Segway {
 
     using namespace STM32_Utility;
     using A4988 = A4988::A4988;
     using ICM20948 = ICM20948::ICM20948;
-    using PID = Utility::PID<std::float32_t>;
+    using MPU6050 = MPU6050::MPU6050;
+    using IMU = std::variant<ICM20948, MPU6050>;
+    using Regulator = Utility::PID<std::float32_t>;
     using Driver = StepDriver::StepDriver;
 
     enum struct Channel : std::uint8_t {
@@ -30,8 +34,8 @@ namespace Segway {
         void operator()(std::float32_t const angle, std::float32_t const sampling_time) noexcept;
         void set_angle(std::float32_t const angle, std::float32_t const sampling_time) noexcept;
 
-        ICM20948 imu{};
-        PID regulator{};
+        IMU imu{};
+        Regulator regulator{};
         std::array<DriverChannel, 2UL> driver_channels{};
 
         std::float32_t prev_control_speed{};

@@ -3,13 +3,13 @@
 
 namespace Segway {
 
-    void test_imu() noexcept;
+    void test_icm20948() noexcept;
 
-    void test_stepper_1() noexcept;
+    void test_mpu6050() noexcept;
 
-    void test_stepper_2() noexcept;
+    void test_a4988_1() noexcept;
 
-    void test_both_steppers() noexcept;
+    void test_a4988_2() noexcept;
 
     void test_segway() noexcept;
 
