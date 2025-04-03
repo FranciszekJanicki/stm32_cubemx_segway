@@ -23,25 +23,25 @@ namespace MPU6050 {
         ~MPU6050() noexcept;
 
         /* celsius */
-        [[nodiscard]] float get_temperature_celsius() const noexcept;
+        [[nodiscard]] std::float32_t get_temperature_celsius() const noexcept;
 
         /* meters per square second */
-        [[nodiscard]] Vec3D<float> get_acceleration_scaled() const noexcept;
-        [[nodiscard]] float get_acceleration_x_scaled() const noexcept;
-        [[nodiscard]] float get_acceleration_y_scaled() const noexcept;
-        [[nodiscard]] float get_acceleration_z_scaled() const noexcept;
+        [[nodiscard]] Vec3D<std::float32_t> get_acceleration_scaled() const noexcept;
+        [[nodiscard]] std::float32_t get_acceleration_x_scaled() const noexcept;
+        [[nodiscard]] std::float32_t get_acceleration_y_scaled() const noexcept;
+        [[nodiscard]] std::float32_t get_acceleration_z_scaled() const noexcept;
 
         /* radians */
-        [[nodiscard]] Vec3D<float> get_rotation_scaled() const noexcept;
-        [[nodiscard]] float get_rotation_x_scaled() const noexcept;
-        [[nodiscard]] float get_rotation_y_scaled() const noexcept;
-        [[nodiscard]] float get_rotation_z_scaled() const noexcept;
+        [[nodiscard]] Vec3D<std::float32_t> get_rotation_scaled() const noexcept;
+        [[nodiscard]] std::float32_t get_rotation_x_scaled() const noexcept;
+        [[nodiscard]] std::float32_t get_rotation_y_scaled() const noexcept;
+        [[nodiscard]] std::float32_t get_rotation_z_scaled() const noexcept;
 
         /* degrees */
-        [[nodiscard]] Vec3D<float> get_roll_pitch_yaw() const noexcept;
-        [[nodiscard]] float get_roll() const noexcept;
-        [[nodiscard]] float get_pitch() const noexcept;
-        [[nodiscard]] float get_yaw() const noexcept;
+        [[nodiscard]] Vec3D<std::float32_t> get_roll_pitch_yaw() const noexcept;
+        [[nodiscard]] std::float32_t get_roll() const noexcept;
+        [[nodiscard]] std::float32_t get_pitch() const noexcept;
+        [[nodiscard]] std::float32_t get_yaw() const noexcept;
 
         std::uint8_t read_byte(std::uint8_t const reg_address) const noexcept;
 
@@ -236,8 +236,8 @@ namespace MPU6050 {
 
         I2CDevice i2c_device_{};
 
-        float gyro_scale_{};
-        float accel_scale_{};
+        std::float32_t gyro_scale_{};
+        std::float32_t accel_scale_{};
     };
 
 }; // namespace MPU6050

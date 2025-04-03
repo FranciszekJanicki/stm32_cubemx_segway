@@ -72,11 +72,11 @@ void MX_GPIO_Init(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(MOT1_DIR_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : ICM20948_INT_Pin */
-    GPIO_InitStruct.Pin = ICM20948_INT_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(ICM20948_INT_GPIO_Port, &GPIO_InitStruct);
+    /*Configure GPIO pins : PB5 ICM20948_INT_Pin */
+    GPIO_InitStruct.Pin = GPIO_PIN_5 | ICM20948_INT_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /* EXTI interrupt init*/
     HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);

@@ -21,15 +21,15 @@ namespace MPU6050 {
 
         ~MPU6050_DMP() noexcept;
 
-        [[nodiscard]] float get_roll() const noexcept;
-        [[nodiscard]] float get_pitch() const noexcept;
-        [[nodiscard]] float get_yaw() const noexcept;
-        [[nodiscard]] Vec3D<float> get_roll_pitch_yaw() const noexcept;
+        [[nodiscard]] std::float32_t get_roll() const noexcept;
+        [[nodiscard]] std::float32_t get_pitch() const noexcept;
+        [[nodiscard]] std::float32_t get_yaw() const noexcept;
+        [[nodiscard]] Vec3D<std::float32_t> get_roll_pitch_yaw() const noexcept;
 
     private:
         Quat3D<std::int16_t> get_quaternion_raw() const noexcept;
-        Quat3D<float> get_quaternion_scaled() const noexcept;
-        Vec3D<float> get_gravity() const noexcept;
+        Quat3D<std::float32_t> get_quaternion_scaled() const noexcept;
+        Vec3D<std::float32_t> get_gravity() const noexcept;
 
         void initialize() noexcept;
         void initialize_dmp() const noexcept;

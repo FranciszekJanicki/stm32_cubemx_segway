@@ -461,7 +461,7 @@ namespace MPU6050 {
     auto constexpr GYRO_OUTPUT_RATE_DLPF_DIS_HZ = 8000U;
     auto constexpr ACCEL_OUTPUT_RATE_HZ = 1000U;
 
-    inline float gyro_range_to_scale(GyroRange const gyro_range) noexcept
+    inline std::float32_t gyro_range_to_scale(GyroRange const gyro_range) noexcept
     {
         switch (gyro_range) {
             case GyroRange::GYRO_FS_250:
@@ -477,7 +477,7 @@ namespace MPU6050 {
         }
     }
 
-    inline float accel_range_to_scale(AccelRange const accel_range) noexcept
+    inline std::float32_t accel_range_to_scale(AccelRange const accel_range) noexcept
     {
         switch (accel_range) {
             case AccelRange::ACCEL_FS_2:
@@ -502,26 +502,26 @@ namespace MPU6050 {
         }
     }
 
-    inline Vec3D<float> accel_to_roll_pitch_yaw(Vec3D<float> const& accel_scaled) noexcept
+    inline Vec3D<std::float32_t> accel_to_roll_pitch_yaw(Vec3D<std::float32_t> const& accel_scaled) noexcept
     {
-        return Vec3D<float>{
+        return Vec3D<std::float32_t>{
             std::atan2(accel_scaled.y, accel_scaled.z),
             -std::atan2(accel_scaled.x, std::sqrt(accel_scaled.y * accel_scaled.y + accel_scaled.z * accel_scaled.z)),
             0.0F};
     }
 
-    inline float accel_to_roll(Vec3D<float> const& accel_scaled) noexcept
+    inline std::float32_t accel_to_roll(Vec3D<std::float32_t> const& accel_scaled) noexcept
     {
         return std::atan2(accel_scaled.y, accel_scaled.z);
     }
 
-    inline float accel_to_pitch(Vec3D<float> const& accel_scaled) noexcept
+    inline std::float32_t accel_to_pitch(Vec3D<std::float32_t> const& accel_scaled) noexcept
     {
         return -std::atan2(accel_scaled.x,
                            std::sqrt(accel_scaled.y * accel_scaled.y + accel_scaled.z * accel_scaled.z));
     }
 
-    inline float accel_to_yaw(Vec3D<float> const& accel_scaled) noexcept
+    inline std::float32_t accel_to_yaw(Vec3D<std::float32_t> const& accel_scaled) noexcept
     {
         return 0.0F;
     }

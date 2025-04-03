@@ -187,32 +187,32 @@ namespace MPU6050 {
                                         static_cast<std::int16_t>(packet[13])};
     }
 
-    Quat3D<float> MPU6050_DMP::get_quaternion_scaled() const noexcept
+    Quat3D<std::float32_t> MPU6050_DMP::get_quaternion_scaled() const noexcept
     {
-        return static_cast<Quat3D<float>>(this->get_quaternion_raw()) / this->mpu6050_.accel_scale_;
+        return static_cast<Quat3D<std::float32_t>>(this->get_quaternion_raw()) / this->mpu6050_.accel_scale_;
     }
 
-    Vec3D<float> MPU6050_DMP::get_gravity() const noexcept
+    Vec3D<std::float32_t> MPU6050_DMP::get_gravity() const noexcept
     {
         return quaternion_to_gravity(this->get_quaternion_scaled());
     }
 
-    float MPU6050_DMP::get_roll() const noexcept
+    std::float32_t MPU6050_DMP::get_roll() const noexcept
     {
         return quaternion_to_roll(this->get_quaternion_scaled());
     }
 
-    float MPU6050_DMP::get_pitch() const noexcept
+    std::float32_t MPU6050_DMP::get_pitch() const noexcept
     {
         return quaternion_to_pitch(this->get_quaternion_scaled());
     }
 
-    float MPU6050_DMP::get_yaw() const noexcept
+    std::float32_t MPU6050_DMP::get_yaw() const noexcept
     {
         return quaternion_to_yaw(this->get_quaternion_scaled());
     }
 
-    Vec3D<float> MPU6050_DMP::get_roll_pitch_yaw() const noexcept
+    Vec3D<std::float32_t> MPU6050_DMP::get_roll_pitch_yaw() const noexcept
     {
         return quaternion_to_roll_pitch_yaw(this->get_quaternion_scaled());
     }

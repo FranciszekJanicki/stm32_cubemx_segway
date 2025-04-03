@@ -22,67 +22,67 @@ namespace MPU6050 {
         this->deinitialize();
     }
 
-    float MPU6050::get_temperature_celsius() const noexcept
+    std::float32_t MPU6050::get_temperature_celsius() const noexcept
     {
-        return static_cast<float>(this->get_temperature_raw()) / 340.0F + 36.53F;
+        return static_cast<std::float32_t>(this->get_temperature_raw()) / 340.0F + 36.53F;
     }
 
-    float MPU6050::get_acceleration_x_scaled() const noexcept
+    std::float32_t MPU6050::get_acceleration_x_scaled() const noexcept
     {
-        return static_cast<float>(this->get_acceleration_x_raw()) / this->accel_scale_;
+        return static_cast<std::float32_t>(this->get_acceleration_x_raw()) / this->accel_scale_;
     }
 
-    float MPU6050::get_acceleration_y_scaled() const noexcept
+    std::float32_t MPU6050::get_acceleration_y_scaled() const noexcept
     {
-        return static_cast<float>(this->get_acceleration_y_raw()) / this->accel_scale_;
+        return static_cast<std::float32_t>(this->get_acceleration_y_raw()) / this->accel_scale_;
     }
 
-    float MPU6050::get_acceleration_z_scaled() const noexcept
+    std::float32_t MPU6050::get_acceleration_z_scaled() const noexcept
     {
-        return static_cast<float>(this->get_acceleration_z_raw()) / this->accel_scale_;
+        return static_cast<std::float32_t>(this->get_acceleration_z_raw()) / this->accel_scale_;
     }
 
-    Vec3D<float> MPU6050::get_acceleration_scaled() const noexcept
+    Vec3D<std::float32_t> MPU6050::get_acceleration_scaled() const noexcept
     {
-        return static_cast<Vec3D<float>>(this->get_acceleration_raw()) / this->accel_scale_;
+        return static_cast<Vec3D<std::float32_t>>(this->get_acceleration_raw()) / this->accel_scale_;
     }
 
-    float MPU6050::get_rotation_x_scaled() const noexcept
+    std::float32_t MPU6050::get_rotation_x_scaled() const noexcept
     {
-        return static_cast<float>(this->get_rotation_x_raw()) / this->gyro_scale_;
+        return static_cast<std::float32_t>(this->get_rotation_x_raw()) / this->gyro_scale_;
     }
 
-    float MPU6050::get_rotation_y_scaled() const noexcept
+    std::float32_t MPU6050::get_rotation_y_scaled() const noexcept
     {
-        return static_cast<float>(this->get_rotation_y_raw()) / this->gyro_scale_;
+        return static_cast<std::float32_t>(this->get_rotation_y_raw()) / this->gyro_scale_;
     }
 
-    float MPU6050::get_rotation_z_scaled() const noexcept
+    std::float32_t MPU6050::get_rotation_z_scaled() const noexcept
     {
-        return static_cast<float>(this->get_rotation_z_raw()) / this->gyro_scale_;
+        return static_cast<std::float32_t>(this->get_rotation_z_raw()) / this->gyro_scale_;
     }
 
-    Vec3D<float> MPU6050::get_rotation_scaled() const noexcept
+    Vec3D<std::float32_t> MPU6050::get_rotation_scaled() const noexcept
     {
-        return static_cast<Vec3D<float>>(this->get_rotation_raw()) / this->gyro_scale_;
+        return static_cast<Vec3D<std::float32_t>>(this->get_rotation_raw()) / this->gyro_scale_;
     }
 
-    Vec3D<float> MPU6050::get_roll_pitch_yaw() const noexcept
+    Vec3D<std::float32_t> MPU6050::get_roll_pitch_yaw() const noexcept
     {
         return accel_to_roll_pitch_yaw(this->get_acceleration_scaled());
     }
 
-    float MPU6050::get_roll() const noexcept
+    std::float32_t MPU6050::get_roll() const noexcept
     {
         return accel_to_roll(this->get_acceleration_scaled());
     }
 
-    float MPU6050::get_pitch() const noexcept
+    std::float32_t MPU6050::get_pitch() const noexcept
     {
         return accel_to_pitch(this->get_acceleration_scaled());
     }
 
-    float MPU6050::get_yaw() const noexcept
+    std::float32_t MPU6050::get_yaw() const noexcept
     {
         return accel_to_yaw(this->get_acceleration_scaled());
     }
@@ -644,64 +644,64 @@ namespace MPU6050 {
     Vec3D<std::int16_t> MPU6050::get_acceleration_raw() const noexcept
     {
         std::int16_t buffer[3];
-        this->read_bytes(std::to_underlying(RA::ACCEL_XOUT_H), (std::uint8_t*)buffer, sizeof(buffer));
+        this->read_bytes(std::to_underlying(RA::ACCEL_XOUT_H), reinterpret_cast<std::uint8_t*>(buffer), sizeof(buffer));
         return Vec3D<std::int16_t>{buffer[0], buffer[1], buffer[2]};
     }
 
     std::int16_t MPU6050::get_acceleration_x_raw() const noexcept
     {
-        std::int16_t buffer;
-        this->read_bytes(std::to_underlying(RA::ACCEL_XOUT_H), (std::uint8_t*)&buffer, sizeof(buffer));
-        return buffer;
+        std::int16_t buffer[1];
+        this->read_bytes(std::to_underlying(RA::ACCEL_XOUT_H), reinterpret_cast<std::uint8_t*>(buffer), sizeof(buffer));
+        return buffer[0];
     }
 
     std::int16_t MPU6050::get_acceleration_y_raw() const noexcept
     {
-        std::int16_t buffer;
-        this->read_bytes(std::to_underlying(RA::ACCEL_YOUT_H), (std::uint8_t*)&buffer, sizeof(buffer));
-        return buffer;
+        std::int16_t buffer[1];
+        this->read_bytes(std::to_underlying(RA::ACCEL_YOUT_H), reinterpret_cast<std::uint8_t*>(buffer), sizeof(buffer));
+        return buffer[0];
     }
 
     std::int16_t MPU6050::get_acceleration_z_raw() const noexcept
     {
-        std::int16_t buffer;
-        this->read_bytes(std::to_underlying(RA::ACCEL_ZOUT_H), (std::uint8_t*)&buffer, sizeof(buffer));
-        return buffer;
+        std::int16_t buffer[1];
+        this->read_bytes(std::to_underlying(RA::ACCEL_ZOUT_H), reinterpret_cast<std::uint8_t*>(buffer), sizeof(buffer));
+        return buffer[0];
     }
 
     std::int16_t MPU6050::get_temperature_raw() const noexcept
     {
-        std::int16_t buffer;
-        this->read_bytes(std::to_underlying(RA::TEMP_OUT_H), (std::uint8_t*)&buffer, sizeof(buffer));
-        return buffer;
+        std::int16_t buffer[1];
+        this->read_bytes(std::to_underlying(RA::TEMP_OUT_H), reinterpret_cast<std::uint8_t*>(buffer), sizeof(buffer));
+        return buffer[0];
     }
 
     Vec3D<std::int16_t> MPU6050::get_rotation_raw() const noexcept
     {
         std::int16_t buffer[3];
-        this->read_bytes(std::to_underlying(RA::GYRO_XOUT_H), (std::uint8_t*)buffer, sizeof(buffer));
+        this->read_bytes(std::to_underlying(RA::GYRO_XOUT_H), reinterpret_cast<std::uint8_t*>(buffer), sizeof(buffer));
         return Vec3D<std::int16_t>{buffer[0], buffer[1], buffer[2]};
     }
 
     std::int16_t MPU6050::get_rotation_x_raw() const noexcept
     {
-        std::int16_t buffer;
-        this->read_bytes(std::to_underlying(RA::GYRO_XOUT_H), (std::uint8_t*)&buffer, sizeof(buffer));
-        return buffer;
+        std::int16_t buffer[1];
+        this->read_bytes(std::to_underlying(RA::GYRO_XOUT_H), reinterpret_cast<std::uint8_t*>(buffer), sizeof(buffer));
+        return buffer[0];
     }
 
     std::int16_t MPU6050::get_rotation_y_raw() const noexcept
     {
-        std::int16_t buffer;
-        this->read_bytes(std::to_underlying(RA::GYRO_YOUT_H), (std::uint8_t*)&buffer, sizeof(buffer));
-        return buffer;
+        std::int16_t buffer[1];
+        this->read_bytes(std::to_underlying(RA::GYRO_YOUT_H), reinterpret_cast<std::uint8_t*>(buffer), sizeof(buffer));
+        return buffer[0];
     }
 
     std::int16_t MPU6050::get_rotation_z_raw() const noexcept
     {
-        std::int16_t buffer;
-        this->read_bytes(std::to_underlying(RA::GYRO_ZOUT_H), (std::uint8_t*)&buffer, sizeof(buffer));
-        return buffer;
+        std::int16_t buffer[1];
+        this->read_bytes(std::to_underlying(RA::GYRO_ZOUT_H), reinterpret_cast<std::uint8_t*>(buffer), sizeof(buffer));
+        return buffer[0];
     }
 
     std::uint8_t MPU6050::get_external_sensor_byte(std::uint8_t const position) const noexcept
