@@ -249,8 +249,6 @@ namespace ICM20948 {
         this->initialized_ = false;
     }
 
-#ifdef USE_OPTIONAL
-
     std::optional<std::float32_t> ICM20948::get_roll() noexcept
     {
         return this->get_roll_pitch_yaw().transform([](Vec3D<std::float32_t> const& rpy) { return rpy.x; });
@@ -279,35 +277,5 @@ namespace ICM20948 {
                                                           dmp_data.Quat6.Data.Q3 / QUAT_SCALE}
                    : std::optional<Vec3D<std::float32_t>>{std::nullopt};
     }
-
-#else
-
-    std::float32_t ICM20948::get_roll() noexcept
-    {
-        return this->get_roll_pitch_yaw().x;
-    }
-
-    std::float32_t ICM20948::get_pitch() noexcept
-    {
-        return this->get_roll_pitch_yaw().y;
-    }
-
-    std::float32_t ICM20948::get_yaw() noexcept
-    {
-        return this->get_roll_pitch_yaw().z;
-    }
-
-    Vec3D<std::float32_t> ICM20948::get_roll_pitch_yaw() noexcept
-    {
-        auto dmp_data = icm_20948_DMP_data_t{};
-        inv_icm20948_read_dmp_data(&this->icm_20948_device_, &dmp_data);
-        ICM_20948_reset_FIFO(&this->icm_20948_device_);
-
-        return Vec3D<std::float32_t>{dmp_data.Quat6.Data.Q1 / QUAT_SCALE,
-                                     dmp_data.Quat6.Data.Q2 / QUAT_SCALE,
-                                     dmp_data.Quat6.Data.Q3 / QUAT_SCALE};
-    }
-
-#endif
 
 } // namespace ICM20948

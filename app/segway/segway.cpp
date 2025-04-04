@@ -22,13 +22,17 @@ namespace Segway {
 
     void Segway::set_angle(std::float32_t const angle, std::float32_t const sampling_time) noexcept
     {
-        auto const measured_angle = std::visit([](auto& imu) { return imu.get_roll(); }, this->imu);
-        auto const error_angle = angle - measured_angle;
-        auto const error_speed = this->angle_to_angular_speed(error_angle, sampling_time);
-        auto const control_speed = this->regulator(error_angle /*error_speed*/, sampling_time);
+        if (auto const measured_angle = std::visit([](auto& imu) { return imu.get_roll(); }, this->imu);
+            measured_angle.has_value()) {
+            auto const error_angle = angle - measured_angle.value();
+            auto const error_speed = this->angle_to_angular_speed(error_angle, sampling_time);
+            auto const control_speed = this->regulator(error_angle /*error_speed*/, sampling_time);
 
-        this->set_speed(Channel::CHANNEL_1, control_speed, sampling_time);
-        this->set_speed(Channel::CHANNEL_2, control_speed, sampling_time);
+            this->set_speed(Channel::CHANNEL_1, control_speed, sampling_time);
+            this->set_speed(Channel::CHANNEL_2, control_speed, sampling_time);
+        } else {
+            std::puts("ERROR!!!\n\r");
+        }
     }
 
     std::float32_t Segway::angle_to_angular_speed(std::float32_t const angle,

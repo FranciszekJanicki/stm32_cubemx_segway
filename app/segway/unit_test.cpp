@@ -41,7 +41,7 @@ namespace Segway {
 
         while (1) {
             if (gpio_pin6_exti) {
-                auto const& [r, p, y] = icm20948.get_roll_pitch_yaw();
+                auto const& [r, p, y] = icm20948.get_roll_pitch_yaw().value();
                 std::printf("roll: %f, pitch: %f, yaw: %f\n\r", r, p, y);
                 gpio_pin6_exti = false;
             }
@@ -65,12 +65,12 @@ namespace Segway {
         auto mpu_dmp = MPU6050_DMP{std::move(mpu6050)};
 
         while (1) {
-            //  if (gpio_pin6_exti) {
-            auto const& [r, p, y] = mpu_dmp.get_roll_pitch_yaw();
+            // if (gpio_pin6_exti) {
+            auto const& [r, p, y] = mpu_dmp.get_roll_pitch_yaw().value();
             std::printf("roll: %f, pitch: %f, yaw: %f\n\r", r, p, y);
             gpio_pin6_exti = false;
             HAL_Delay(50);
-            // }
+            //}
         }
     }
 

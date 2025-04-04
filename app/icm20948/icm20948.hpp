@@ -21,7 +21,7 @@ namespace ICM20948 {
 
     constexpr auto ACCEL_SCALE = 8.192F / 1000.0F * 9.81F;
     constexpr auto GYRO_SCALE = 16.4F;
-    constexpr auto QUAT_SCALE = std::pow(2.0F, 30.0F);
+    constexpr auto QUAT_SCALE = static_cast<float>(2U << 30U);
 
     struct Config {};
 
@@ -43,18 +43,10 @@ namespace ICM20948 {
 
         void deinitialize() noexcept;
 
-#ifdef USE_OPTIONAL
         std::optional<std::float32_t> get_roll() noexcept;
         std::optional<std::float32_t> get_pitch() noexcept;
         std::optional<std::float32_t> get_yaw() noexcept;
         std::optional<Vec3D<std::float32_t>> get_roll_pitch_yaw() noexcept;
-#else
-        std::float32_t get_roll() noexcept;
-        std::float32_t get_pitch() noexcept;
-        std::float32_t get_yaw() noexcept;
-        Vec3D<std::float32_t> get_roll_pitch_yaw() noexcept;
-
-#endif
 
     private:
         bool initialized_{false};

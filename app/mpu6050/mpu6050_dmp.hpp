@@ -3,14 +3,16 @@
 
 #include "mpu6050.hpp"
 #include "mpu6050_config.hpp"
-#include "mpu6050_dmp_config.hpp"
-#include "mpu6050_dmp_img.hpp"
+#include "mpu6050_registers.hpp"
+#include <array>
+#include <cstdint>
 
 namespace MPU6050 {
 
     struct MPU6050_DMP {
     public:
         MPU6050_DMP() noexcept = default;
+
         MPU6050_DMP(MPU6050&& mpu6050) noexcept;
 
         MPU6050_DMP(MPU6050_DMP const& other) noexcept = delete;
@@ -21,15 +23,15 @@ namespace MPU6050 {
 
         ~MPU6050_DMP() noexcept;
 
-        [[nodiscard]] std::float32_t get_roll() const noexcept;
-        [[nodiscard]] std::float32_t get_pitch() const noexcept;
-        [[nodiscard]] std::float32_t get_yaw() const noexcept;
-        [[nodiscard]] Vec3D<std::float32_t> get_roll_pitch_yaw() const noexcept;
+        std::optional<std::float32_t> get_roll() const noexcept;
+        std::optional<std::float32_t> get_pitch() const noexcept;
+        std::optional<std::float32_t> get_yaw() const noexcept;
+        std::optional<Vec3D<std::float32_t>> get_roll_pitch_yaw() const noexcept;
 
     private:
-        Quat3D<std::int16_t> get_quaternion_raw() const noexcept;
-        Quat3D<std::float32_t> get_quaternion_scaled() const noexcept;
-        Vec3D<std::float32_t> get_gravity() const noexcept;
+        std::optional<Quat3D<std::int16_t>> get_quaternion_raw() const noexcept;
+        std::optional<Quat3D<std::float32_t>> get_quaternion_scaled() const noexcept;
+        std::optional<Vec3D<std::float32_t>> get_gravity() const noexcept;
 
         void initialize() noexcept;
         void initialize_dmp() const noexcept;

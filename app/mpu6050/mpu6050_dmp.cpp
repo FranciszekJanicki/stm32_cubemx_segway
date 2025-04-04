@@ -1,6 +1,6 @@
 #include "mpu6050_dmp.hpp"
-#include "mpu6050_config.hpp"
 #include "mpu6050_dmp_config.hpp"
+#include "mpu6050_dmp_img.hpp"
 
 namespace MPU6050 {
 
@@ -128,40 +128,47 @@ namespace MPU6050 {
 
     void MPU6050_DMP::set_x_accel_offset(std::int16_t const offset) const noexcept
     {
-        this->mpu6050_.write_bytes(std::to_underlying(RA::XA_OFFS_H), (std::uint8_t*)(&offset), sizeof(offset));
+        std::uint8_t buffer[2] = {static_cast<std::uint8_t>(offset) >> 8, static_cast<std::uint8_t>(offset)};
+        this->mpu6050_.write_bytes(std::to_underlying(RA::XA_OFFS_H), buffer, sizeof(buffer));
     }
 
     void MPU6050_DMP::set_y_accel_offset(std::int16_t const offset) const noexcept
     {
-        this->mpu6050_.write_bytes(std::to_underlying(RA::YA_OFFS_H), (std::uint8_t*)(&offset), sizeof(offset));
+        std::uint8_t buffer[2] = {static_cast<std::uint8_t>(offset) >> 8, static_cast<std::uint8_t>(offset)};
+        this->mpu6050_.write_bytes(std::to_underlying(RA::YA_OFFS_H), buffer, sizeof(buffer));
     }
 
     void MPU6050_DMP::set_z_accel_offset(std::int16_t const offset) const noexcept
     {
-        this->mpu6050_.write_bytes(std::to_underlying(RA::ZA_OFFS_H), (std::uint8_t*)(&offset), sizeof(offset));
+        std::uint8_t buffer[2] = {static_cast<std::uint8_t>(offset) >> 8, static_cast<std::uint8_t>(offset)};
+
+        this->mpu6050_.write_bytes(std::to_underlying(RA::ZA_OFFS_H), buffer, sizeof(buffer));
     }
 
     void MPU6050_DMP::set_x_gyro_offset(std::int16_t const offset) const noexcept
     {
-        this->mpu6050_.write_bytes(std::to_underlying(RA::XG_OFFS_USRH), (std::uint8_t*)(&offset), sizeof(offset));
+        std::uint8_t buffer[2] = {static_cast<std::uint8_t>(offset) >> 8, static_cast<std::uint8_t>(offset)};
+        this->mpu6050_.write_bytes(std::to_underlying(RA::XG_OFFS_USRH), buffer, sizeof(buffer));
     }
 
     void MPU6050_DMP::set_y_gyro_offset(std::int16_t const offset) const noexcept
     {
-        this->mpu6050_.write_bytes(std::to_underlying(RA::YG_OFFS_USRH), (std::uint8_t*)(&offset), sizeof(offset));
+        std::uint8_t buffer[2] = {static_cast<std::uint8_t>(offset) >> 8, static_cast<std::uint8_t>(offset)};
+        this->mpu6050_.write_bytes(std::to_underlying(RA::YG_OFFS_USRH), buffer, sizeof(buffer));
     }
 
     void MPU6050_DMP::set_z_gyro_offset(std::int16_t const offset) const noexcept
     {
-        this->mpu6050_.write_bytes(std::to_underlying(RA::ZG_OFFS_USRH), (std::uint8_t*)(&offset), sizeof(offset));
+        std::uint8_t buffer[2] = {static_cast<std::uint8_t>(offset) >> 8, static_cast<std::uint8_t>(offset)};
+        this->mpu6050_.write_bytes(std::to_underlying(RA::ZG_OFFS_USRH), buffer, sizeof(buffer));
     }
 
     std::array<std::uint8_t, 42UL> MPU6050_DMP::get_dmp_packet() const noexcept
     {
-        std::array<std::uint8_t, 42UL> dmp_packet{};
+        auto dmp_packet = std::array<std::uint8_t, 42UL>{};
 
         if (this->get_int_dmp_status()) {
-            auto fifo_count{this->mpu6050_.get_fifo_count()};
+            auto fifo_count = this->mpu6050_.get_fifo_count();
             if (fifo_count == FIFO_MAX_COUNT) {
                 this->mpu6050_.reset_fifo();
             }
@@ -169,7 +176,7 @@ namespace MPU6050 {
             while (fifo_count < dmp_packet.size()) {
             }
 
-            for (auto i{0}; i < fifo_count / dmp_packet.size(); ++i) {
+            for (auto i = 0U; i < fifo_count / dmp_packet.size(); ++i) {
                 this->mpu6050_.get_fifo_bytes(dmp_packet.data(), dmp_packet.size());
             }
         }
@@ -177,44 +184,56 @@ namespace MPU6050 {
         return dmp_packet;
     }
 
-    Quat3D<std::int16_t> MPU6050_DMP::get_quaternion_raw() const noexcept
+    std::optional<Quat3D<std::int16_t>> MPU6050_DMP::get_quaternion_raw() const noexcept
     {
-        auto packet{this->get_dmp_packet()};
-        return Quat3D<std::int16_t>{(static_cast<std::int16_t>(packet[0]) << 8) | static_cast<std::int16_t>(packet[1]),
-                                    (static_cast<std::int16_t>(packet[4]) << 8) | static_cast<std::int16_t>(packet[5]),
-                                    (static_cast<std::int16_t>(packet[8]) << 8) | static_cast<std::int16_t>(packet[9]),
-                                    (static_cast<std::int16_t>(packet[12]) << 8) |
-                                        static_cast<std::int16_t>(packet[13])};
+        auto packet = this->get_dmp_packet();
+        return this->initialized_ ? std::optional<Quat3D<std::int16_t>>{std::in_place,
+                                                                        (static_cast<std::int16_t>(packet[0]) << 8) |
+                                                                            static_cast<std::int16_t>(packet[1]),
+                                                                        (static_cast<std::int16_t>(packet[4]) << 8) |
+                                                                            static_cast<std::int16_t>(packet[5]),
+                                                                        (static_cast<std::int16_t>(packet[8]) << 8) |
+                                                                            static_cast<std::int16_t>(packet[9]),
+                                                                        (static_cast<std::int16_t>(packet[12]) << 8) |
+                                                                            static_cast<std::int16_t>(packet[13])}
+                                  : std::optional<Quat3D<std::int16_t>>{std::nullopt};
     }
 
-    Quat3D<std::float32_t> MPU6050_DMP::get_quaternion_scaled() const noexcept
+    std::optional<Quat3D<std::float32_t>> MPU6050_DMP::get_quaternion_scaled() const noexcept
     {
-        return static_cast<Quat3D<std::float32_t>>(this->get_quaternion_raw()) / this->mpu6050_.accel_scale_;
+        return this->get_quaternion_raw().transform([this](Quat3D<std::int16_t> const& raw) {
+            return static_cast<Quat3D<std::float32_t>>(raw) / this->mpu6050_.accel_scale_;
+        });
     }
 
-    Vec3D<std::float32_t> MPU6050_DMP::get_gravity() const noexcept
+    std::optional<Vec3D<std::float32_t>> MPU6050_DMP::get_gravity() const noexcept
     {
-        return quaternion_to_gravity(this->get_quaternion_scaled());
+        return this->get_quaternion_scaled().transform(
+            [](Quat3D<std::float32_t> const& quaternion) { return quaternion_to_gravity(quaternion); });
     }
 
-    std::float32_t MPU6050_DMP::get_roll() const noexcept
+    std::optional<std::float32_t> MPU6050_DMP::get_roll() const noexcept
     {
-        return quaternion_to_roll(this->get_quaternion_scaled());
+        return this->get_quaternion_scaled().transform(
+            [](Quat3D<std::float32_t> const& quaternion) { return quaternion_to_roll(quaternion); });
     }
 
-    std::float32_t MPU6050_DMP::get_pitch() const noexcept
+    std::optional<std::float32_t> MPU6050_DMP::get_pitch() const noexcept
     {
-        return quaternion_to_pitch(this->get_quaternion_scaled());
+        return this->get_quaternion_scaled().transform(
+            [](Quat3D<std::float32_t> const& quaternion) { return quaternion_to_pitch(quaternion); });
     }
 
-    std::float32_t MPU6050_DMP::get_yaw() const noexcept
+    std::optional<std::float32_t> MPU6050_DMP::get_yaw() const noexcept
     {
-        return quaternion_to_yaw(this->get_quaternion_scaled());
+        return this->get_quaternion_scaled().transform(
+            [](Quat3D<std::float32_t> const& quaternion) { return quaternion_to_yaw(quaternion); });
     }
 
-    Vec3D<std::float32_t> MPU6050_DMP::get_roll_pitch_yaw() const noexcept
+    std::optional<Vec3D<std::float32_t>> MPU6050_DMP::get_roll_pitch_yaw() const noexcept
     {
-        return quaternion_to_roll_pitch_yaw(this->get_quaternion_scaled());
+        return this->get_quaternion_scaled().transform(
+            [](Quat3D<std::float32_t> const& quaternion) { return quaternion_to_roll_pitch_yaw(quaternion); });
     }
 
     void MPU6050_DMP::set_int_pll_ready_enabled(bool const enabled) const noexcept

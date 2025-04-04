@@ -2,11 +2,14 @@
 #define MPU6050_HPP
 
 #include "mpu6050_config.hpp"
+#include "mpu6050_registers.hpp"
+#include <optional>
 
 namespace MPU6050 {
 
     struct MPU6050 {
         MPU6050() noexcept = default;
+
         MPU6050(I2CDevice&& i2c_device,
                 std::uint32_t const sampling_rate,
                 GyroRange const gyro_range,
@@ -23,25 +26,25 @@ namespace MPU6050 {
         ~MPU6050() noexcept;
 
         /* celsius */
-        [[nodiscard]] std::float32_t get_temperature_celsius() const noexcept;
+        std::optional<std::float32_t> get_temperature_celsius() const noexcept;
 
         /* meters per square second */
-        [[nodiscard]] Vec3D<std::float32_t> get_acceleration_scaled() const noexcept;
-        [[nodiscard]] std::float32_t get_acceleration_x_scaled() const noexcept;
-        [[nodiscard]] std::float32_t get_acceleration_y_scaled() const noexcept;
-        [[nodiscard]] std::float32_t get_acceleration_z_scaled() const noexcept;
+        std::optional<Vec3D<std::float32_t>> get_acceleration_scaled() const noexcept;
+        std::optional<std::float32_t> get_acceleration_x_scaled() const noexcept;
+        std::optional<std::float32_t> get_acceleration_y_scaled() const noexcept;
+        std::optional<std::float32_t> get_acceleration_z_scaled() const noexcept;
 
         /* radians */
-        [[nodiscard]] Vec3D<std::float32_t> get_rotation_scaled() const noexcept;
-        [[nodiscard]] std::float32_t get_rotation_x_scaled() const noexcept;
-        [[nodiscard]] std::float32_t get_rotation_y_scaled() const noexcept;
-        [[nodiscard]] std::float32_t get_rotation_z_scaled() const noexcept;
+        std::optional<Vec3D<std::float32_t>> get_rotation_scaled() const noexcept;
+        std::optional<std::float32_t> get_rotation_x_scaled() const noexcept;
+        std::optional<std::float32_t> get_rotation_y_scaled() const noexcept;
+        std::optional<std::float32_t> get_rotation_z_scaled() const noexcept;
 
         /* degrees */
-        [[nodiscard]] Vec3D<std::float32_t> get_roll_pitch_yaw() const noexcept;
-        [[nodiscard]] std::float32_t get_roll() const noexcept;
-        [[nodiscard]] std::float32_t get_pitch() const noexcept;
-        [[nodiscard]] std::float32_t get_yaw() const noexcept;
+        std::optional<Vec3D<std::float32_t>> get_roll_pitch_yaw() const noexcept;
+        std::optional<std::float32_t> get_roll() const noexcept;
+        std::optional<std::float32_t> get_pitch() const noexcept;
+        std::optional<std::float32_t> get_yaw() const noexcept;
 
         std::uint8_t read_byte(std::uint8_t const reg_address) const noexcept;
 
@@ -164,17 +167,17 @@ namespace MPU6050 {
         bool get_int_i2c_master_status() const noexcept;
         bool get_int_data_ready_status() const noexcept;
 
-        Vec3D<std::int16_t> get_acceleration_raw() const noexcept;
-        std::int16_t get_acceleration_x_raw() const noexcept;
-        std::int16_t get_acceleration_y_raw() const noexcept;
-        std::int16_t get_acceleration_z_raw() const noexcept;
+        std::optional<Vec3D<std::int16_t>> get_acceleration_raw() const noexcept;
+        std::optional<std::int16_t> get_acceleration_x_raw() const noexcept;
+        std::optional<std::int16_t> get_acceleration_y_raw() const noexcept;
+        std::optional<std::int16_t> get_acceleration_z_raw() const noexcept;
 
-        std::int16_t get_temperature_raw() const noexcept;
+        std::optional<std::int16_t> get_temperature_raw() const noexcept;
 
-        Vec3D<std::int16_t> get_rotation_raw() const noexcept;
-        std::int16_t get_rotation_x_raw() const noexcept;
-        std::int16_t get_rotation_y_raw() const noexcept;
-        std::int16_t get_rotation_z_raw() const noexcept;
+        std::optional<Vec3D<std::int16_t>> get_rotation_raw() const noexcept;
+        std::optional<std::int16_t> get_rotation_x_raw() const noexcept;
+        std::optional<std::int16_t> get_rotation_y_raw() const noexcept;
+        std::optional<std::int16_t> get_rotation_z_raw() const noexcept;
 
         std::uint8_t get_external_sensor_byte(std::uint8_t const position) const noexcept;
         std::uint16_t get_external_sensor_word(std::uint8_t const position) const noexcept;

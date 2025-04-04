@@ -1,5 +1,5 @@
-#ifndef MPU6050_DMP_IMG_HPP
-#define MPU6050_DMP_IMG_HPP
+#ifndef MPU6050_DMP_MEMORY_HPP
+#define MPU6050_DMP_MEMORY_HPP
 
 #include <array>
 #include <cstdint>
@@ -1945,4 +1945,4 @@ namespace MPU6050 {
 
 }; // namespace MPU6050
 
-#endif // MPU6050_DMP_IMG_HPP
+#endif // MPU6050_DMP_MEMORY_HPP
