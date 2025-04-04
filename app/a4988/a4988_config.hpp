@@ -19,6 +19,7 @@ namespace A4988 {
     enum struct Direction : std::uint8_t {
         FORWARD,
         BACKWARD,
+        STOP,
     };
 
     inline std::float32_t microstep_to_fraction(Microstep const microstep) noexcept

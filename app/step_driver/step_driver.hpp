@@ -41,8 +41,8 @@ namespace StepDriver {
         bool stopped{};
 
     private:
-        void start_pwm() noexcept;
-        void stop_pwm() noexcept;
+        void start() noexcept;
+        void stop() noexcept;
 
         std::float32_t step_change() const noexcept;
 

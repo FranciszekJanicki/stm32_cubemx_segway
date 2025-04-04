@@ -50,10 +50,10 @@ namespace StepDriver {
         auto static stopped = false;
 
         if (std::abs(control_speed) < 10.0F) {
-            this->stop_pwm();
+            this->stop();
         } else {
             if (this->stopped) {
-                this->start_pwm();
+                this->start();
             }
             this->set_control_speed(speed);
         }
@@ -67,15 +67,15 @@ namespace StepDriver {
         this->set_speed(speed, sampling_time);
     }
 
-    void StepDriver::start_pwm() noexcept
+    void StepDriver::start() noexcept
     {
-        this->driver.pwm_device_.start_it();
+        this->driver.stop();
         this->stopped = false;
     }
 
-    void StepDriver::stop_pwm() noexcept
+    void StepDriver::stop() noexcept
     {
-        this->driver.pwm_device_.stop_it();
+        this->driver.start();
         this->stopped = true;
     }
 

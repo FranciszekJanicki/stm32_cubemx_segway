@@ -28,10 +28,19 @@ namespace A4988 {
         this->deinitialize();
     }
 
+    void A4988::start() const noexcept
+    {
+        this->pwm_device_.set_compare_raw(10U);
+    }
+
+    void A4988::stop() const noexcept
+    {
+        this->pwm_device_.set_compare_raw(0U);
+    }
+
     void A4988::set_frequency(std::uint32_t const frequency) noexcept
     {
         this->pwm_device_.set_frequency(frequency);
-        this->set_step();
     }
 
     void A4988::set_microstep(Microstep const microstep) const noexcept
@@ -59,47 +68,37 @@ namespace A4988 {
 
     void A4988::set_full_microstep() const noexcept
     {
-        if (this->initialized_) {
-            gpio_write_pin(this->pin_ms1_, GPIO_PIN_RESET);
-            gpio_write_pin(this->pin_ms2_, GPIO_PIN_RESET);
-            gpio_write_pin(this->pin_ms3_, GPIO_PIN_RESET);
-        }
+        gpio_write_pin(this->pin_ms1_, GPIO_PIN_RESET);
+        gpio_write_pin(this->pin_ms2_, GPIO_PIN_RESET);
+        gpio_write_pin(this->pin_ms3_, GPIO_PIN_RESET);
     }
 
     void A4988::set_half_microstep() const noexcept
     {
-        if (this->initialized_) {
-            gpio_write_pin(this->pin_ms1_, GPIO_PIN_SET);
-            gpio_write_pin(this->pin_ms2_, GPIO_PIN_RESET);
-            gpio_write_pin(this->pin_ms3_, GPIO_PIN_RESET);
-        }
+        gpio_write_pin(this->pin_ms1_, GPIO_PIN_SET);
+        gpio_write_pin(this->pin_ms2_, GPIO_PIN_RESET);
+        gpio_write_pin(this->pin_ms3_, GPIO_PIN_RESET);
     }
 
     void A4988::set_quarter_microstep() const noexcept
     {
-        if (this->initialized_) {
-            gpio_write_pin(this->pin_ms1_, GPIO_PIN_RESET);
-            gpio_write_pin(this->pin_ms2_, GPIO_PIN_SET);
-            gpio_write_pin(this->pin_ms3_, GPIO_PIN_RESET);
-        }
+        gpio_write_pin(this->pin_ms1_, GPIO_PIN_RESET);
+        gpio_write_pin(this->pin_ms2_, GPIO_PIN_SET);
+        gpio_write_pin(this->pin_ms3_, GPIO_PIN_RESET);
     }
 
     void A4988::set_eighth_microstep() const noexcept
     {
-        if (this->initialized_) {
-            gpio_write_pin(this->pin_ms1_, GPIO_PIN_SET);
-            gpio_write_pin(this->pin_ms2_, GPIO_PIN_SET);
-            gpio_write_pin(this->pin_ms3_, GPIO_PIN_RESET);
-        }
+        gpio_write_pin(this->pin_ms1_, GPIO_PIN_SET);
+        gpio_write_pin(this->pin_ms2_, GPIO_PIN_SET);
+        gpio_write_pin(this->pin_ms3_, GPIO_PIN_RESET);
     }
 
     void A4988::set_sixteenth_microstep() const noexcept
     {
-        if (this->initialized_) {
-            gpio_write_pin(this->pin_ms1_, GPIO_PIN_RESET);
-            gpio_write_pin(this->pin_ms2_, GPIO_PIN_RESET);
-            gpio_write_pin(this->pin_ms3_, GPIO_PIN_SET);
-        }
+        gpio_write_pin(this->pin_ms1_, GPIO_PIN_RESET);
+        gpio_write_pin(this->pin_ms2_, GPIO_PIN_RESET);
+        gpio_write_pin(this->pin_ms3_, GPIO_PIN_SET);
     }
 
     void A4988::set_direction(Direction const direction) const noexcept
@@ -118,16 +117,19 @@ namespace A4988 {
 
     void A4988::set_forward_direction() const noexcept
     {
-        if (this->initialized_) {
-            gpio_write_pin(this->pin_dir_, GPIO_PIN_RESET);
-        }
+        gpio_write_pin(this->pin_dir_, GPIO_PIN_RESET);
+        this->start();
     }
 
     void A4988::set_backward_direction() const noexcept
     {
-        if (this->initialized_) {
-            gpio_write_pin(this->pin_dir_, GPIO_PIN_SET);
-        }
+        gpio_write_pin(this->pin_dir_, GPIO_PIN_SET);
+        this->start();
+    }
+
+    void A4988::set_stop_direction() const noexcept
+    {
+        this->stop();
     }
 
     void A4988::set_reset(bool const reset) const noexcept
@@ -145,20 +147,12 @@ namespace A4988 {
         gpio_write_pin(this->pin_sleep_, sleep ? GPIO_PIN_RESET : GPIO_PIN_SET);
     }
 
-    void A4988::set_step(bool const step) const noexcept
-    {
-        if (this->initialized_) {
-            this->pwm_device_.set_compare_raw(step ? 10U : 0U);
-        }
-    }
-
     void A4988::initialize() noexcept
     {
         this->set_reset(false);
         this->set_enable(true);
         this->set_sleep(false);
-        this->set_step(false);
-        this->initialized_ = true;
+        this->start();
     }
 
     void A4988::deinitialize() noexcept
@@ -166,8 +160,7 @@ namespace A4988 {
         this->set_reset(true);
         this->set_enable(false);
         this->set_sleep(true);
-        this->set_step(false);
-        this->initialized_ = false;
+        this->stop();
     }
 
 }; // namespace A4988
