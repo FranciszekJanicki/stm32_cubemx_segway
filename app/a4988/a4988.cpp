@@ -30,12 +30,12 @@ namespace A4988 {
 
     void A4988::start() const noexcept
     {
-        this->pwm_device_.set_compare_raw(10U);
+        this->pwm_device_.set_compare_half();
     }
 
     void A4988::stop() const noexcept
     {
-        this->pwm_device_.set_compare_raw(0U);
+        this->pwm_device_.set_compare_min();
     }
 
     void A4988::set_frequency(std::uint32_t const frequency) noexcept
@@ -110,6 +110,8 @@ namespace A4988 {
             case Direction::BACKWARD:
                 this->set_backward_direction();
                 break;
+            case Direction::STOP:
+                this->set_stop_direction();
             default:
                 break;
         }
@@ -152,7 +154,7 @@ namespace A4988 {
         this->set_reset(false);
         this->set_enable(true);
         this->set_sleep(false);
-        this->start();
+        this->stop();
     }
 
     void A4988::deinitialize() noexcept

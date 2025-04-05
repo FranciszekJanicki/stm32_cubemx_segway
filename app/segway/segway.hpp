@@ -3,19 +3,27 @@
 
 #include "icm20948.hpp"
 #include "mpu6050.hpp"
+#include "mpu6050_dmp.hpp"
 #include "pid.hpp"
 #include "step_driver.hpp"
 #include <variant>
 
 namespace Segway {
 
+    using namespace Utility;
+    using namespace ICM20948;
+    using namespace MPU6050;
+    using namespace A4988;
+    using namespace StepDriver;
     using namespace STM32_Utility;
-    using A4988 = A4988::A4988;
-    using ICM20948 = ICM20948::ICM20948;
-    using MPU6050 = MPU6050::MPU6050;
-    using IMU = std::variant<ICM20948, MPU6050>;
-    using Regulator = Utility::PID<std::float32_t>;
-    using Driver = StepDriver::StepDriver;
+
+    using A4988 = ::A4988::A4988;
+    using ICM20948 = ::ICM20948::ICM20948;
+    using MPU6050 = ::MPU6050::MPU6050;
+    using MPU6050_DMP = ::MPU6050::MPU6050_DMP;
+    using IMU = std::variant<ICM20948, MPU6050_DMP>;
+    using Regulator = ::Utility::PID<std::float32_t>;
+    using Driver = ::StepDriver::StepDriver;
 
     enum struct Channel : std::uint8_t {
         CHANNEL_1,

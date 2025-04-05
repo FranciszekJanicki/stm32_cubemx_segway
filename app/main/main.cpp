@@ -18,5 +18,5 @@ int main()
     MX_TIM2_Init();
     MX_TIM3_Init();
 
-    Segway::test_mpu6050();
+    Segway::test_segway();
 }

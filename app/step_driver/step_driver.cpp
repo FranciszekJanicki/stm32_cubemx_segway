@@ -24,7 +24,7 @@ namespace StepDriver {
 
     void StepDriver::update_step_count() noexcept
     {
-        auto const counter_period = this->driver.pwm_device_.get_counter_period();
+        auto const counter_period = this->driver.pwm_device_.get_period();
 
         if (this->direction == Direction::BACKWARD) {
             this->step_count = (this->step_count - 1U) % counter_period;
