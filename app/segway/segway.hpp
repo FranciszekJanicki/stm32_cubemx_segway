@@ -36,11 +36,15 @@ namespace Segway {
     };
 
     struct Segway {
-        void update_step_count(Channel const channel) noexcept;
-        void set_speed(Channel const channel, std::float32_t const speed, std::float32_t const sampling_time) noexcept;
+        void update_step_count(this Segway& self, Channel const channel) noexcept;
 
-        void operator()(std::float32_t const angle, std::float32_t const sampling_time) noexcept;
-        void set_angle(std::float32_t const angle, std::float32_t const sampling_time) noexcept;
+        void set_speed(this Segway& self,
+                       Channel const channel,
+                       std::float32_t const speed,
+                       std::float32_t const sampling_time) noexcept;
+
+        void operator()(this Segway& self, std::float32_t const angle, std::float32_t const sampling_time) noexcept;
+        void set_angle(this Segway& self, std::float32_t const angle, std::float32_t const sampling_time) noexcept;
 
         IMU imu{};
         Regulator regulator{};
@@ -49,9 +53,11 @@ namespace Segway {
         std::float32_t prev_control_speed{};
 
     private:
-        std::float32_t angle_to_angular_speed(std::float32_t const angle, std::float32_t const sampling_time) noexcept;
+        std::float32_t angle_to_angular_speed(this Segway& self,
+                                              std::float32_t const angle,
+                                              std::float32_t const sampling_time) noexcept;
 
-        Driver& get_driver(Channel const channel) noexcept;
+        Driver& get_driver(this Segway& self, Channel const channel) noexcept;
     };
 
 }; // namespace Segway

@@ -38,7 +38,7 @@ namespace StepDriver {
         std::float32_t prev_speed{};
         std::float32_t prev_acceleration{};
 
-        bool stopped{};
+        bool is_stopped{};
 
     private:
         void start() noexcept;

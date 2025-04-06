@@ -47,12 +47,10 @@ namespace StepDriver {
         auto control_speed = speed;
         // this->regulator(error_speed, sampling_time);
 
-        auto static stopped = false;
-
         if (std::abs(control_speed) < 10.0F) {
             this->stop();
         } else {
-            if (this->stopped) {
+            if (this->is_stopped) {
                 this->start();
             }
             this->set_control_speed(speed);
@@ -69,14 +67,14 @@ namespace StepDriver {
 
     void StepDriver::start() noexcept
     {
-        this->driver.stop();
-        this->stopped = false;
+        this->driver.start();
+        this->is_stopped = false;
     }
 
     void StepDriver::stop() noexcept
     {
-        this->driver.start();
-        this->stopped = true;
+        this->driver.stop();
+        this->is_stopped = true;
     }
 
     std::float32_t StepDriver::step_change() const noexcept
