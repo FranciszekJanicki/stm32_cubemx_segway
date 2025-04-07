@@ -52,8 +52,7 @@ namespace Segway {
     {
         auto pwm_device = PWMDevice{&htim1, TIM_CHANNEL_1};
 
-        auto a4988 =
-            A4988{std::move(pwm_device), MS1_1, MS2_1, MS3_1, RESET_1, SLEEP_1, DIR_1, EN_1};
+        auto a4988 = A4988{std::move(pwm_device), MS1_1, MS2_1, MS3_1, RESET_1, SLEEP_1, DIR_1, EN_1};
 
         auto step_driver = StepDriver{.driver = std::move(a4988), .steps_per_360 = STEPS_PER_360};
 
@@ -62,7 +61,7 @@ namespace Segway {
         auto i = 0.0F;
 
         while (1) {
-            step_driver.set_speed(i += 1.0F, SAMPLING_TIME);
+            step_driver.set_speed(i += 1.0F, DT);
             tim2_period_elapsed = false;
 
             if (tim1_pulse_finished) {
@@ -78,8 +77,7 @@ namespace Segway {
     {
         auto pwm_device = PWMDevice{&htim3, TIM_CHANNEL_1};
 
-        auto a4988 =
-            A4988{std::move(pwm_device), MS1_2, MS2_2, MS3_2, RESET_2, SLEEP_2, DIR_2, EN_2};
+        auto a4988 = A4988{std::move(pwm_device), MS1_2, MS2_2, MS3_2, RESET_2, SLEEP_2, DIR_2, EN_2};
 
         auto step_driver = StepDriver{.driver = std::move(a4988), .steps_per_360 = STEPS_PER_360};
 
@@ -88,7 +86,7 @@ namespace Segway {
         auto i = 0.0F;
 
         while (1) {
-            step_driver.set_speed(i += 1.0F, SAMPLING_TIME);
+            step_driver.set_speed(i += 1.0F, DT);
 
             tim2_period_elapsed = false;
 
@@ -105,19 +103,15 @@ namespace Segway {
     {
         auto pwm_device_1 = PWMDevice{&htim1, TIM_CHANNEL_1};
 
-        auto a4988_1 =
-            A4988{std::move(pwm_device_1), MS1_1, MS2_1, MS3_1, RESET_1, SLEEP_1, DIR_1, EN_1};
+        auto a4988_1 = A4988{std::move(pwm_device_1), MS1_1, MS2_1, MS3_1, RESET_1, SLEEP_1, DIR_1, EN_1};
 
-        auto step_driver_1 =
-            StepDriver{.driver = std::move(a4988_1), .steps_per_360 = STEPS_PER_360};
+        auto step_driver_1 = StepDriver{.driver = std::move(a4988_1), .steps_per_360 = STEPS_PER_360};
 
         auto pwm_device_2 = PWMDevice{&htim3, TIM_CHANNEL_1};
 
-        auto a4988_2 =
-            A4988{std::move(pwm_device_2), MS1_2, MS2_2, MS3_2, RESET_2, SLEEP_2, DIR_2, EN_2};
+        auto a4988_2 = A4988{std::move(pwm_device_2), MS1_2, MS2_2, MS3_2, RESET_2, SLEEP_2, DIR_2, EN_2};
 
-        auto step_driver_2 =
-            StepDriver{.driver = std::move(a4988_2), .steps_per_360 = STEPS_PER_360};
+        auto step_driver_2 = StepDriver{.driver = std::move(a4988_2), .steps_per_360 = STEPS_PER_360};
 
         auto i2c_device = I2CDevice{&hi2c1, MPU6050_I2C_ADDRESS};
         i2c_device.bus_scan();
@@ -135,11 +129,11 @@ namespace Segway {
 
         auto observer = SFO{};
 
-        auto wheels = std::array{
-            Wheel{.type = WheelType::LEFT,
-                  .driver = WheelDriver{.driver = std::move(step_driver_1), .wheel_radius = 0.0F}},
-            Wheel{.type = WheelType::RIGHT,
-                  .driver = WheelDriver{.driver = std::move(step_driver_2), .wheel_radius = 0.0F}}};
+        auto wheels =
+            std::array{Wheel{.type = WheelType::LEFT,
+                             .driver = WheelDriver{.driver = std::move(step_driver_1), .wheel_radius = 0.0F}},
+                       Wheel{.type = WheelType::RIGHT,
+                             .driver = WheelDriver{.driver = std::move(step_driver_2), .wheel_radius = 0.0F}}};
 
         auto segway = Segway{.sensor = std::move(sensor),
                              .regulator = regulator,
@@ -152,12 +146,11 @@ namespace Segway {
         auto speed = 100.0F32;
 
         while (1) {
-            // if (gpio_pin6_exti) {
-            segway.run_segway({}, {}, {}, {}, {}, {}, SAMPLING_TIME);
+            if (gpio_pin6_exti) {
+                segway.run_segway(DOT_TILT, TILT, DOT_ROTATION, ROTATION, POSITION, WHELLS_SPEED, DT);
 
-            gpio_pin6_exti = false;
-            // }
-            HAL_Delay(50);
+                gpio_pin6_exti = false;
+            }
 
             if (tim3_pulse_finished) {
                 segway.update_step_count(WheelType::RIGHT);

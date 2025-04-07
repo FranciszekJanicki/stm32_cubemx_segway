@@ -10,34 +10,24 @@ namespace StepDriver {
     using namespace Utility;
     using A4988 = ::A4988::A4988;
 
-    Microstep speed_to_microstep(std::float32_t const speed,
-                                 std::float32_t const step_change) noexcept;
+    Microstep speed_to_microstep(std::float32_t const speed, std::float32_t const step_change) noexcept;
 
     Direction speed_to_direction(std::float32_t const speed) noexcept;
 
-    std::uint16_t speed_to_frequency(std::float32_t const speed,
-                                     std::float32_t const step_change) noexcept;
+    std::uint16_t speed_to_frequency(std::float32_t const speed, std::float32_t const step_change) noexcept;
 
     struct StepDriver {
     public:
         void update_step_count(this StepDriver& self) noexcept;
 
-        void set_position(this StepDriver& self,
-                          std::float32_t const position,
-                          std::float32_t const sampling_time) noexcept;
-        void set_speed(this StepDriver& self,
-                       std::float32_t const speed,
-                       std::float32_t const sampling_time) noexcept;
-        void set_acceleration(this StepDriver& self,
-                              std::float32_t const acceleration,
-                              std::float32_t const sampling_time) noexcept;
+        void set_position(this StepDriver& self, std::float32_t const position, std::float32_t const dt) noexcept;
+        void set_speed(this StepDriver& self, std::float32_t const speed, std::float32_t const dt) noexcept;
+        void
+        set_acceleration(this StepDriver& self, std::float32_t const acceleration, std::float32_t const dt) noexcept;
 
-        std::float32_t get_position(this StepDriver& self,
-                                    std::float32_t const sampling_time) noexcept;
-        std::float32_t get_speed(this StepDriver& self,
-                                 std::float32_t const sampling_time) noexcept;
-        std::float32_t get_acceleration(this StepDriver& self,
-                                        std::float32_t const sampling_time) noexcept;
+        std::float32_t get_position(this StepDriver& self, std::float32_t const dt) noexcept;
+        std::float32_t get_speed(this StepDriver& self, std::float32_t const dt) noexcept;
+        std::float32_t get_acceleration(this StepDriver& self, std::float32_t const dt) noexcept;
 
         A4988 driver = A4988{};
         std::uint16_t steps_per_360 = 0U;

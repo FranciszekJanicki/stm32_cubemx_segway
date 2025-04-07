@@ -54,13 +54,13 @@ namespace Segway {
     constexpr auto ICM20948_FREQ = 200UL;
     constexpr auto ICM20948_I2C_ADDRESS = ICM_20948_I2C_ADDR_AD0;
 
-    constexpr auto INPUT_ANGLE = 0.0F;
-    constexpr auto SAMPLING_TIME = 1.0F / MPU6050_FREQ;
-
-    constexpr auto P = 1.0F;
-    constexpr auto I = 1.0F;
-    constexpr auto D = 0.0F;
-    constexpr auto SAT = 1000.0F;
+    constexpr auto DOT_TILT = 0.0F;
+    constexpr auto TILT = 0.0F;
+    constexpr auto DOT_ROTATION = 0.0F;
+    constexpr auto ROTATION = 0.0F;
+    constexpr auto POSITION = 0.0F;
+    constexpr auto WHELLS_SPEED = 0.0F;
+    constexpr auto DT = 1.0F / ICM20948_FREQ;
 
     constexpr auto STEPS_PER_360 = 200U;
 

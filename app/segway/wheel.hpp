@@ -17,15 +17,12 @@ namespace Segway {
     using Driver = StepDriver::StepDriver;
 
     struct WheelDriver {
-        std::float32_t get_wheel_position(this WheelDriver& self,
-                                          std::float32_t const sampling_time) noexcept;
+        std::float32_t get_wheel_position(this WheelDriver& self, std::float32_t const dt) noexcept;
 
-        std::float32_t get_wheel_speed(this WheelDriver& self,
-                                       std::float32_t const sampling_time) noexcept;
+        std::float32_t get_wheel_speed(this WheelDriver& self, std::float32_t const dt) noexcept;
 
-        void set_wheel_speed(this WheelDriver& self,
-                             std::float32_t const wheel_speed,
-                             std::float32_t const sampling_time) noexcept;
+        void
+        set_wheel_speed(this WheelDriver& self, std::float32_t const wheel_speed, std::float32_t const dt) noexcept;
 
         Driver driver = Driver{};
         std::float32_t wheel_radius = 0.0F;
