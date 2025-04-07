@@ -2,7 +2,8 @@
 
 namespace StepDriver {
 
-    Microstep speed_to_microstep(std::float32_t const speed, std::float32_t const step_change) noexcept
+    Microstep speed_to_microstep(std::float32_t const speed,
+                                 std::float32_t const step_change) noexcept
     {
         return Microstep::FULL;
     }
@@ -12,118 +13,136 @@ namespace StepDriver {
         return speed > 0.0F ? Direction::FORWARD : Direction::BACKWARD;
     }
 
-    std::float32_t frequency_to_speed(std::uint16_t const frequency, std::float32_t const step_change) noexcept
+    std::float32_t frequency_to_speed(std::uint16_t const frequency,
+                                      std::float32_t const step_change) noexcept
     {
         return static_cast<std::float32_t>(std::abs(frequency * step_change));
     }
 
-    std::uint16_t speed_to_frequency(std::float32_t const speed, std::float32_t const step_change) noexcept
+    std::uint16_t speed_to_frequency(std::float32_t const speed,
+                                     std::float32_t const step_change) noexcept
     {
         return static_cast<std::uint16_t>(std::abs(speed / step_change));
     }
 
-    void StepDriver::update_step_count() noexcept
+    void StepDriver::update_step_count(this StepDriver& self) noexcept
     {
-        auto const counter_period = this->driver.pwm_device_.get_period();
+        auto const counter_period = self.driver.pwm_device_.get_period();
 
-        if (this->direction == Direction::BACKWARD) {
-            this->step_count = (this->step_count - 1U) % counter_period;
-        } else if (this->direction == Direction::FORWARD) {
-            this->step_count = (this->step_count + 1U) % counter_period;
+        if (self.direction == Direction::BACKWARD) {
+            self.step_count = (self.step_count - 1U) % counter_period;
+        } else if (self.direction == Direction::FORWARD) {
+            self.step_count = (self.step_count + 1U) % counter_period;
         }
     }
 
-    void StepDriver::set_position(std::float32_t const position, std::float32_t const sampling_time) noexcept
+    void StepDriver::set_position(this StepDriver& self,
+                                  std::float32_t const position,
+                                  std::float32_t const sampling_time) noexcept
     {
-        auto const speed =
-            Utility::differentiate(position, std::exchange(this->prev_position, position), sampling_time);
+        auto const speed = Utility::differentiate(position,
+                                                  std::exchange(self.prev_position, position),
+                                                  sampling_time);
 
-        this->set_speed(speed, sampling_time);
+        self.set_speed(speed, sampling_time);
     }
 
-    void StepDriver::set_speed(std::float32_t const speed, std::float32_t const sampling_time) noexcept
+    void StepDriver::set_speed(this StepDriver& self,
+                               std::float32_t const speed,
+                               std::float32_t const sampling_time) noexcept
     {
-        auto const error_speed = speed - this->get_speed(sampling_time);
+        auto const error_speed = speed - self.get_speed(sampling_time);
         auto control_speed = speed;
-        // this->regulator(error_speed, sampling_time);
+        // self.regulator(error_speed, sampling_time);
 
         if (std::abs(control_speed) < 10.0F) {
-            this->stop();
+            self.stop();
         } else {
-            if (this->is_stopped) {
-                this->start();
+            if (self.is_stopped) {
+                self.start();
             }
-            this->set_control_speed(speed);
+            self.set_control_speed(speed);
         }
     }
 
-    void StepDriver::set_acceleration(std::float32_t const acceleration, std::float32_t const sampling_time) noexcept
+    void StepDriver::set_acceleration(this StepDriver& self,
+                                      std::float32_t const acceleration,
+                                      std::float32_t const sampling_time) noexcept
     {
-        auto const speed =
-            Utility::integrate(acceleration, std::exchange(this->prev_acceleration, acceleration), sampling_time);
+        auto const speed = Utility::integrate(acceleration,
+                                              std::exchange(self.prev_acceleration, acceleration),
+                                              sampling_time);
 
-        this->set_speed(speed, sampling_time);
+        self.set_speed(speed, sampling_time);
     }
 
-    void StepDriver::start() noexcept
+    void StepDriver::start(this StepDriver& self) noexcept
     {
-        this->driver.start();
-        this->is_stopped = false;
+        self.driver.start();
+        self.is_stopped = false;
     }
 
-    void StepDriver::stop() noexcept
+    void StepDriver::stop(this StepDriver& self) noexcept
     {
-        this->driver.stop();
-        this->is_stopped = true;
+        self.driver.stop();
+        self.is_stopped = true;
     }
 
-    std::float32_t StepDriver::step_change() const noexcept
+    std::float32_t StepDriver::step_change(this StepDriver& self) noexcept
     {
-        return (360.0F / static_cast<std::float32_t>(this->steps_per_360)) * microstep_to_fraction(this->microstep);
+        return (360.0F / static_cast<std::float32_t>(self.steps_per_360)) *
+               microstep_to_fraction(self.microstep);
     }
 
-    void StepDriver::set_control_speed(std::float32_t const control_speed) noexcept
+    void StepDriver::set_control_speed(this StepDriver& self,
+                                       std::float32_t const control_speed) noexcept
     {
-        this->set_direction(speed_to_direction(control_speed));
-        this->set_microstep(speed_to_microstep(control_speed, this->step_change()));
-        this->set_frequency(speed_to_frequency(control_speed, this->step_change()));
+        self.set_direction(speed_to_direction(control_speed));
+        self.set_microstep(speed_to_microstep(control_speed, self.step_change()));
+        self.set_frequency(speed_to_frequency(control_speed, self.step_change()));
     }
 
-    void StepDriver::set_microstep(Microstep const microstep) noexcept
+    void StepDriver::set_microstep(this StepDriver& self, Microstep const microstep) noexcept
     {
-        this->microstep = microstep;
-        this->driver.set_microstep(microstep);
+        self.microstep = microstep;
+        self.driver.set_microstep(microstep);
     }
 
-    void StepDriver::set_direction(Direction const direction) noexcept
+    void StepDriver::set_direction(this StepDriver& self, Direction const direction) noexcept
     {
-        this->direction = direction;
-        this->driver.set_direction(direction);
+        self.direction = direction;
+        self.driver.set_direction(direction);
     }
 
-    void StepDriver::set_frequency(std::uint16_t const frequency) noexcept
+    void StepDriver::set_frequency(this StepDriver& self, std::uint16_t const frequency) noexcept
     {
-        this->frequency = frequency;
-        this->driver.set_frequency(frequency);
+        self.frequency = frequency;
+        self.driver.set_frequency(frequency);
     }
 
-    std::float32_t StepDriver::get_position(std::float32_t const sampling_time) noexcept
+    std::float32_t StepDriver::get_position(this StepDriver& self,
+                                            std::float32_t const sampling_time) noexcept
     {
-        return std::fmodf(this->step_change() * static_cast<std::float32_t>(this->step_count), 360.0F);
+        return std::fmodf(self.step_change() * static_cast<std::float32_t>(self.step_count),
+                          360.0F);
     }
 
-    std::float32_t StepDriver::get_speed(std::float32_t const sampling_time) noexcept
+    std::float32_t StepDriver::get_speed(this StepDriver& self,
+                                         std::float32_t const sampling_time) noexcept
     {
-        auto const position = this->get_position(sampling_time);
+        auto const position = self.get_position(sampling_time);
 
-        return Utility::differentiate(position, std::exchange(this->prev_position, position), sampling_time);
+        return Utility::differentiate(position,
+                                      std::exchange(self.prev_position, position),
+                                      sampling_time);
     }
 
-    std::float32_t StepDriver::get_acceleration(std::float32_t const sampling_time) noexcept
+    std::float32_t StepDriver::get_acceleration(this StepDriver& self,
+                                                std::float32_t const sampling_time) noexcept
     {
-        auto const speed = this->get_speed(sampling_time);
+        auto const speed = self.get_speed(sampling_time);
 
-        return Utility::differentiate(speed, std::exchange(this->prev_speed, speed), sampling_time);
+        return Utility::differentiate(speed, std::exchange(self.prev_speed, speed), sampling_time);
     }
 
 }; // namespace StepDriver

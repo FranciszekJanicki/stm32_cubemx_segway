@@ -26,6 +26,7 @@ namespace Segway {
     using namespace StepDriver;
 
     using A4988 = ::A4988::A4988;
+    using StepDriver = ::StepDriver::StepDriver;
 
     constexpr auto MS1_1 = GPIO::PB4;
     constexpr auto MS2_1 = GPIO::PB5;

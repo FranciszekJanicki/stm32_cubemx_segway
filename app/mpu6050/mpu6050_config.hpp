@@ -174,41 +174,13 @@ namespace MPU6050 {
         }
     }
 
-    inline std::uint8_t get_sampling_divider(std::uint32_t const sampling_rate,
-                                             DLPF const dlpf) noexcept
+    inline std::uint8_t get_sampling_divider(std::uint32_t const sampling_rate, DLPF const dlpf) noexcept
     {
         if (dlpf == DLPF::BW_256) {
             return static_cast<std::uint8_t>((GYRO_OUTPUT_RATE_DLPF_DIS_HZ / sampling_rate) - 1U);
         } else {
             return static_cast<std::uint8_t>((GYRO_OUTPUT_RATE_DLPF_EN_HZ / sampling_rate) - 1U);
         }
-    }
-
-    inline std::float32_t accel_to_roll(Vec3D<std::float32_t> const& accel_scaled) noexcept
-    {
-        return std::atan2(accel_scaled.y, accel_scaled.z) * 180.0F / PI;
-    }
-
-    inline std::float32_t accel_to_pitch(Vec3D<std::float32_t> const& accel_scaled) noexcept
-    {
-        return -(std::atan2(
-                     accel_scaled.x,
-                     std::sqrt(accel_scaled.y * accel_scaled.y + accel_scaled.z * accel_scaled.z)) *
-                 180.0F) /
-               PI;
-    }
-
-    inline std::float32_t accel_to_yaw(Vec3D<std::float32_t> const& accel_scaled) noexcept
-    {
-        return {};
-    }
-
-    inline Vec3D<std::float32_t>
-    accel_to_roll_pitch_yaw(Vec3D<std::float32_t> const& accel_scaled) noexcept
-    {
-        return Vec3D<std::float32_t>{accel_to_roll(accel_scaled),
-                                     accel_to_pitch(accel_scaled),
-                                     accel_to_yaw(accel_scaled)};
     }
 
     inline std::uint8_t slave_num_to_address(std::uint8_t const num) noexcept
