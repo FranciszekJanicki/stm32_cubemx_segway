@@ -20,7 +20,7 @@ namespace Segway {
                         std::float32_t const tilt,
                         std::float32_t const dot_rotation,
                         std::float32_t const rotation,
-                        std::float32_t const wheels_position,
+                        std::float32_t const position,
                         std::float32_t const whells_speed,
                         std::float32_t const sampling_time) noexcept;
 
@@ -29,7 +29,7 @@ namespace Segway {
                         std::float32_t const tilt,
                         std::float32_t const dot_rotation,
                         std::float32_t const rotation,
-                        std::float32_t const wheels_position,
+                        std::float32_t const position,
                         std::float32_t const whells_speed,
                         std::float32_t const sampling_time) noexcept;
 
@@ -42,18 +42,15 @@ namespace Segway {
 
         std::float32_t prev_tilt = 0.0F;
         std::float32_t prev_rotation = 0.0F;
-        std::float32_t prev_whells_position = 0.0F;
+        std::float32_t prev_position = 0.0F;
 
     private:
         std::float32_t get_tilt(this Segway& self) noexcept;
         std::float32_t get_rotation(this Segway& self) noexcept;
-        std::float32_t get_wheels_position(this Segway& self,
-                                           std::uint32_t const sampling_time) noexcept;
+        std::float32_t get_position(this Segway& self, std::uint32_t const sampling_time) noexcept;
 
-        std::float32_t get_wheel_position(this Segway& self,
-                                          WheelType const wheel_type,
-                                          std::float32_t const sampling_time) noexcept;
-
+        std::float32_t
+        get_wheel_position(this Segway& self, WheelType const wheel_type, std::float32_t const sampling_time) noexcept;
         void set_wheel_speed(this Segway& self,
                              WheelType const wheel_type,
                              std::float32_t const wheel_speed,
