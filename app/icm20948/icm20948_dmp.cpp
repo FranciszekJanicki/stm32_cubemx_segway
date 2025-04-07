@@ -1,4 +1,4 @@
-#include "icm20948.hpp"
+#include "icm20948_dmp.hpp"
 
 namespace ICM20948 {
 
@@ -24,7 +24,7 @@ namespace ICM20948 {
         return ICM_20948_Stat_Ok;
     }
 
-    ICM20948::ICM20948(I2CDevice&& i2c_device) noexcept :
+    ICM20948_DMP::ICM20948_DMP(I2CDevice&& i2c_device) noexcept :
         i2c_device_{std::forward<I2CDevice>(i2c_device)},
         icm_20948_serif_{.write = &write_bytes, .read = &read_bytes, .user = &i2c_device_},
         icm_20948_device_{._serif = &icm_20948_serif_,
@@ -36,12 +36,52 @@ namespace ICM20948 {
         this->initialize();
     }
 
-    ICM20948::~ICM20948() noexcept
+    ICM20948_DMP::~ICM20948_DMP() noexcept
     {
         this->deinitialize();
     }
 
-    void ICM20948::initialize() noexcept
+    std::optional<Vec3D<std::float32_t>> ICM20948_DMP::get_roll_pitch_yaw() noexcept
+    {
+        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_roll_pitch_yaw<std::float32_t>);
+    }
+
+    std::optional<std::float32_t> ICM20948_DMP::get_roll() noexcept
+    {
+        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_roll<std::float32_t>);
+    }
+
+    std::optional<std::float32_t> ICM20948_DMP::get_pitch() noexcept
+    {
+        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_pitch<std::float32_t>);
+    }
+
+    std::optional<std::float32_t> ICM20948_DMP::get_yaw() noexcept
+    {
+        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_yaw<std::float32_t>);
+    }
+
+    std::optional<Quat3D<std::float32_t>> ICM20948_DMP::get_quaternion_scaled() noexcept
+    {
+        return this->get_quaternion_raw().transform(
+            [](Quat3D<std::int32_t> const& raw) { return static_cast<Quat3D<std::float32_t>>(raw) / QUAT_SCALE; });
+    }
+
+    std::optional<Quat3D<std::int32_t>> ICM20948_DMP::get_quaternion_raw() noexcept
+    {
+        auto dmp_data = icm_20948_DMP_data_t{};
+        inv_icm20948_read_dmp_data(&this->icm_20948_device_, &dmp_data);
+        ICM_20948_reset_FIFO(&this->icm_20948_device_);
+
+        return (dmp_data.header & DMP_header_bitmap_Quat6) ? std::optional<Quat3D<std::int32_t>>{std::in_place,
+                                                                                                 dmp_data.Quat6.Data.Q1,
+                                                                                                 dmp_data.Quat6.Data.Q2,
+                                                                                                 dmp_data.Quat6.Data.Q3,
+                                                                                                 0}
+                                                           : std::optional<Quat3D<std::int32_t>>{std::nullopt};
+    }
+
+    void ICM20948_DMP::initialize() noexcept
     {
         ICM_20948_sw_reset(&this->icm_20948_device_);
         HAL_Delay(500);
@@ -92,7 +132,7 @@ namespace ICM20948 {
         this->initialized_ = true;
     }
 
-    void ICM20948::initialize_dmp() noexcept
+    void ICM20948_DMP::initialize_dmp() noexcept
     {
         ICM_20948_i2c_controller_configure_peripheral(&this->icm_20948_device_,
                                                       0,
@@ -244,38 +284,9 @@ namespace ICM20948 {
         ICM_20948_int_enable(&this->icm_20948_device_, &en, &en);
     }
 
-    void ICM20948::deinitialize() noexcept
+    void ICM20948_DMP::deinitialize() noexcept
     {
         this->initialized_ = false;
-    }
-
-    std::optional<std::float32_t> ICM20948::get_roll() noexcept
-    {
-        return this->get_roll_pitch_yaw().transform([](Vec3D<std::float32_t> const& rpy) { return rpy.x; });
-    }
-
-    std::optional<std::float32_t> ICM20948::get_pitch() noexcept
-    {
-        return this->get_roll_pitch_yaw().transform([](Vec3D<std::float32_t> const& rpy) { return rpy.y; });
-    }
-
-    std::optional<std::float32_t> ICM20948::get_yaw() noexcept
-    {
-        return this->get_roll_pitch_yaw().transform([](Vec3D<std::float32_t> const& rpy) { return rpy.z; });
-    }
-
-    std::optional<Vec3D<std::float32_t>> ICM20948::get_roll_pitch_yaw() noexcept
-    {
-        auto dmp_data = icm_20948_DMP_data_t{};
-        inv_icm20948_read_dmp_data(&this->icm_20948_device_, &dmp_data);
-        ICM_20948_reset_FIFO(&this->icm_20948_device_);
-
-        return (dmp_data.header & DMP_header_bitmap_Quat6)
-                   ? std::optional<Vec3D<std::float32_t>>{std::in_place,
-                                                          dmp_data.Quat6.Data.Q1 / QUAT_SCALE,
-                                                          dmp_data.Quat6.Data.Q2 / QUAT_SCALE,
-                                                          dmp_data.Quat6.Data.Q3 / QUAT_SCALE}
-                   : std::optional<Vec3D<std::float32_t>>{std::nullopt};
     }
 
 } // namespace ICM20948

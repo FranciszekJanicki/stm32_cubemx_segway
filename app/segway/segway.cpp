@@ -2,56 +2,64 @@
 
 namespace Segway {
 
-    void Segway::update_step_count(this Segway& self, Channel const channel) noexcept
+    void Segway::update_step_count(this Segway& self, WheelType const wheel_type) noexcept
     {
-        auto& driver = self.get_driver(channel);
-        driver.update_step_count();
+        auto& wheel_driver = self.get_wheel_driver(wheel_type);
+        wheel_driver.driver.update_step_count();
     }
 
-    void Segway::set_speed(this Segway& self,
-                           Channel const channel,
-                           std::float32_t const speed,
-                           std::float32_t const sampling_time) noexcept
+    void Segway::operator()(this Segway& self,
+                            std::float32_t const dot_tilt,
+                            std::float32_t const tilt,
+                            std::float32_t const dot_rotation,
+                            std::float32_t const rotation,
+                            std::float32_t const position,
+                            std::float32_t const step_diff,
+                            std::float32_t const sampling_time) noexcept
     {
-        auto& driver = self.get_driver(channel);
-        driver.set_speed(speed, sampling_time);
+        self.run_segway(dot_tilt, tilt, dot_rotation, rotation, position, step_diff, sampling_time);
     }
 
-    void Segway::operator()(this Segway& self, std::float32_t const angle, std::float32_t const sampling_time) noexcept
+    void Segway::run_segway(this Segway& self,
+                            std::float32_t const dot_tilt,
+                            std::float32_t const tilt,
+                            std::float32_t const dot_rotation,
+                            std::float32_t const rotation,
+                            std::float32_t const position,
+                            std::float32_t const step_diff,
+                            std::float32_t const sampling_time) noexcept
     {
-        self.set_angle(angle, sampling_time);
+        auto const measured_tilt =
+            std::visit([](auto& imu) { return imu.get_roll().value_or(0.0F); }, self.sensor);
+        std::printf("roll: %f\n\r", measured_tilt);
+
+        auto const measured_rotation =
+            std::visit([](auto& imu) { return imu.get_yaw().value_or(0.0F); }, self.sensor);
+        std::printf("roll: %f\n\r", measured_rotation);
+
+        auto const left_wheel_speed = 0.0F;
+        auto const right_wheel_speed = 0.0F;
+
+        self.set_wheel_speed(WheelType::LEFT, left_wheel_speed, sampling_time);
+        self.set_wheel_speed(WheelType::RIGHT, right_wheel_speed, sampling_time);
     }
 
-    void Segway::set_angle(this Segway& self, std::float32_t const angle, std::float32_t const sampling_time) noexcept
+    void Segway::set_wheel_speed(this Segway& self,
+                                 WheelType const wheel_type,
+                                 std::float32_t const wheel_speed,
+                                 std::float32_t const sampling_time) noexcept
     {
-        auto const measured_angle = std::visit([](auto& imu) { return imu.get_roll().value_or(0.0F); }, self.imu);
-        std::printf("roll: %f\n\r", measured_angle);
-
-        auto const error_angle = angle - measured_angle;
-        auto const error_angular_speed = self.angle_to_angular_speed(error_angle, sampling_time);
-        auto const control_speed = self.regulator(error_angle /*error_angular_speed*/, sampling_time);
-
-        self.set_speed(Channel::CHANNEL_1, control_speed, sampling_time);
-        self.set_speed(Channel::CHANNEL_2, control_speed, sampling_time);
+        auto& wheel_driver = self.get_wheel_driver(wheel_type);
+        wheel_driver.set_wheel_speed(wheel_speed, sampling_time);
     }
 
-    std::float32_t Segway::angle_to_angular_speed(this Segway& self,
-                                                  std::float32_t const angle,
-                                                  std::float32_t const sampling_time) noexcept
+    WheelDriver& Segway::get_wheel_driver(this Segway& self, WheelType const wheel_type) noexcept
     {
-        return Utility::differentiate(angle, std::exchange(self.prev_control_speed, angle), sampling_time);
-    }
+        auto* wheel = std::ranges::find_if(self.wheels, [wheel_type](Wheel const& wheel) {
+            return wheel.type == wheel_type;
+        });
 
-    Driver& Segway::get_driver(this Segway& self, Channel const channel) noexcept
-    {
-        if (auto it = std::ranges::find_if(
-                self.driver_channels,
-                [channel](DriverChannel const& driver_channel) { return driver_channel.channel == channel; });
-            it != self.driver_channels.end()) {
-            return it->driver;
-        } else {
-            std::unreachable();
-        }
+        return wheel->driver;
     }
 
 }; // namespace Segway

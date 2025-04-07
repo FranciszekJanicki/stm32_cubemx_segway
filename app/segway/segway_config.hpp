@@ -2,21 +2,30 @@
 #define SEGWAY_CONFIG_HPP
 
 #include "a4988.hpp"
-#include "gpio.h"
 #include "gpio.hpp"
-#include "i2c.h"
 #include "i2c_device.hpp"
-#include "icm20948.hpp"
+#include "icm20948_dmp.hpp"
+#include "imu.hpp"
 #include "mpu6050.hpp"
 #include "mpu6050_dmp.hpp"
 #include "nvic.hpp"
 #include "pwm_device.hpp"
 #include "segway.hpp"
+#include "sfo.hpp"
+#include "sfr.hpp"
 #include "step_driver.hpp"
-#include "tim.h"
-#include "vector3d.hpp"
+#include "wheel.hpp"
 
 namespace Segway {
+
+    using namespace Utility;
+    using namespace STM32_Utility;
+    using namespace A4988;
+    using namespace MPU6050;
+    using namespace ICM20948;
+    using namespace StepDriver;
+
+    using A4988 = ::A4988::A4988;
 
     constexpr auto MS1_1 = GPIO::PB4;
     constexpr auto MS2_1 = GPIO::PB5;

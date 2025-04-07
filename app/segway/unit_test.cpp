@@ -1,20 +1,21 @@
 #include "unit_test.hpp"
+#include "gpio.h"
+#include "i2c.h"
 #include "segway_config.hpp"
+#include "tim.h"
 
 namespace Segway {
 
-    void test_icm20948() noexcept
+    void test_icm20948_dmp() noexcept
     {
-        using namespace ICM20948;
-
         auto i2c_device = I2CDevice{&hi2c1, ICM20948_I2C_ADDRESS};
         i2c_device.bus_scan();
 
-        auto icm20948 = ICM20948{std::move(i2c_device)};
+        auto icm20948_dmp = ICM20948_DMP{std::move(i2c_device)};
 
         while (1) {
             if (gpio_pin6_exti) {
-                auto const& [r, p, y] = icm20948.get_roll_pitch_yaw().value();
+                auto const& [r, p, y] = icm20948_dmp.get_roll_pitch_yaw().value();
                 std::printf("roll: %f, pitch: %f, yaw: %f\n\r", r, p, y);
                 gpio_pin6_exti = false;
             }
@@ -23,8 +24,6 @@ namespace Segway {
 
     void test_mpu6050() noexcept
     {
-        using namespace MPU6050;
-
         auto i2c_device = I2CDevice{&hi2c1, MPU6050_I2C_ADDRESS};
         i2c_device.bus_scan();
 
@@ -132,20 +131,19 @@ namespace Segway {
                                MPU6050_DLPF,
                                MPU6050_DHPF};
 
-        auto imu = IMU{std::in_place_type<MPU6050_DMP>, std::move(mpu6050)};
+        auto sensor = IMU{std::in_place_type<MPU6050_DMP>, std::move(mpu6050)};
 
-        auto angle_regulator = Regulator{.proportion_gain = P,
-                                         .integral_gain = I,
-                                         .derivative_gain = D,
-                                         .saturation = SAT};
+        auto regulator = SFR{};
 
-        auto driver_channels =
-            std::array{DriverChannel{.channel = Channel::CHANNEL_1, .driver = std::move(driver_1)},
-                       DriverChannel{.channel = Channel::CHANNEL_2, .driver = std::move(driver_2)}};
+        auto observer = SFO{};
 
-        auto segway = Segway{.imu = std::move(imu),
-                             .regulator = angle_regulator,
-                             .driver_channels = std::move(driver_channels)};
+        auto wheels = std::array{Wheel{.type = WheelType::LEFT, .driver = std::move(driver_1)},
+                                 Wheel{.type = WheelType::RIGHT, .driver = std::move(driver_2)}};
+
+        auto segway = Segway{.sensor = std::move(sensor),
+                             .regulator = regulator,
+                             .observer = observer,
+                             .wheels = std::move(wheels)};
 
         //  HAL_TIM_PWM_Start_IT(&htim1, TIM_CHANNEL_1);
         //  HAL_TIM_PWM_Start_IT(&htim3, TIM_CHANNEL_1);
@@ -154,21 +152,21 @@ namespace Segway {
 
         while (1) {
             // if (gpio_pin6_exti) {
-            segway.set_angle(INPUT_ANGLE, SAMPLING_TIME);
+            segway.run_segway({}, {}, {}, {}, {}, {}, SAMPLING_TIME);
 
             gpio_pin6_exti = false;
             // }
             HAL_Delay(50);
 
             if (tim3_pulse_finished) {
-                segway.update_step_count(Channel::CHANNEL_1);
+                segway.update_step_count(WheelType::RIGHT);
 
                 tim3_pulse_finished = false;
                 HAL_TIM_PWM_Start_IT(&htim3, TIM_CHANNEL_1);
             }
 
             if (tim1_pulse_finished) {
-                segway.update_step_count(Channel::CHANNEL_2);
+                segway.update_step_count(WheelType::LEFT);
 
                 tim1_pulse_finished = false;
                 HAL_TIM_PWM_Start_IT(&htim1, TIM_CHANNEL_1);

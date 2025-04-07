@@ -1,0 +1,39 @@
+#ifndef WHEEL_HPP
+#define WHEEL_HPP
+
+#include "step_driver.hpp"
+#include <cstdint>
+
+namespace Segway {
+
+    enum struct WheelType : std::uint8_t {
+        LEFT,
+        RIGHT,
+        NONE,
+    };
+
+    std::float32_t wheel_speed_to_driver_speed(std::float32_t const wheel_speed,
+                                               std::float32_t const wheel_radius,
+                                               std::float32_t const sampling_time) noexcept;
+
+    using Driver = StepDriver::StepDriver;
+
+    struct WheelDriver {
+        void set_wheel_speed(this WheelDriver& self,
+                             std::float32_t const wheel_speed,
+                             std::float32_t const sampling_time) noexcept;
+
+        Driver driver = Driver{};
+
+        std::float32_t wheel_radius = 0.0F;
+        std::float32_t prev_wheel_speed = 0.0F;
+    };
+
+    struct Wheel {
+        WheelType type = WheelType{};
+        WheelDriver driver = WheelDriver{};
+    };
+
+}; // namespace Segway
+
+#endif // WHEEL_HPP

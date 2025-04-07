@@ -1,63 +1,52 @@
 #ifndef SEGWAY_HPP
 #define SEGWAY_HPP
 
-#include "icm20948.hpp"
-#include "mpu6050.hpp"
-#include "mpu6050_dmp.hpp"
-#include "pid.hpp"
-#include "step_driver.hpp"
-#include <variant>
+#include "segway_config.hpp"
+#include "sfo.hpp"
+#include "sfr.hpp"
+#include "wheel.hpp"
+#include <array>
 
 namespace Segway {
 
-    using namespace Utility;
-    using namespace ICM20948;
-    using namespace MPU6050;
-    using namespace A4988;
-    using namespace StepDriver;
-    using namespace STM32_Utility;
-
-    using A4988 = ::A4988::A4988;
-    using ICM20948 = ::ICM20948::ICM20948;
-    using MPU6050 = ::MPU6050::MPU6050;
-    using MPU6050_DMP = ::MPU6050::MPU6050_DMP;
-    using IMU = std::variant<ICM20948, MPU6050_DMP>;
-    using Regulator = ::Utility::PID<std::float32_t>;
-    using Driver = ::StepDriver::StepDriver;
-
-    enum struct Channel : std::uint8_t {
-        CHANNEL_1,
-        CHANNEL_2,
-    };
-
-    struct DriverChannel {
-        Channel channel{};
-        Driver driver{};
-    };
+    using SFR = ::Utility::SFR<std::float32_t, 6UL, 2UL>;
+    using SFO = ::Utility::SFO<std::float32_t, 6UL, 2UL>;
 
     struct Segway {
-        void update_step_count(this Segway& self, Channel const channel) noexcept;
+        void update_step_count(this Segway& self, WheelType const wheel_type) noexcept;
 
-        void set_speed(this Segway& self,
-                       Channel const channel,
-                       std::float32_t const speed,
-                       std::float32_t const sampling_time) noexcept;
+        void operator()(this Segway& self,
+                        std::float32_t const dot_tilt,
+                        std::float32_t const tilt,
+                        std::float32_t const dot_rotation,
+                        std::float32_t const rotation,
+                        std::float32_t const position,
+                        std::float32_t const step_diff,
+                        std::float32_t const sampling_time) noexcept;
 
-        void operator()(this Segway& self, std::float32_t const angle, std::float32_t const sampling_time) noexcept;
-        void set_angle(this Segway& self, std::float32_t const angle, std::float32_t const sampling_time) noexcept;
+        void run_segway(this Segway& self,
+                        std::float32_t const dot_tilt,
+                        std::float32_t const tilt,
+                        std::float32_t const dot_rotation,
+                        std::float32_t const rotation,
+                        std::float32_t const position,
+                        std::float32_t const step_diff,
+                        std::float32_t const sampling_time) noexcept;
 
-        IMU imu{};
-        Regulator regulator{};
-        std::array<DriverChannel, 2UL> driver_channels{};
+        IMU sensor = IMU{};
 
-        std::float32_t prev_control_speed{};
+        SFR regulator = SFR{};
+        SFO observer = SFO{};
+
+        std::array<Wheel, 2UL> wheels = std::array<Wheel, 2UL>{};
 
     private:
-        std::float32_t angle_to_angular_speed(this Segway& self,
-                                              std::float32_t const angle,
-                                              std::float32_t const sampling_time) noexcept;
+        void set_wheel_speed(this Segway& self,
+                             WheelType const wheel_type,
+                             std::float32_t const wheel_speed,
+                             std::float32_t sampling_time) noexcept;
 
-        Driver& get_driver(this Segway& self, Channel const channel) noexcept;
+        WheelDriver& get_wheel_driver(this Segway& self, WheelType const wheel_type) noexcept;
     };
 
 }; // namespace Segway
