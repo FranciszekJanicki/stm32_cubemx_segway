@@ -11,6 +11,7 @@ AccessModifierOffset: -4
 IndentAccessModifiers: false
 IndentCaseLabels: true
 NamespaceIndentation: All
+IndentExternBlock: Indent
 
 # Alignment Settings
 AlignAfterOpenBracket: Align

@@ -4,7 +4,12 @@
 #include "tim.h"
 #include "unit_test.hpp"
 #include "usart.h"
+#include "usb_device.h"
 #include <cstdio>
+
+#include "usbd_cdc_if.h"
+#include <cstdint>
+#include <cstring>
 
 int main()
 {
@@ -16,6 +21,7 @@ int main()
     MX_I2C1_Init();
     MX_TIM1_Init();
     MX_TIM3_Init();
+    MX_USB_DEVICE_Init();
 
     Segway::test_segway();
 }

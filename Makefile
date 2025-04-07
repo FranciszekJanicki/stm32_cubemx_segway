@@ -25,7 +25,7 @@ flash:
 
 .PHONY: serial
 serial:
-	minicom -D /dev/ttyUSB0 -b 115200
+	minicom -D /dev/ttyACM0 -b 115200
 
 .PHONY: clang_format
 clang_format:
