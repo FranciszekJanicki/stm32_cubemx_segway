@@ -2,47 +2,25 @@
 #define SEGWAY_HPP
 
 #include "segway_config.hpp"
-#include "sfo.hpp"
-#include "sfr.hpp"
 #include "wheel.hpp"
 #include <array>
 
 namespace Segway {
 
-    using SFR = ::Utility::SFR<std::float32_t, 6UL, 2UL>;
-    using SFO = ::Utility::SFO<std::float32_t, 6UL, 2UL>;
-
     struct Segway {
         void update_step_count(this Segway& self, WheelType const wheel_type) noexcept;
 
-        void operator()(this Segway& self,
-                        std::float32_t const dot_tilt,
-                        std::float32_t const tilt,
-                        std::float32_t const dot_rotation,
-                        std::float32_t const rotation,
-                        std::float32_t const position,
-                        std::float32_t const whells_speed,
-                        std::float32_t const dt) noexcept;
+        void
+        operator()(this Segway& self, std::array<std::float32_t, 6UL> const& x_ref, std::float32_t const dt) noexcept;
 
-        void run_segway(this Segway& self,
-                        std::float32_t const dot_tilt,
-                        std::float32_t const tilt,
-                        std::float32_t const dot_rotation,
-                        std::float32_t const rotation,
-                        std::float32_t const position,
-                        std::float32_t const whells_speed,
-                        std::float32_t const dt) noexcept;
+        void
+        run_segway(this Segway& self, std::array<std::float32_t, 6UL> const& x_ref, std::float32_t const dt) noexcept;
 
-        IMU sensor = IMU{};
-
-        SFR regulator = SFR{};
-        SFO observer = SFO{};
-
-        std::array<Wheel, 2UL> wheels = std::array<Wheel, 2UL>{};
-
-        std::float32_t prev_tilt = 0.0F;
-        std::float32_t prev_rotation = 0.0F;
-        std::float32_t prev_position = 0.0F;
+        IMU sensor = {};
+        SFR regulator = {};
+        SFO observer = {};
+        Config config = {};
+        std::array<Wheel, 2UL> wheels = {};
 
     private:
         std::float32_t get_tilt(this Segway& self) noexcept;

@@ -1,6 +1,7 @@
 #include "unit_test.hpp"
 #include "gpio.h"
 #include "i2c.h"
+#include "segway.hpp"
 #include "segway_config.hpp"
 #include "tim.h"
 
@@ -135,9 +136,12 @@ namespace Segway {
                        Wheel{.type = WheelType::RIGHT,
                              .driver = WheelDriver{.driver = std::move(step_driver_2), .wheel_radius = 0.0F}}};
 
+        auto config = Config{};
+
         auto segway = Segway{.sensor = std::move(sensor),
                              .regulator = regulator,
                              .observer = observer,
+                             .config = config,
                              .wheels = std::move(wheels)};
 
         //  HAL_TIM_PWM_Start_IT(&htim1, TIM_CHANNEL_1);
@@ -147,7 +151,7 @@ namespace Segway {
 
         while (1) {
             if (gpio_pin6_exti) {
-                segway.run_segway(DOT_TILT, TILT, DOT_ROTATION, ROTATION, POSITION, WHELLS_SPEED, DT);
+                segway.run_segway(X_REF, DT);
 
                 gpio_pin6_exti = false;
             }
