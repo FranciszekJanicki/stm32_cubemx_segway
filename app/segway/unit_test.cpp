@@ -7,7 +7,7 @@
 
 namespace Segway {
 
-    void test_icm20948_dmp() noexcept
+    void test_icm20948() noexcept
     {
         auto i2c_device = I2CDevice{&hi2c1, ICM20948_I2C_ADDRESS};
         i2c_device.bus_scan();
@@ -35,11 +35,11 @@ namespace Segway {
                                MPU6050_DLPF,
                                MPU6050_DHPF};
 
-        auto mpu_dmp = MPU6050_DMP{std::move(mpu6050)};
+        auto mpu6050_dmp = MPU6050_DMP{std::move(mpu6050)};
 
         while (1) {
             if (gpio_pin6_exti) {
-                if (auto const rpy = mpu_dmp.get_roll_pitch_yaw(); rpy.has_value()) {
+                if (auto const rpy = mpu6050_dmp.get_roll_pitch_yaw(); rpy.has_value()) {
                     auto const& [r, p, y] = rpy.value();
                     std::printf("roll: %f, pitch: %f, yaw: %f\n\r", r, p, y);
                 }
@@ -137,6 +137,11 @@ namespace Segway {
                              .driver = WheelDriver{.driver = std::move(step_driver_2), .wheel_radius = 0.0F}}};
 
         auto config = Config{};
+        std::memset(&config, 0x01, sizeof(config));
+
+        print_config(config);
+
+        HAL_Delay(50000);
 
         auto segway = Segway{.sensor = std::move(sensor),
                              .regulator = regulator,
@@ -147,14 +152,13 @@ namespace Segway {
         //  HAL_TIM_PWM_Start_IT(&htim1, TIM_CHANNEL_1);
         //  HAL_TIM_PWM_Start_IT(&htim3, TIM_CHANNEL_1);
 
-        auto speed = 100.0F32;
-
         while (1) {
-            if (gpio_pin6_exti) {
-                segway.run_segway(X_REF, DT);
+            // if (gpio_pin6_exti) {
+            segway.run_segway(X_REF, DT);
 
-                gpio_pin6_exti = false;
-            }
+            gpio_pin6_exti = false;
+            //}
+            HAL_Delay(5);
 
             if (tim3_pulse_finished) {
                 segway.update_step_count(WheelType::RIGHT);
