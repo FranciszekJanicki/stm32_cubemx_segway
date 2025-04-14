@@ -3,8 +3,6 @@
 
 #include <cstdint>
 
-#define packed __attribute__((__packed__))
-
 namespace MPU6050 {
 
     enum struct RA : std::uint8_t {

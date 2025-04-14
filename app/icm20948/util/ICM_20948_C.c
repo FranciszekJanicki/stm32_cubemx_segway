@@ -12,9 +12,8 @@
 const uint8_t dmp3_image[] = {
 #elif (defined(__AVR__) || defined(__arm__) || defined(__ARDUINO_ARC__) || defined(ESP8266)) && !defined(__linux__) // Store the DMP firmware in PROGMEM on older AVR (ATmega) platforms
 #define ICM_20948_USE_PROGMEM_FOR_DMP
-//#include <arm/pgmspace.h>
-#include<string.h>
-static const uint8_t dmp3_image[]  = {
+#include <avr/pgmspace.h>
+const uint8_t dmp3_image[] PROGMEM = {
 #else
 const uint8_t dmp3_image[] = {
 #endif
@@ -1373,7 +1372,7 @@ ICM_20948_Status_e inv_icm20948_firmware_load(ICM_20948_Device_t *pdev, const un
       write_size = (memaddr & 0xff) + write_size - 0x100;
     }
 #ifdef ICM_20948_USE_PROGMEM_FOR_DMP
-    memcpy(data_not_pg, data, write_size);  // Suggested by @HyperKokichi in Issue #63
+    memcpy_P(data_not_pg, data, write_size);  // Suggested by @HyperKokichi in Issue #63
     result = inv_icm20948_write_mems(pdev, memaddr, write_size, (unsigned char *)data_not_pg);
 #else
     result = inv_icm20948_write_mems(pdev, memaddr, write_size, (unsigned char *)data);
@@ -1406,7 +1405,7 @@ ICM_20948_Status_e inv_icm20948_firmware_load(ICM_20948_Device_t *pdev, const un
     if (result != ICM_20948_Stat_Ok)
       flag++;                               // Error, DMP not written correctly
 #ifdef ICM_20948_USE_PROGMEM_FOR_DMP
-    memcpy(data_not_pg, data, write_size);  // Suggested by @HyperKokichi in Issue #63
+    memcpy_P(data_not_pg, data, write_size);  // Suggested by @HyperKokichi in Issue #63
     if (memcmp(data_cmp, data_not_pg, write_size))
 #else
     if (memcmp(data_cmp, data, write_size)) // Compare the data

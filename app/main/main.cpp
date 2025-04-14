@@ -23,5 +23,7 @@ int main()
     MX_TIM3_Init();
     MX_USB_DEVICE_Init();
 
-    Segway::test_segway();
+    HAL_Delay(2000);
+
+    Segway::test_icm20948();
 }

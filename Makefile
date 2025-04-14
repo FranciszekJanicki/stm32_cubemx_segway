@@ -19,19 +19,35 @@ clean:
 cmake:
 	cd ${PROJECT_DIR} && make clean && mkdir build && cmake -S . -B build
 
-.PHONY: flash
-flash: 
+.PHONY: flash_uart
+flash_uart: 
 	STM32_Programmer_CLI -c port=swd -d ${BUILD_DIR}/app/main/main.elf -rst
 
-.PHONY: serial
-serial:
-	minicom -D /dev/ttyACM0 -b 115200
+.PHONY: flash_usb
+flash_usb:
+	STM32_Programmer_CLI -c port=/dev/ttyACM0 -d ${BUILD_DIR}/app/main/main.elf -rst
+
+.PHONY: serial_uart
+serial_uart:
+	minicom -D /dev/ttyUSB0 -b 115200
+
+.PHONY: serial_usb
+serial_usb:
+	minicom -D /dev/ttyACM1 -b 115200
 
 .PHONY: clang_format
 clang_format:
 	for ext in h c cpp hpp; do \
 		find $(SOURCE_DIR) -iname "*.$$ext" -print0 | xargs -0 -r clang-format -i; \
 	done
+
+.PHONY: cubemx
+cubemx: 
+	stm32cubemx
+
+.PHONY: cubeprog
+cubeprog:
+	/opt/stm32cubeprog/bin/STM32CubeProgrammer
 
 .PHONY: add_stm32_utility
 add_stm32_utility:
@@ -57,4 +73,4 @@ remove_utility:
 
 .PHONY: all
 all:
-	make build && make flash && make serial
+	make build && make flash_uart && make serial_usb

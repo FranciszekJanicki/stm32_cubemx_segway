@@ -1,25 +1,33 @@
 #include "unit_test.hpp"
 #include "gpio.h"
 #include "i2c.h"
+#include "icm_sensor.h"
 #include "segway.hpp"
 #include "segway_config.hpp"
 #include "tim.h"
+#include "usbd_cdc_if.h"
 
 namespace Segway {
 
     void test_icm20948() noexcept
     {
-        auto i2c_device = I2CDevice{&hi2c1, ICM20948_I2C_ADDRESS};
-        i2c_device.bus_scan();
+        // auto i2c_device = I2CDevice{&hi2c1, ICM20948_I2C_ADDRESS};
+        // i2c_device.bus_scan();
 
-        auto icm20948_dmp = ICM20948_DMP{std::move(i2c_device)};
+        // auto icm20948_dmp = ICM20948_DMP{std::move(i2c_device)};
 
-        while (1) {
-            if (gpio_pin6_exti) {
-                auto const& [r, p, y] = icm20948_dmp.get_roll_pitch_yaw().value();
-                std::printf("roll: %f, pitch: %f, yaw: %f\n\r", r, p, y);
-                gpio_pin6_exti = false;
-            }
+        icm_sensor_init();
+
+        static icm_sensor_data_t data = {0};
+
+        for (;;) {
+            icm_sensor_read(&data);
+            auto const& [r, p, y] =
+                Utility::quaternion_to_roll_pitch_yaw(Utility::Quaternion3D<float>{(float)data.q1 * Q_SCALE,
+                                                                                   (float)data.q2 * Q_SCALE,
+                                                                                   (float)data.q3 * Q_SCALE,
+                                                                                   0.0F});
+            printf("DATA: %f %f %f\n\r", r, p, y);
         }
     }
 
@@ -141,7 +149,7 @@ namespace Segway {
 
         print_config(config);
 
-        HAL_Delay(50000);
+        HAL_Delay(500);
 
         auto segway = Segway{.sensor = std::move(sensor),
                              .regulator = regulator,
@@ -175,5 +183,4 @@ namespace Segway {
             }
         }
     }
-
 }; // namespace Segway

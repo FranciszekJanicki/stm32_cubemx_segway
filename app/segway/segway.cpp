@@ -62,7 +62,8 @@ namespace Segway {
 
     std::float32_t Segway::get_tilt(this Segway& self) noexcept
     {
-        auto const measured_tilt = std::visit([](auto& imu) { return imu.get_roll().value_or(0.0F); }, self.sensor);
+        auto const measured_tilt = 0.0F;
+        // std::visit([](auto& imu) { return imu.get_roll().value_or(0.0F); }, self.sensor);
         std::printf("Tilt: %f\n\r", measured_tilt);
 
         return measured_tilt;
@@ -70,7 +71,8 @@ namespace Segway {
 
     std::float32_t Segway::get_rotation(this Segway& self) noexcept
     {
-        auto const measured_rotation = std::visit([](auto& imu) { return imu.get_yaw().value_or(0.0F); }, self.sensor);
+        auto const measured_rotation = 0.0F;
+        // std::visit([](auto& imu) { return imu.get_yaw().value_or(0.0F); }, self.sensor);
         std::printf("Rotation: %f\n\r", measured_rotation);
 
         return measured_rotation;
