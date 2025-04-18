@@ -48,13 +48,13 @@ namespace Segway {
 
         std::copy(e.begin(), e.end(), prev_e.begin());
 
-        u[0] = (Ki[0] * int_e[0] - Kx[0][0] * x[0]) + (Ki[1] * int_e[1] - Kx[0][1] * x[1]) +
-               (Ki[2] * int_e[2] - Kx[0][2] * x[2]) + (Ki[3] * int_e[3] - Kx[0][3] * x[3]) +
-               (Ki[4] * int_e[4] - Kx[0][4] * x[4]) + (Ki[5] * int_e[5] - Kx[0][5] * x[5]);
+        u[0] = (Ki[0] * int_e[0] - Kx[0] * x[0]) + (Ki[1] * int_e[1] - Kx[1] * x[1]) +
+               (Ki[2] * int_e[2] - Kx[2] * x[2]) + (Ki[3] * int_e[3] - Kx[3] * x[3]) +
+               (Ki[4] * int_e[4] - Kx[4] * x[4]) + (Ki[5] * int_e[5] - Kx[5] * x[5]);
 
-        u[1] = (Ki[0] * int_e[0] - Kx[1][0] * x[0]) + (Ki[1] * int_e[1] - Kx[1][1] * x[1]) +
-               (Ki[2] * int_e[2] - Kx[1][2] * x[2]) + (Ki[3] * int_e[3] - Kx[1][3] * x[3]) +
-               (Ki[4] * int_e[4] - Kx[1][4] * x[4]) + (Ki[5] * int_e[5] - Kx[1][5] * x[5]);
+        u[1] = (Ki[0] * int_e[0] + Kx[0] * x[0]) + (Ki[1] * int_e[1] + Kx[1] * x[1]) +
+               (Ki[2] * int_e[2] + Kx[2] * x[2]) + (Ki[3] * int_e[3] + Kx[3] * x[3]) +
+               (Ki[4] * int_e[4] + Kx[4] * x[4]) + (Ki[5] * int_e[5] + Kx[5] * x[5]);
 
         self.set_wheel_speed(WheelType::LEFT, u[0], dt);
         self.set_wheel_speed(WheelType::RIGHT, u[1], dt);
@@ -62,8 +62,7 @@ namespace Segway {
 
     std::float32_t Segway::get_tilt(this Segway& self) noexcept
     {
-        auto const measured_tilt = 0.0F;
-        // std::visit([](auto& imu) { return imu.get_roll().value_or(0.0F); }, self.sensor);
+        auto const measured_tilt = std::visit([](auto& imu) { return imu.get_roll().value_or(0.0F); }, self.sensor);
         std::printf("Tilt: %f\n\r", measured_tilt);
 
         return measured_tilt;
@@ -71,8 +70,7 @@ namespace Segway {
 
     std::float32_t Segway::get_rotation(this Segway& self) noexcept
     {
-        auto const measured_rotation = 0.0F;
-        // std::visit([](auto& imu) { return imu.get_yaw().value_or(0.0F); }, self.sensor);
+        auto const measured_rotation = std::visit([](auto& imu) { return imu.get_yaw().value_or(0.0F); }, self.sensor);
         std::printf("Rotation: %f\n\r", measured_rotation);
 
         return measured_rotation;

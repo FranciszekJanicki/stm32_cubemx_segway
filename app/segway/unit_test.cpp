@@ -11,8 +11,8 @@ namespace Segway {
 
     void test_icm20948() noexcept
     {
-        // auto i2c_device = I2CDevice{&hi2c1, ICM20948_I2C_ADDRESS};
-        // i2c_device.bus_scan();
+        auto i2c_device = I2CDevice{&hi2c1, 104};
+        i2c_device.bus_scan();
 
         // auto icm20948_dmp = ICM20948_DMP{std::move(i2c_device)};
 
@@ -21,13 +21,17 @@ namespace Segway {
         static icm_sensor_data_t data = {0};
 
         for (;;) {
+            //   if (gpio_pin6_exti) {
             icm_sensor_read(&data);
-            auto const& [r, p, y] =
-                Utility::quaternion_to_roll_pitch_yaw(Utility::Quaternion3D<float>{(float)data.q1 * Q_SCALE,
-                                                                                   (float)data.q2 * Q_SCALE,
-                                                                                   (float)data.q3 * Q_SCALE,
-                                                                                   0.0F});
-            printf("DATA: %f %f %f\n\r", r, p, y);
+            auto const& [x, y, z, w] = std::array{(std::float64_t)data.q1 * Q_SCALE,
+                                                  (std::float64_t)data.q2 * Q_SCALE,
+                                                  (std::float64_t)data.q3 * Q_SCALE,
+                                                  0.0F64};
+
+            printf("x: %f, y: %f, z: %f, w: %f\n\r", x, y, z, w);
+            gpio_pin6_exti = false;
+            //        }
+            // HAL_Delay(5);
         }
     }
 

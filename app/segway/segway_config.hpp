@@ -30,8 +30,8 @@ namespace Segway {
     using IMU = std::variant<ICM20948_DMP, MPU6050_DMP>;
 
     struct Config {
+        std::array<std::float32_t, 6UL> Kx = {};
         std::array<std::float32_t, 6UL> Ki = {};
-        std::array<std::array<std::float32_t, 6UL>, 2UL> Kx = {};
 
         std::array<std::float32_t, 6UL> prev_x = {};
         std::array<std::float32_t, 6UL> prev_e = {};
@@ -85,9 +85,8 @@ namespace Segway {
         std::fputs("\n\r", stdout);
 
         std::fputs("Kx: \n\r", stdout);
-        for (auto const Kx : config.Kx) {
-            for (auto const kx : Kx)
-                std::fprintf(stdout, "%f\r\n", kx);
+        for (auto const kx : config.Kx) {
+            std::fprintf(stdout, "%f\r\n", kx);
         }
     }
 

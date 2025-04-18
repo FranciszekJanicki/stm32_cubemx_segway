@@ -33,7 +33,7 @@ serial_uart:
 
 .PHONY: serial_usb
 serial_usb:
-	minicom -D /dev/ttyACM1 -b 115200
+	minicom -D /dev/ttyACM0 -b 115200
 
 .PHONY: clang_format
 clang_format:

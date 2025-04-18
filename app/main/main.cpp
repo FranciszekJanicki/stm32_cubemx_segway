@@ -5,11 +5,7 @@
 #include "unit_test.hpp"
 #include "usart.h"
 #include "usb_device.h"
-#include <cstdio>
-
 #include "usbd_cdc_if.h"
-#include <cstdint>
-#include <cstring>
 
 int main()
 {
@@ -17,10 +13,10 @@ int main()
     SystemClock_Config();
 
     MX_GPIO_Init();
-    MX_USART2_UART_Init();
+    // MX_USART2_UART_Init();
     MX_I2C1_Init();
-    MX_TIM1_Init();
-    MX_TIM3_Init();
+    // MX_TIM1_Init();
+    // MX_TIM3_Init();
     MX_USB_DEVICE_Init();
 
     HAL_Delay(2000);

@@ -18,6 +18,7 @@ extern "C" {
         HAL_I2C_Mem_Write(&hi2c1, ICM_20948_I2C_ADDR_AD0 << 1, reg, I2C_MEMADD_SIZE_8BIT, data, len, 100);
         return ICM_20948_Stat_Ok;
     }
+
     static ICM_20948_Status_e read(uint8_t reg, uint8_t* data, uint32_t len, void* user)
     {
         (void)user;
