@@ -11,7 +11,7 @@ namespace MPU6050 {
     constexpr auto DMP_MEMORY_CHUNK_SIZE = 16UL;
     constexpr auto FIFO_DEFAULT_TIMEOUT = 11000;
     constexpr auto FIFO_MAX_COUNT = 1024UL;
-    constexpr auto QUAT_SCALE = static_cast<std::float32_t>(1UL << 30UL);
+    constexpr auto QUAT_SCALE = static_cast<std::float64_t>(1ULL << 30ULL);
 
 } // namespace MPU6050
 

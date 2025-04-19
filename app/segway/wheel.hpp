@@ -24,13 +24,13 @@ namespace Segway {
         void
         set_wheel_speed(this WheelDriver& self, std::float32_t const wheel_speed, std::float32_t const dt) noexcept;
 
-        Driver driver = Driver{};
+        Driver driver = {};
         std::float32_t wheel_radius = 0.0F;
     };
 
     struct Wheel {
-        WheelType type = WheelType{};
-        WheelDriver driver = WheelDriver{};
+        WheelType type = {};
+        WheelDriver driver = {};
     };
 
 }; // namespace Segway

@@ -41,30 +41,30 @@ namespace ICM20948 {
         this->deinitialize();
     }
 
-    std::optional<Vec3D<std::float32_t>> ICM20948_DMP::get_roll_pitch_yaw() noexcept
+    std::optional<Vec3D<std::float64_t>> ICM20948_DMP::get_roll_pitch_yaw() noexcept
     {
-        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_roll_pitch_yaw<std::float32_t>);
+        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_roll_pitch_yaw<std::float64_t>);
     }
 
-    std::optional<std::float32_t> ICM20948_DMP::get_roll() noexcept
+    std::optional<std::float64_t> ICM20948_DMP::get_roll() noexcept
     {
-        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_roll<std::float32_t>);
+        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_roll<std::float64_t>);
     }
 
-    std::optional<std::float32_t> ICM20948_DMP::get_pitch() noexcept
+    std::optional<std::float64_t> ICM20948_DMP::get_pitch() noexcept
     {
-        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_pitch<std::float32_t>);
+        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_pitch<std::float64_t>);
     }
 
-    std::optional<std::float32_t> ICM20948_DMP::get_yaw() noexcept
+    std::optional<std::float64_t> ICM20948_DMP::get_yaw() noexcept
     {
-        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_yaw<std::float32_t>);
+        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_yaw<std::float64_t>);
     }
 
-    std::optional<Quat3D<std::float32_t>> ICM20948_DMP::get_quaternion_scaled() noexcept
+    std::optional<Quat3D<std::float64_t>> ICM20948_DMP::get_quaternion_scaled() noexcept
     {
         return this->get_quaternion_raw().transform(
-            [](Quat3D<std::int32_t> const& raw) { return static_cast<Quat3D<std::float32_t>>(raw) / QUAT_SCALE; });
+            [](Quat3D<std::int32_t> const& raw) { return static_cast<Quat3D<std::float64_t>>(raw) / QUAT_SCALE; });
     }
 
     std::optional<Quat3D<std::int32_t>> ICM20948_DMP::get_quaternion_raw() noexcept

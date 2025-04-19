@@ -1,4 +1,11 @@
 #include "wheel.hpp"
+#include "log.hpp"
+
+namespace {
+
+    constexpr auto TAG = "Wheel";
+
+};
 
 namespace Segway {
 

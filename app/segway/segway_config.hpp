@@ -72,24 +72,6 @@ namespace Segway {
 
     constexpr auto STEPS_PER_360 = 200U;
 
-    inline void print_config(Config const& config) noexcept
-    {
-        std::fflush(stdout);
-
-        std::fputs("Ki: \n\r", stdout);
-        for (auto const ki : config.Ki) {
-            std::fprintf(stdout, "%f\r\n", ki);
-        }
-
-        std::fflush(stdout);
-        std::fputs("\n\r", stdout);
-
-        std::fputs("Kx: \n\r", stdout);
-        for (auto const kx : config.Kx) {
-            std::fprintf(stdout, "%f\r\n", kx);
-        }
-    }
-
 }; // namespace Segway
 
 #endif // SEGWAY_CONFIG_HPP

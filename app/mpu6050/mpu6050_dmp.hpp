@@ -23,15 +23,14 @@ namespace MPU6050 {
 
         ~MPU6050_DMP() noexcept;
 
-        std::optional<std::float32_t> get_roll() const noexcept;
-        std::optional<std::float32_t> get_pitch() const noexcept;
-        std::optional<std::float32_t> get_yaw() const noexcept;
-        std::optional<Vec3D<std::float32_t>> get_roll_pitch_yaw() const noexcept;
+        std::optional<std::float64_t> get_roll() const noexcept;
+        std::optional<std::float64_t> get_pitch() const noexcept;
+        std::optional<std::float64_t> get_yaw() const noexcept;
+        std::optional<Vec3D<std::float64_t>> get_roll_pitch_yaw() const noexcept;
 
-        std::optional<Quat3D<std::float32_t>> get_quaternion_scaled() const noexcept;
+        std::optional<Quat3D<std::float64_t>> get_quaternion_scaled() const noexcept;
 
-    private:
-        std::optional<Quat3D<std::int32_t>> get_quaternion_raw() const noexcept;
+        std::optional<Quat3D<std::int16_t>> get_quaternion_raw() const noexcept;
 
         void initialize() noexcept;
         void initialize_dmp() const noexcept;
@@ -49,13 +48,13 @@ namespace MPU6050 {
         void set_y_fine_gain(std::uint8_t const gain) const noexcept;
         void set_z_fine_gain(std::uint8_t const gain) const noexcept;
 
-        void set_x_accel_offset(std::int32_t const offset) const noexcept;
-        void set_y_accel_offset(std::int32_t const offset) const noexcept;
-        void set_z_accel_offset(std::int32_t const offset) const noexcept;
+        void set_x_accel_offset(std::int16_t const offset) const noexcept;
+        void set_y_accel_offset(std::int16_t const offset) const noexcept;
+        void set_z_accel_offset(std::int16_t const offset) const noexcept;
 
-        void set_x_gyro_offset(std::int32_t const offset) const noexcept;
-        void set_y_gyro_offset(std::int32_t const offset) const noexcept;
-        void set_z_gyro_offset(std::int32_t const offset) const noexcept;
+        void set_x_gyro_offset(std::int16_t const offset) const noexcept;
+        void set_y_gyro_offset(std::int16_t const offset) const noexcept;
+        void set_z_gyro_offset(std::int16_t const offset) const noexcept;
 
         void set_int_pll_ready_enabled(bool const enabled) const noexcept;
         void set_int_dmp_enabled(bool const enabled) const noexcept;

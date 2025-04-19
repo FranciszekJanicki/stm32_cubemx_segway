@@ -1,5 +1,5 @@
-#ifndef MPU_REGISTER_MAP_HPP
-#define MPU_REGISTER_MAP_HPP
+#ifndef MPU6050_REGISTERS_HPP
+#define MPU6050_REGISTERS_HPP
 
 #include <cstdint>
 
@@ -329,4 +329,4 @@ namespace MPU6050 {
 
 }; // namespace MPU6050
 
-#endif // MPU_REGISTER_MAP_HPP
+#endif // MPU6050_REGISTERS_HPP

@@ -3,6 +3,7 @@
 
 namespace Segway {
 
+    inline auto volatile i2c1_error = false;
     inline auto volatile gpio_pin6_exti = false;
     inline auto volatile tim2_period_elapsed = false;
     inline auto volatile tim1_pulse_finished = false;
