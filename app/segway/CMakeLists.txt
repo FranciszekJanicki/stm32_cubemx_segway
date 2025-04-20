@@ -5,6 +5,8 @@ target_sources(segway PRIVATE
     "unit_test.cpp"
     "nvic.cpp"
     "wheel.cpp"
+    "wheels.cpp"
+    "imu.cpp"
 )
 
 target_include_directories(segway PUBLIC 

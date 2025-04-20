@@ -1,5 +1,6 @@
 #include "nvic.hpp"
 #include "gpio.h"
+#include "i2c.h"
 #include "log.hpp"
 #include "tim.h"
 
@@ -7,64 +8,41 @@
 extern "C" {
 #endif
 
-namespace {
-
-    using namespace Segway;
-
-    constexpr auto TAG = "NVIC";
-    constexpr auto log_nvic = false;
-
-}; // namespace
+using namespace Segway;
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
 {
     if (htim->Instance == TIM1) {
-        if constexpr (log_nvic) {
-            LOG(TAG, "TIM1 PULSE FINISHED CALLBACK\n\r");
-        }
-
-        tim1_pulse_finished = true;
-    }
-
-    if (htim->Instance == TIM3) {
-        if constexpr (log_nvic) {
-            LOG(TAG, "TIM3 PULSE FINISHED CALLBACK\n\r");
-        }
-
-        tim3_pulse_finished = true;
+        nvic_mask.motor1_pwm_pulse = true;
+    } else if (htim->Instance == TIM3) {
+        nvic_mask.motor2_pwm_pulse = true;
     }
 }
 
 void HAL_I2C_ErrorCallback(I2C_HandleTypeDef* hi2c)
 {
     if (hi2c->Instance == I2C1) {
-        if constexpr (log_nvic) {
-            LOG(TAG, "I2C ERROR CALLBACK\n\r");
-        }
-
-        i2c1_error = true;
+        nvic_mask.i2c_error = true;
     }
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
     if (htim->Instance == TIM2) {
-        if constexpr (log_nvic) {
-            LOG(TAG, "TIM2 PERIOD ELAPSED CALLBACK\n\r");
+        nvic_mask.sampling_timer = true;
+    } else if (htim->Instance == TIM4) {
+        HAL_TIM_Base_Stop_IT(&htim4);
+        if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6)) {
+            nvic_mask.data_ready = true;
         }
-
-        gpio_pin6_exti = true;
     }
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    if (GPIO_Pin == ICM20948_INT_Pin) {
-        if constexpr (log_nvic) {
-            LOG(TAG, "GPIO EXTI 6 CALLBACK\n\r");
-        }
-
-        gpio_pin6_exti = true;
+    if (GPIO_Pin == GPIO_PIN_6) {
+        __HAL_TIM_SET_COUNTER(&htim4, 0);
+        HAL_TIM_Base_Start_IT(&htim4);
     }
 }
 

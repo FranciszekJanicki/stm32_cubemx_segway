@@ -6,6 +6,9 @@
 
 namespace Segway {
 
+    using A4988 = ::A4988::A4988;
+    using Driver = StepDriver::StepDriver;
+
     enum struct WheelType : std::uint8_t {
         LEFT,
         RIGHT,
@@ -14,10 +17,12 @@ namespace Segway {
 
     char const* wheel_type_to_string(WheelType const wheel_type) noexcept;
 
-    using Driver = StepDriver::StepDriver;
-
     struct WheelDriver {
         std::float32_t get_wheel_position(this WheelDriver& self, std::float32_t const dt) noexcept;
+
+        void set_wheel_position(this WheelDriver& self,
+                                std::float32_t const wheel_position,
+                                std::float32_t const dt) noexcept;
 
         std::float32_t get_wheel_speed(this WheelDriver& self, std::float32_t const dt) noexcept;
 

@@ -20,14 +20,8 @@ namespace Segway {
     using namespace ICM20948;
     using namespace StepDriver;
 
-    using A4988 = ::A4988::A4988;
-    using StepDriver = ::StepDriver::StepDriver;
     using SFR = ::Utility::SFR<std::float32_t, 6UL, 2UL>;
     using SFO = ::Utility::SFO<std::float32_t, 6UL, 2UL>;
-    using ICM20948_DMP = ::ICM20948::ICM20948_DMP;
-    using MPU6050 = ::MPU6050::MPU6050;
-    using MPU6050_DMP = ::MPU6050::MPU6050_DMP;
-    using IMU = std::variant<ICM20948_DMP, MPU6050_DMP>;
 
     struct Config {
         std::array<std::float32_t, 6UL> Kx = {};
