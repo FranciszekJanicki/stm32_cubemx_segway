@@ -8,8 +8,9 @@
 namespace Segway {
 
     struct NVICMask {
-        std::uint8_t : 3;
+        std::uint8_t : 2;
         std::uint8_t data_ready : 1;
+        std::uint8_t debounce_timer : 1;
         std::uint8_t motor1_pwm_pulse : 1;
         std::uint8_t motor2_pwm_pulse : 1;
         std::uint8_t i2c_error : 1;

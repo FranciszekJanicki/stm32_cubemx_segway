@@ -29,20 +29,20 @@ namespace StepDriver {
         std::float32_t get_speed(this StepDriver& self, std::float32_t const dt) noexcept;
         std::float32_t get_acceleration(this StepDriver& self, std::float32_t const dt) noexcept;
 
-        A4988 driver = A4988{};
-        std::uint16_t steps_per_360 = 0U;
+        A4988 driver = {};
+        std::uint16_t steps_per_360 = {};
 
-        Microstep microstep = Microstep{};
-        Direction direction = Direction{};
-        std::uint16_t frequency = 0U;
+        Microstep microstep = {};
+        Direction direction = {};
+        std::uint16_t frequency = {};
 
-        std::int64_t step_count = 0LL;
+        std::int64_t step_count = {};
 
-        std::float32_t prev_position = 0.0F;
-        std::float32_t prev_speed = 0.0F;
-        std::float32_t prev_acceleration = 0.0F;
+        std::float32_t prev_position = {};
+        std::float32_t prev_speed = {};
+        std::float32_t prev_acceleration = {};
 
-        bool is_stopped = false;
+        bool is_stopped = {};
 
     private:
         void start(this StepDriver& self) noexcept;

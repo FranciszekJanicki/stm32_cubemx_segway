@@ -4,6 +4,7 @@
 #include "icm20948_dmp.hpp"
 #include "mpu6050_dmp.hpp"
 #include "segway_config.hpp"
+#include <stdfloat>
 #include <variant>
 
 namespace Segway {
@@ -12,13 +13,10 @@ namespace Segway {
     using namespace MPU6050;
     using MPU6050 = ::MPU6050::MPU6050;
 
-    struct IMU {
-    public:
-        std::float32_t get_tilt(this IMU& self) noexcept;
-        std::float32_t get_rotation(this IMU& self) noexcept;
+    using IMU = std::variant<ICM20948_DMP, MPU6050_DMP>;
 
-        std::variant<ICM20948_DMP, MPU6050_DMP> sensor = {};
-    };
+    std::float32_t get_tilt(IMU& imu) noexcept;
+    std::float32_t get_rotation(IMU& imu) noexcept;
 
 }; // namespace Segway
 

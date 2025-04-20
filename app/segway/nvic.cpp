@@ -31,18 +31,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
     if (htim->Instance == TIM2) {
         nvic_mask.sampling_timer = true;
     } else if (htim->Instance == TIM4) {
-        HAL_TIM_Base_Stop_IT(&htim4);
-        if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6)) {
-            nvic_mask.data_ready = true;
-        }
+        nvic_mask.debounce_timer = true;
     }
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    if (GPIO_Pin == GPIO_PIN_6) {
-        __HAL_TIM_SET_COUNTER(&htim4, 0);
-        HAL_TIM_Base_Start_IT(&htim4);
+    if (GPIO_Pin == ICM20948_INT_Pin) {
+        nvic_mask.data_ready = true;
     }
 }
 

@@ -33,12 +33,14 @@ namespace Segway {
         std::array<std::float32_t, 6UL> x = {};
         std::array<std::float32_t, 6UL> e = {};
         std::array<std::float32_t, 2UL> u = {};
+
+        std::float32_t wheel_distance = {};
     };
 
-    constexpr auto MS1_1 = GPIO::PB4;
-    constexpr auto MS2_1 = GPIO::PB5;
-    constexpr auto MS3_1 = GPIO::PB6;
-    constexpr auto DIR_1 = GPIO::PB7;
+    constexpr auto MS1_1 = GPIO::PA11;
+    constexpr auto MS2_1 = GPIO::PA10;
+    constexpr auto MS3_1 = GPIO::PA9;
+    constexpr auto DIR_1 = GPIO::PB15;
     constexpr auto EN_1 = GPIO::NC;
     constexpr auto SLEEP_1 = GPIO::NC;
     constexpr auto RESET_1 = GPIO::NC;
@@ -65,6 +67,8 @@ namespace Segway {
     constexpr auto DT = 1.0F / ICM20948_FREQ;
 
     constexpr auto STEPS_PER_360 = 200U;
+    constexpr auto WHEEL_DIST = 30.0F;
+    constexpr auto WHEEL_RADIUS = 3.0F;
 
 }; // namespace Segway
 

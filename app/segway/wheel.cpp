@@ -11,13 +11,14 @@ namespace Segway {
 
     std::float32_t WheelDriver::get_wheel_position(this WheelDriver& self, std::float32_t const dt) noexcept
     {
-        auto position = self.driver.get_position(dt) * self.wheel_radius;
+        return self.driver.get_position(dt) * self.wheel_radius;
     }
 
     void WheelDriver::set_wheel_position(this WheelDriver& self,
                                          std::float32_t const wheel_position,
                                          std::float32_t const dt) noexcept
     {
+        assert(self.wheel_radius);
         self.driver.set_position(wheel_position / self.wheel_radius, dt);
     }
 
@@ -30,6 +31,7 @@ namespace Segway {
                                       std::float32_t const wheel_speed,
                                       std::float32_t const dt) noexcept
     {
+        assert(self.wheel_radius);
         self.driver.set_speed(wheel_speed / self.wheel_radius, dt);
     }
 

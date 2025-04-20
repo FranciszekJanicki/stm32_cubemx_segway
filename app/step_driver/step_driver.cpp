@@ -49,10 +49,9 @@ namespace StepDriver {
 
         if (std::abs(control_speed) < 10.0F) {
             self.stop();
+            self.set_control_speed(0.0F);
         } else {
-            if (self.is_stopped) {
-                self.start();
-            }
+            self.start();
             self.set_control_speed(speed);
         }
     }

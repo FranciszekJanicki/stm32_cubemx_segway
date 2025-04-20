@@ -6,13 +6,13 @@ namespace {
 
     constexpr auto TAG = "Segway";
 
-};
+}; // namespace
 
 namespace Segway {
 
     void Segway::update_step_count(this Segway& self, WheelType const wheel_type) noexcept
     {
-        self.wheels.update_wheel_step_count(wheel_type);
+        update_wheel_step_count(self.wheels, wheel_type);
     }
 
     void Segway::operator()(this Segway& self,
@@ -26,16 +26,18 @@ namespace Segway {
                             std::array<std::float32_t, 6UL> const& x_ref,
                             std::float32_t const dt) noexcept
     {
-        auto& [Ki, Kx, prev_x, prev_e, int_e, x, e, u] = self.config;
+        auto& [Ki, Kx, prev_x, prev_e, int_e, x, e, u, _] = self.config;
 
-        x[1] = self.imu.get_tilt();
+        x[1] = get_tilt(self.imu);
         x[0] = Utility::differentiate(x[1], prev_x[1], dt);
-        x[3] = self.wheels.get_wheel_diff_rotation(dt);
+        x[3] = get_wheel_diff_rotation(self.wheels, dt, self.config.wheel_distance);
         x[2] = Utility::differentiate(x[3], prev_x[3], dt);
-        x[4] = self.wheels.get_wheel_diff_position(dt);
+        x[4] = get_wheel_diff_position(self.wheels, dt);
         x[5] = Utility::differentiate(x[4], prev_x[4], dt);
 
         std::copy(x.begin(), x.end(), prev_x.begin());
+
+        LOG(TAG, "DUPA DUTKIEWICZA SIE OBSRALA!");
 
         e[0] = x_ref[0] - x[0];
         e[1] = x_ref[1] - x[1];
@@ -51,22 +53,28 @@ namespace Segway {
         int_e[4] += Utility::integrate(e[4], prev_e[4], dt);
         int_e[5] += Utility::integrate(e[5], prev_e[5], dt);
 
-        std::copy(e.begin(), e.begin(), prev_e.data());
+        std::copy(e.begin(), e.end(), prev_e.begin());
 
-        u[std::to_underlying(WheelType::LEFT)] = (Ki[0] * int_e[0] - Kx[0] * x[0]) + (Ki[1] * int_e[1] - Kx[1] * x[1]) +
-                                                 (Ki[2] * int_e[2] - Kx[2] * x[2]) + (Ki[3] * int_e[3] - Kx[3] * x[3]) +
-                                                 (Ki[4] * int_e[4] - Kx[4] * x[4]) + (Ki[5] * int_e[5] - Kx[5] * x[5]);
+        u[0] = Utility::state_feedback(x_ref[0], Kx[0], x[0], Ki[0], int_e[0]) +
+               Utility::state_feedback(x_ref[1], Kx[1], x[1], Ki[1], int_e[1]) +
+               Utility::state_feedback(x_ref[2], Kx[2], x[2], Ki[2], int_e[2]) +
+               Utility::state_feedback(x_ref[3], Kx[3], x[3], Ki[3], int_e[3]) +
+               Utility::state_feedback(x_ref[4], Kx[4], x[4], Ki[4], int_e[4]) +
+               Utility::state_feedback(x_ref[5], Kx[5], x[5], Ki[5], int_e[5]);
 
-        u[std::to_underlying(WheelType::RIGHT)] =
-            (Ki[0] * int_e[0] + Kx[0] * x[0]) + (Ki[1] * int_e[1] + Kx[1] * x[1]) + (Ki[2] * int_e[2] + Kx[2] * x[2]) +
-            (Ki[3] * int_e[3] + Kx[3] * x[3]) + (Ki[4] * int_e[4] + Kx[4] * x[4]) + (Ki[5] * int_e[5] + Kx[5] * x[5]);
+        u[1] = Utility::state_feedback(x_ref[0], Kx[0], x[0], Ki[0], int_e[0]) +
+               Utility::state_feedback(x_ref[1], Kx[1], x[1], Ki[1], int_e[1]) +
+               Utility::state_feedback(x_ref[2], -Kx[2], x[2], Ki[2], int_e[2]) +
+               Utility::state_feedback(x_ref[3], -Kx[3], x[3], Ki[3], int_e[3]) +
+               Utility::state_feedback(x_ref[4], Kx[4], x[4], Ki[4], int_e[4]) +
+               Utility::state_feedback(x_ref[5], Kx[5], x[5], Ki[5], int_e[5]);
 
-        for (auto u_val : u) {
-            LOG(TAG, "Control signal: %f\n\r", u_val);
+        for (auto& u_val : u) {
+            u_val = std::clamp(u_val, -100.0F32, 100.0F32);
+            LOG(TAG, "Control signal: %f", u_val);
         }
 
-        self.wheels.set_wheel_speed(WheelType::LEFT, u[std::to_underlying(WheelType::LEFT)], dt);
-        self.wheels.set_wheel_speed(WheelType::RIGHT, u[std::to_underlying(WheelType::RIGHT)], dt);
+        set_wheels_speed(self.wheels, u[0], u[1], dt);
     }
 
 }; // namespace Segway
