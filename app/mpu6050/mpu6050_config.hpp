@@ -136,13 +136,13 @@ namespace MPU6050 {
         FREQ_40 = 0x3,
     };
 
-    constexpr auto PI = std::numbers::pi_v<std::float32_t>;
+    constexpr auto PI = std::numbers::pi_v<std::float64_t>;
 
     constexpr auto GYRO_OUTPUT_RATE_DLPF_EN_HZ = 1000U;
     constexpr auto GYRO_OUTPUT_RATE_DLPF_DIS_HZ = 8000U;
     constexpr auto ACCEL_OUTPUT_RATE_HZ = 1000U;
 
-    inline std::float32_t gyro_range_to_scale(GyroRange const gyro_range) noexcept
+    inline std::float64_t gyro_range_to_scale(GyroRange const gyro_range) noexcept
     {
         switch (gyro_range) {
             case GyroRange::GYRO_FS_250:
@@ -158,7 +158,7 @@ namespace MPU6050 {
         }
     }
 
-    inline std::float32_t accel_range_to_scale(AccelRange const accel_range) noexcept
+    inline std::float64_t accel_range_to_scale(AccelRange const accel_range) noexcept
     {
         switch (accel_range) {
             case AccelRange::ACCEL_FS_2:

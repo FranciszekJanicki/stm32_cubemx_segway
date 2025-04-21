@@ -20,18 +20,18 @@ namespace Segway {
     using namespace ICM20948;
     using namespace StepDriver;
 
-    using PID = ::Utility::PID<std::float32_t>;
+    using PID = ::Utility::PID<std::float64_t>;
 
     struct LQR {
-        std::array<std::float32_t, 6UL> Kx = {};
-        std::array<std::float32_t, 6UL> Ki = {};
+        std::array<std::float64_t, 6UL> Kx = {};
+        std::array<std::float64_t, 6UL> Ki = {};
 
-        std::array<std::float32_t, 6UL> prev_x = {};
-        std::array<std::float32_t, 6UL> prev_e = {};
-        std::array<std::float32_t, 6UL> int_e = {};
-        std::array<std::float32_t, 6UL> x = {};
-        std::array<std::float32_t, 6UL> e = {};
-        std::array<std::float32_t, 2UL> u = {};
+        std::array<std::float64_t, 6UL> prev_x = {};
+        std::array<std::float64_t, 6UL> prev_e = {};
+        std::array<std::float64_t, 6UL> int_e = {};
+        std::array<std::float64_t, 6UL> x = {};
+        std::array<std::float64_t, 6UL> e = {};
+        std::array<std::float64_t, 2UL> u = {};
     };
 
     using Regulator = std::variant<PID, LQR>;
@@ -62,17 +62,19 @@ namespace Segway {
     constexpr auto ICM20948_FREQ = 200UL;
     constexpr auto ICM20948_I2C_ADDRESS = ICM_20948_I2C_ADDR_AD0;
 
-    constexpr auto LQR_X_REF = std::array{0.0F32, 0.0F32, 0.0F32, 0.0F32, 0.0F32, 0.0F32};
-    constexpr auto LQR_KI = std::array{1.0F32, 0.0F32, 0.0F32, 0.0F32, 0.0F32, 0.0F32};
-    constexpr auto LQR_KX = std::array{-7.14F32, -1.900F32, -0.0007F32, -0.0015F32, -0.707F32, -0.8803F32};
+    constexpr auto LQR_X_REF = std::array{0.0F64, 0.0F64, 0.0F64, 0.0F64, 0.0F64, 0.0F64};
+    constexpr auto LQR_KI = std::array{1.0F64, 0.0F64, 0.0F64, 0.0F64, 0.0F64, 0.0F64};
+    constexpr auto LQR_KX = std::array{-7.14F64, -1.900F64, -0.0007F64, -0.0015F64, -0.707F64, -0.8803F64};
 
-    constexpr auto PID_Y_REF = 0.0F32;
-    constexpr auto PID_KP = 200.0F32;
-    constexpr auto PID_KI = 0.0F32;
-    constexpr auto PID_KD = 3.0F32;
-    constexpr auto PID_SAT = 1000.0F32;
+    constexpr auto PID_Y_REF = 0.0F64;
+    constexpr auto PID_KP = 5.0F64;
+    constexpr auto PID_KI = 0.064;
+    constexpr auto PID_KD = 0.0F64;
+    constexpr auto PID_KC = 0.0F64;
+    constexpr auto PID_TD = 0.0001F64;
+    constexpr auto PID_SAT = 1000.0F64;
 
-    constexpr auto DT = 1.0F32 / ICM20948_FREQ;
+    constexpr auto DT = 1.0F64 / ICM20948_FREQ;
 
     constexpr auto STEPS_PER_360 = 200U;
     constexpr auto WHEEL_DIST = 1.0F;

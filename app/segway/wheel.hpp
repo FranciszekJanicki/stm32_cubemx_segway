@@ -18,19 +18,19 @@ namespace Segway {
     char const* wheel_type_to_string(WheelType const wheel_type) noexcept;
 
     struct WheelDriver {
-        std::float32_t get_wheel_position(this WheelDriver& self, std::float32_t const dt) noexcept;
+        std::float64_t get_wheel_position(this WheelDriver& self, std::float64_t const dt) noexcept;
 
         void set_wheel_position(this WheelDriver& self,
-                                std::float32_t const wheel_position,
-                                std::float32_t const dt) noexcept;
+                                std::float64_t const wheel_position,
+                                std::float64_t const dt) noexcept;
 
-        std::float32_t get_wheel_speed(this WheelDriver& self, std::float32_t const dt) noexcept;
+        std::float64_t get_wheel_speed(this WheelDriver& self, std::float64_t const dt) noexcept;
 
         void
-        set_wheel_speed(this WheelDriver& self, std::float32_t const wheel_speed, std::float32_t const dt) noexcept;
+        set_wheel_speed(this WheelDriver& self, std::float64_t const wheel_speed, std::float64_t const dt) noexcept;
 
         Driver driver = {};
-        std::float32_t wheel_radius = 0.0F;
+        std::float64_t wheel_radius = 0.0F;
     };
 
     struct Wheel {

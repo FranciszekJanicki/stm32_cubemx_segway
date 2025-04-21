@@ -158,7 +158,6 @@ namespace Segway {
                          .driver = WheelDriver{.driver = std::move(step_driver_2), .wheel_radius = WHEEL_RADIUS}}};
 
         auto i2c_device = I2CDevice{.i2c_bus = &hi2c1, .dev_address = MPU6050_I2C_ADDRESS};
-        i2c_device.bus_scan();
         auto mpu6050 = MPU6050{std::move(i2c_device),
                                MPU6050_FREQ,
                                MPU6050_GYRO_RANGE,
@@ -167,7 +166,7 @@ namespace Segway {
                                MPU6050_DHPF};
         auto imu = MPU6050_DMP{std::move(mpu6050)};
 
-        auto regulator = PID{.kP = PID_KP, .kI = PID_KI, .kD = PID_KD, .sat = PID_SAT};
+        auto regulator = PID{.kP = PID_KP, .kI = PID_KI, .kD = PID_KD, .tD = PID_TD, .kC = PID_KC, .sat = PID_SAT};
 
         auto segway = Segway{.imu = std::move(imu),
                              .regulator = regulator,

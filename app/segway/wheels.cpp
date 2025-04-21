@@ -19,8 +19,8 @@ namespace Segway {
 
     void set_wheel_speed(Wheels& wheels,
                          WheelType const wheel_type,
-                         std::float32_t const wheel_speed,
-                         std::float32_t const dt) noexcept
+                         std::float64_t const wheel_speed,
+                         std::float64_t const dt) noexcept
     {
         auto& wheel_driver = get_wheel_driver(wheels, wheel_type);
         wheel_driver.set_wheel_speed(wheel_speed, dt);
@@ -29,9 +29,9 @@ namespace Segway {
     }
 
     void set_wheels_speed(Wheels& wheels,
-                          std::float32_t const left_wheel_speed,
-                          std::float32_t const right_wheel_speed,
-                          std::float32_t const dt) noexcept
+                          std::float64_t const left_wheel_speed,
+                          std::float64_t const right_wheel_speed,
+                          std::float64_t const dt) noexcept
     {
         auto& left_wheel_driver = get_wheel_driver(wheels, WheelType::LEFT);
         left_wheel_driver.set_wheel_speed(left_wheel_speed, dt);
@@ -43,7 +43,7 @@ namespace Segway {
         LOG(TAG, "Updating left wheel speed to: %f!", left_wheel_speed);
     }
 
-    std::float32_t get_wheel_speed(Wheels& wheels, WheelType const wheel_type, std::float32_t const dt) noexcept
+    std::float64_t get_wheel_speed(Wheels& wheels, WheelType const wheel_type, std::float64_t const dt) noexcept
     {
         auto& wheel_driver = get_wheel_driver(wheels, wheel_type);
         auto wheel_speed = wheel_driver.get_wheel_speed(dt);
@@ -54,8 +54,8 @@ namespace Segway {
 
     void set_wheel_position(Wheels& wheels,
                             WheelType const wheel_type,
-                            std::float32_t const wheel_position,
-                            std::float32_t const dt) noexcept
+                            std::float64_t const wheel_position,
+                            std::float64_t const dt) noexcept
     {
         auto& wheel_driver = get_wheel_driver(wheels, wheel_type);
         wheel_driver.set_wheel_position(wheel_position, dt);
@@ -64,9 +64,9 @@ namespace Segway {
     }
 
     void set_wheels_position(Wheels& wheels,
-                             std::float32_t const left_wheel_position,
-                             std::float32_t const right_wheel_position,
-                             std::float32_t const dt) noexcept
+                             std::float64_t const left_wheel_position,
+                             std::float64_t const right_wheel_position,
+                             std::float64_t const dt) noexcept
     {
         auto& left_wheel_driver = get_wheel_driver(wheels, WheelType::LEFT);
         left_wheel_driver.set_wheel_position(left_wheel_position, dt);
@@ -78,7 +78,7 @@ namespace Segway {
         LOG(TAG, "Updating left wheel speed to: %f!", left_wheel_position);
     }
 
-    std::float32_t get_wheel_position(Wheels& wheels, WheelType const wheel_type, std::float32_t const dt) noexcept
+    std::float64_t get_wheel_position(Wheels& wheels, WheelType const wheel_type, std::float64_t const dt) noexcept
     {
         auto& wheel_driver = get_wheel_driver(wheels, wheel_type);
         auto wheel_position = wheel_driver.get_wheel_position(dt);
@@ -87,8 +87,8 @@ namespace Segway {
         return wheel_position;
     }
 
-    std::float32_t
-    get_wheel_diff_rotation(Wheels& wheels, std::float32_t const dt, std::float32_t const wheel_distance) noexcept
+    std::float64_t
+    get_wheel_diff_rotation(Wheels& wheels, std::float64_t const dt, std::float64_t const wheel_distance) noexcept
     {
         auto& left_wheel_driver = get_wheel_driver(wheels, WheelType::LEFT);
         auto& right_wheel_driver = get_wheel_driver(wheels, WheelType::RIGHT);
@@ -101,7 +101,7 @@ namespace Segway {
         return wheel_diff_rotation;
     }
 
-    std::float32_t get_wheel_diff_position(Wheels& wheels, std::float32_t const dt) noexcept
+    std::float64_t get_wheel_diff_position(Wheels& wheels, std::float64_t const dt) noexcept
     {
         auto& left_wheel_driver = get_wheel_driver(wheels, WheelType::LEFT);
         auto& right_wheel_driver = get_wheel_driver(wheels, WheelType::RIGHT);

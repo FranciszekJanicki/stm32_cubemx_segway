@@ -11,18 +11,18 @@ namespace Segway {
         void update_step_count(this Segway& self, WheelType const wheel_type) noexcept;
 
         void
-        operator()(this Segway& self, std::array<std::float32_t, 6UL> const& x_ref, std::float32_t const dt) noexcept;
+        operator()(this Segway& self, std::array<std::float64_t, 6UL> const& x_ref, std::float64_t const dt) noexcept;
 
         void run_segway_lqr(this Segway& self,
-                            std::array<std::float32_t, 6UL> const& x_ref,
-                            std::float32_t const dt) noexcept;
+                            std::array<std::float64_t, 6UL> const& x_ref,
+                            std::float64_t const dt) noexcept;
 
-        void run_segway_pid(this Segway& self, std::float32_t const tilt_ref, std::float32_t const dt) noexcept;
+        void run_segway_pid(this Segway& self, std::float64_t const tilt_ref, std::float64_t const dt) noexcept;
 
         IMU imu = {};
         Regulator regulator = {};
         Wheels wheels = {};
-        std::float32_t wheel_distance = {};
+        std::float64_t wheel_distance = {};
     };
 
 }; // namespace Segway

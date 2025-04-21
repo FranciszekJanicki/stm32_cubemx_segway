@@ -16,15 +16,15 @@ namespace Segway {
     }
 
     void Segway::operator()(this Segway& self,
-                            std::array<std::float32_t, 6UL> const& x_ref,
-                            std::float32_t const dt) noexcept
+                            std::array<std::float64_t, 6UL> const& x_ref,
+                            std::float64_t const dt) noexcept
     {
         self.run_segway_lqr(x_ref, dt);
     }
 
     void Segway::run_segway_lqr(this Segway& self,
-                                std::array<std::float32_t, 6UL> const& x_ref,
-                                std::float32_t const dt) noexcept
+                                std::array<std::float64_t, 6UL> const& x_ref,
+                                std::float64_t const dt) noexcept
     {
         if (std::holds_alternative<LQR>(self.regulator)) {
             auto& [Kx, Ki, prev_x, prev_e, int_e, x, e, u] = std::get<LQR>(self.regulator);
@@ -72,12 +72,23 @@ namespace Segway {
         }
     }
 
-    void Segway::run_segway_pid(this Segway& self, std::float32_t const tilt_ref, std::float32_t const dt) noexcept
+    void Segway::run_segway_pid(this Segway& self, std::float64_t const tilt_ref, std::float64_t const dt) noexcept
     {
         if (std::holds_alternative<PID>(self.regulator)) {
-            auto error = tilt_ref - get_tilt_angle(self.imu);
-            auto u = std::get<PID>(self.regulator).get_u(error, dt);
-            set_wheels_speed(self.wheels, u, u, dt);
+            auto& regulator = std::get<PID>(self.regulator);
+
+            auto e = tilt_ref - get_tilt_angle(self.imu);
+            LOG(TAG, "Error tilt: %f", e);
+
+            auto u = regulator.get_sat_u(e, dt);
+            LOG(TAG, "Control speed: %f", u);
+
+            static std::float64_t prev_u = 0.0;
+            std::float64_t alpha = 0.3; // Smoothing factor (try tweaking from 0.05 to 0.3)
+            std::float64_t smooth_u = prev_u + alpha * (u - prev_u);
+            prev_u = smooth_u;
+
+            set_wheels_speed(self.wheels, smooth_u, -smooth_u, dt);
         }
     }
 

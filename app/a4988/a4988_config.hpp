@@ -22,7 +22,7 @@ namespace A4988 {
         STOP,
     };
 
-    inline std::float32_t microstep_to_fraction(Microstep const microstep) noexcept
+    inline std::float64_t microstep_to_fraction(Microstep const microstep) noexcept
     {
         switch (microstep) {
             case Microstep::FULL:

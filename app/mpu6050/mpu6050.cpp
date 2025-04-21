@@ -23,80 +23,80 @@ namespace MPU6050 {
         this->deinitialize();
     }
 
-    std::optional<std::float32_t> MPU6050::get_temperature_celsius() const noexcept
+    std::optional<std::float64_t> MPU6050::get_temperature_celsius() const noexcept
     {
         return this->get_temperature_raw().transform(
-            [](std::int16_t const raw) { return static_cast<std::float32_t>(raw) / 340.0f + 36.53f; });
+            [](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / 340.0f + 36.53f; });
     }
 
-    std::optional<std::float32_t> MPU6050::get_acceleration_x_scaled() const noexcept
+    std::optional<std::float64_t> MPU6050::get_acceleration_x_scaled() const noexcept
     {
         return this->get_acceleration_x_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float32_t>(raw) / this->accel_scale_; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->accel_scale_; });
     }
 
-    std::optional<std::float32_t> MPU6050::get_acceleration_y_scaled() const noexcept
+    std::optional<std::float64_t> MPU6050::get_acceleration_y_scaled() const noexcept
     {
         return this->get_acceleration_y_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float32_t>(raw) / this->accel_scale_; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->accel_scale_; });
     }
 
-    std::optional<std::float32_t> MPU6050::get_acceleration_z_scaled() const noexcept
+    std::optional<std::float64_t> MPU6050::get_acceleration_z_scaled() const noexcept
     {
         return this->get_acceleration_z_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float32_t>(raw) / this->accel_scale_; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->accel_scale_; });
     }
 
-    std::optional<Vec3D<std::float32_t>> MPU6050::get_acceleration_scaled() const noexcept
+    std::optional<Vec3D<std::float64_t>> MPU6050::get_acceleration_scaled() const noexcept
     {
         return this->get_acceleration_raw().transform([this](Vec3D<std::int16_t> const& raw) {
-            return static_cast<Vec3D<std::float32_t>>(raw) / this->accel_scale_;
+            return static_cast<Vec3D<std::float64_t>>(raw) / this->accel_scale_;
         });
     }
 
-    std::optional<std::float32_t> MPU6050::get_rotation_x_scaled() const noexcept
+    std::optional<std::float64_t> MPU6050::get_rotation_x_scaled() const noexcept
     {
         return this->get_rotation_x_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float32_t>(raw) / this->gyro_scale_; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->gyro_scale_; });
     }
 
-    std::optional<std::float32_t> MPU6050::get_rotation_y_scaled() const noexcept
+    std::optional<std::float64_t> MPU6050::get_rotation_y_scaled() const noexcept
     {
         return this->get_rotation_y_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float32_t>(raw) / this->gyro_scale_; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->gyro_scale_; });
     }
 
-    std::optional<std::float32_t> MPU6050::get_rotation_z_scaled() const noexcept
+    std::optional<std::float64_t> MPU6050::get_rotation_z_scaled() const noexcept
     {
         return this->get_rotation_z_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float32_t>(raw) / this->gyro_scale_; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->gyro_scale_; });
     }
 
-    std::optional<Vec3D<std::float32_t>> MPU6050::get_rotation_scaled() const noexcept
+    std::optional<Vec3D<std::float64_t>> MPU6050::get_rotation_scaled() const noexcept
     {
         return this->get_rotation_raw().transform([this](Vec3D<std::int16_t> const& raw) {
-            return static_cast<Vec3D<std::float32_t>>(raw) / this->gyro_scale_;
+            return static_cast<Vec3D<std::float64_t>>(raw) / this->gyro_scale_;
         });
     }
 
-    std::optional<Vec3D<std::float32_t>> MPU6050::get_roll_pitch_yaw() const noexcept
+    std::optional<Vec3D<std::float64_t>> MPU6050::get_roll_pitch_yaw() const noexcept
     {
-        return this->get_acceleration_scaled().transform(&Utility::accel_to_roll_pitch_yaw<std::float32_t>);
+        return this->get_acceleration_scaled().transform(&Utility::accel_to_roll_pitch_yaw<std::float64_t>);
     }
 
-    std::optional<std::float32_t> MPU6050::get_roll() const noexcept
+    std::optional<std::float64_t> MPU6050::get_roll() const noexcept
     {
-        return this->get_acceleration_scaled().transform(&Utility::accel_to_roll<std::float32_t>);
+        return this->get_acceleration_scaled().transform(&Utility::accel_to_roll<std::float64_t>);
     }
 
-    std::optional<std::float32_t> MPU6050::get_pitch() const noexcept
+    std::optional<std::float64_t> MPU6050::get_pitch() const noexcept
     {
-        return this->get_acceleration_scaled().transform(&Utility::accel_to_pitch<std::float32_t>);
+        return this->get_acceleration_scaled().transform(&Utility::accel_to_pitch<std::float64_t>);
     }
 
-    std::optional<std::float32_t> MPU6050::get_yaw() const noexcept
+    std::optional<std::float64_t> MPU6050::get_yaw() const noexcept
     {
-        return this->get_acceleration_scaled().transform(&Utility::accel_to_yaw<std::float32_t>);
+        return this->get_acceleration_scaled().transform(&Utility::accel_to_yaw<std::float64_t>);
     }
 
     std::uint8_t MPU6050::read_byte(std::uint8_t const reg_address) const noexcept
