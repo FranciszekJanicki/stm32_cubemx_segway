@@ -31,10 +31,12 @@ namespace Segway {
 
             x[1] = get_tilt_angle(self.imu);
             x[0] = Utility::differentiate(x[1], prev_x[1], dt);
-            x[3] = get_wheel_diff_rotation(self.wheels, dt, self.wheel_distance);
+            x[3] = get_wheel_diff_rotation(self.wheels, dt, self.config.wheel_distance);
             x[2] = Utility::differentiate(x[3], prev_x[3], dt);
             x[4] = get_wheel_diff_position(self.wheels, dt);
             x[5] = Utility::differentiate(x[4], prev_x[4], dt);
+
+            self.check_fault(x[1]);
 
             std::copy(x.begin(), x.end(), prev_x.begin());
 
@@ -77,18 +79,37 @@ namespace Segway {
         if (std::holds_alternative<PID>(self.regulator)) {
             auto& regulator = std::get<PID>(self.regulator);
 
-            auto e = tilt_ref - get_tilt_angle(self.imu);
+            auto tilt = get_tilt_angle(self.imu);
+            self.check_fault(tilt);
+
+            auto e = tilt_ref - tilt;
             LOG(TAG, "Error tilt: %f", e);
 
             auto u = regulator.get_sat_u(e, dt);
             LOG(TAG, "Control speed: %f", u);
 
-            static std::float64_t prev_u = 0.0;
-            std::float64_t alpha = 0.3; // Smoothing factor (try tweaking from 0.05 to 0.3)
-            std::float64_t smooth_u = prev_u + alpha * (u - prev_u);
-            prev_u = smooth_u;
+            set_wheels_speed(self.wheels, u, -u, dt);
+        }
+    }
 
-            set_wheels_speed(self.wheels, smooth_u, -smooth_u, dt);
+    void Segway::check_fault(this Segway& self, std::float64_t const tilt) noexcept
+    {
+        auto& [_, fault_enter, fault_exit, has_fault_occured] = self.config;
+
+        if (std::abs(tilt) > fault_enter) {
+            if (!has_fault_occured) {
+                stop_wheels(self.wheels);
+
+                has_fault_occured = true;
+                LOG(TAG, "FAULT ENTERED. Stopping wheels.");
+            }
+        } else if (std::abs(tilt) < fault_exit) {
+            if (has_fault_occured) {
+                start_wheels(self.wheels);
+
+                has_fault_occured = false;
+                LOG(TAG, "FAULT CLEARED. Starting wheels.");
+            }
         }
     }
 

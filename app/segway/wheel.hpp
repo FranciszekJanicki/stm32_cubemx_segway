@@ -18,6 +18,9 @@ namespace Segway {
     char const* wheel_type_to_string(WheelType const wheel_type) noexcept;
 
     struct WheelDriver {
+        void start(this WheelDriver& self) noexcept;
+        void stop(this WheelDriver& self) noexcept;
+
         std::float64_t get_wheel_position(this WheelDriver& self, std::float64_t const dt) noexcept;
 
         void set_wheel_position(this WheelDriver& self,

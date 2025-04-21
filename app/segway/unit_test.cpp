@@ -168,10 +168,12 @@ namespace Segway {
 
         auto regulator = PID{.kP = PID_KP, .kI = PID_KI, .kD = PID_KD, .tD = PID_TD, .kC = PID_KC, .sat = PID_SAT};
 
-        auto segway = Segway{.imu = std::move(imu),
-                             .regulator = regulator,
-                             .wheels = std::move(wheels),
-                             .wheel_distance = WHEEL_DIST};
+        auto config = Config{.wheel_distance = WHEEL_DIST,
+                             .fault_angle_enter = FAULT_ANGLE_ENTER,
+                             .fault_angle_exit = FAULT_ANGLE_EXIT};
+
+        auto segway =
+            Segway{.imu = std::move(imu), .wheels = std::move(wheels), .regulator = regulator, .config = config};
 
         HAL_TIM_Base_Start_IT(&htim2);
         HAL_TIM_PWM_Start_IT(&htim1, TIM_CHANNEL_1);

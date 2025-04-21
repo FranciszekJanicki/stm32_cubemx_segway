@@ -16,6 +16,9 @@ namespace StepDriver {
 
     struct StepDriver {
     public:
+        void start(this StepDriver& self) noexcept;
+        void stop(this StepDriver& self) noexcept;
+
         void update_step_count(this StepDriver& self) noexcept;
 
         void set_position(this StepDriver& self, std::float64_t const position, std::float64_t const dt) noexcept;
@@ -46,9 +49,6 @@ namespace StepDriver {
     private:
         static constexpr auto MAX_SPEED = 1000.0F64;
         static constexpr auto MIN_SPEED = 1.0F64;
-
-        void start(this StepDriver& self) noexcept;
-        void stop(this StepDriver& self) noexcept;
 
         std::float64_t step_change(this StepDriver& self) noexcept;
 

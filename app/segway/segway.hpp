@@ -20,9 +20,12 @@ namespace Segway {
         void run_segway_pid(this Segway& self, std::float64_t const tilt_ref, std::float64_t const dt) noexcept;
 
         IMU imu = {};
-        Regulator regulator = {};
         Wheels wheels = {};
-        std::float64_t wheel_distance = {};
+        Regulator regulator = {};
+        Config config = {};
+
+    private:
+        void check_fault(this Segway& self, std::float64_t const tilt) noexcept;
     };
 
 }; // namespace Segway

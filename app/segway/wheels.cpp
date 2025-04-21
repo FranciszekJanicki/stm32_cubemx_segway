@@ -9,6 +9,20 @@ namespace {
 
 namespace Segway {
 
+    void start_wheels(Wheels& wheels) noexcept
+    {
+        for (auto& wheel : wheels) {
+            wheel.driver.start();
+        }
+    }
+
+    void stop_wheels(Wheels& wheels) noexcept
+    {
+        for (auto& wheel : wheels) {
+            wheel.driver.stop();
+        }
+    }
+
     void update_wheel_step_count(Wheels& wheels, WheelType const wheel_type) noexcept
     {
         auto& wheel_driver = get_wheel_driver(wheels, wheel_type);

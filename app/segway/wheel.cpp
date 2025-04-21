@@ -9,6 +9,16 @@ namespace {
 
 namespace Segway {
 
+    void WheelDriver::start(this WheelDriver& self) noexcept
+    {
+        self.driver.start();
+    }
+
+    void WheelDriver::stop(this WheelDriver& self) noexcept
+    {
+        self.driver.stop();
+    }
+
     std::float64_t WheelDriver::get_wheel_position(this WheelDriver& self, std::float64_t const dt) noexcept
     {
         return self.driver.get_position(dt) / self.wheel_radius;

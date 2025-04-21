@@ -8,6 +8,9 @@ namespace Segway {
 
     using Wheels = std::array<Wheel, 2UL>;
 
+    void start_wheels(Wheels& wheels) noexcept;
+    void stop_wheels(Wheels& wheels) noexcept;
+
     void update_wheel_step_count(Wheels& wheels, WheelType const wheel_type) noexcept;
 
     void set_wheel_speed(Wheels& wheels,

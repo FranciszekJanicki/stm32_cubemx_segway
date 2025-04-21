@@ -22,6 +22,18 @@ namespace StepDriver {
         return static_cast<std::uint16_t>(std::abs(speed / step_change));
     }
 
+    void StepDriver::start(this StepDriver& self) noexcept
+    {
+        self.driver.start();
+        self.is_stopped = false;
+    }
+
+    void StepDriver::stop(this StepDriver& self) noexcept
+    {
+        self.driver.stop();
+        self.is_stopped = true;
+    }
+
     void StepDriver::update_step_count(this StepDriver& self) noexcept
     {
         auto const counter_period = self.driver.pwm_device_.get_period();
@@ -63,18 +75,6 @@ namespace StepDriver {
         auto const speed = Utility::integrate(acceleration, std::exchange(self.prev_acceleration, acceleration), dt);
 
         self.set_speed(speed, dt);
-    }
-
-    void StepDriver::start(this StepDriver& self) noexcept
-    {
-        self.driver.start();
-        self.is_stopped = false;
-    }
-
-    void StepDriver::stop(this StepDriver& self) noexcept
-    {
-        self.driver.stop();
-        self.is_stopped = true;
     }
 
     std::float64_t StepDriver::step_change(this StepDriver& self) noexcept

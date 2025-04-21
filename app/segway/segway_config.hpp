@@ -36,6 +36,14 @@ namespace Segway {
 
     using Regulator = std::variant<PID, LQR>;
 
+    struct Config {
+        std::float64_t wheel_distance = {};
+
+        std::float64_t fault_angle_enter = {};
+        std::float64_t fault_angle_exit = {};
+        bool has_fault_occured = {};
+    };
+
     constexpr auto MS1_1 = GPIO::PA11;
     constexpr auto MS2_1 = GPIO::PA10;
     constexpr auto MS3_1 = GPIO::PA9;
@@ -68,7 +76,7 @@ namespace Segway {
 
     constexpr auto PID_Y_REF = 0.0F64;
     constexpr auto PID_KP = 5.0F64;
-    constexpr auto PID_KI = 0.064;
+    constexpr auto PID_KI = 0.0F64;
     constexpr auto PID_KD = 0.0F64;
     constexpr auto PID_KC = 0.0F64;
     constexpr auto PID_TD = 0.0001F64;
@@ -77,8 +85,10 @@ namespace Segway {
     constexpr auto DT = 1.0F64 / ICM20948_FREQ;
 
     constexpr auto STEPS_PER_360 = 200U;
-    constexpr auto WHEEL_DIST = 1.0F;
-    constexpr auto WHEEL_RADIUS = 1.0F;
+    constexpr auto WHEEL_DIST = 1.0F64;
+    constexpr auto WHEEL_RADIUS = 1.0F64;
+    constexpr auto FAULT_ANGLE_ENTER = 45.0F64;
+    constexpr auto FAULT_ANGLE_EXIT = 30.0F64;
 
 }; // namespace Segway
 
