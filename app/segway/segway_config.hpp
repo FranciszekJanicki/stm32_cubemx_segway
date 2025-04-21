@@ -20,10 +20,9 @@ namespace Segway {
     using namespace ICM20948;
     using namespace StepDriver;
 
-    using SFR = ::Utility::SFR<std::float32_t, 6UL, 2UL>;
-    using SFO = ::Utility::SFO<std::float32_t, 6UL, 2UL>;
+    using PID = ::Utility::PID<std::float32_t>;
 
-    struct Config {
+    struct LQR {
         std::array<std::float32_t, 6UL> Kx = {};
         std::array<std::float32_t, 6UL> Ki = {};
 
@@ -33,7 +32,10 @@ namespace Segway {
         std::array<std::float32_t, 6UL> x = {};
         std::array<std::float32_t, 6UL> e = {};
         std::array<std::float32_t, 2UL> u = {};
+    };
 
+    struct Config {
+        std::variant<PID, LQR> regulator = {};
         std::float32_t wheel_distance = {};
     };
 
@@ -63,12 +65,21 @@ namespace Segway {
     constexpr auto ICM20948_FREQ = 200UL;
     constexpr auto ICM20948_I2C_ADDRESS = ICM_20948_I2C_ADDR_AD0;
 
-    constexpr auto X_REF = std::array{0.0F32, 0.0F32, 0.0F32, 0.0F32, 0.0F32, 0.0F32};
+    constexpr auto LQR_X_REF = std::array{0.0F32, 0.0F32, 0.0F32, 0.0F32, 0.0F32, 0.0F32};
+    constexpr auto LQR_KI = std::array{1.0F32, 0.0F32, 0.0F32, 0.0F32, 0.0F32, 0.0F32};
+    constexpr auto LQR_KX = std::array{-7.14F32, -1.900F32, -0.0007F32, -0.0015F32, -0.707F32, -0.8803F32};
+
+    constexpr auto PID_Y_REF = 0.0F32;
+    constexpr auto PID_KP = 200.0F32;
+    constexpr auto PID_KI = 400.0F32;
+    constexpr auto PID_KD = 3.0F32;
+    constexpr auto PID_SAT = 1000.0F32;
+
     constexpr auto DT = 1.0F / ICM20948_FREQ;
 
     constexpr auto STEPS_PER_360 = 200U;
-    constexpr auto WHEEL_DIST = 30.0F;
-    constexpr auto WHEEL_RADIUS = 3.0F;
+    constexpr auto WHEEL_DIST = 1.0F;
+    constexpr auto WHEEL_RADIUS = 1.0F;
 
 }; // namespace Segway
 

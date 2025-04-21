@@ -11,9 +11,7 @@ namespace StepDriver {
     using A4988 = ::A4988::A4988;
 
     Microstep speed_to_microstep(std::float32_t const speed, std::float32_t const step_change) noexcept;
-
     Direction speed_to_direction(std::float32_t const speed) noexcept;
-
     std::uint16_t speed_to_frequency(std::float32_t const speed, std::float32_t const step_change) noexcept;
 
     struct StepDriver {
@@ -43,8 +41,11 @@ namespace StepDriver {
         std::float32_t prev_acceleration = {};
 
         bool is_stopped = {};
+        bool is_initialized = {};
 
     private:
+        static constexpr auto MAX_SPEED = 100.0F32;
+
         void start(this StepDriver& self) noexcept;
         void stop(this StepDriver& self) noexcept;
 

@@ -9,17 +9,12 @@
 #include <cstdio>
 #include <cstring>
 
-namespace {
-
-    constexpr auto DEBUG_ENV = true;
-
-};
-
 namespace Segway {
 
-    template <typename... Args>
-    inline void LOG(char const* tag, char const* fmt, Args const... args) noexcept
+    inline void LOG(char const* tag, char const* fmt, auto const... args) noexcept
     {
+        constexpr auto DEBUG_ENV = true;
+
         if constexpr (DEBUG_ENV) {
             static char buffer[100];
 
@@ -30,7 +25,6 @@ namespace Segway {
             auto tag_len = std::strlen(tag) + std::strlen(": ");
             auto args_len = std::snprintf(nullptr, buf_len - tag_len, fmt, args...);
             auto endline_len = std::strlen("\n\r");
-
             auto len = tag_len + args_len + endline_len;
 
             if (len > buf_len) {
@@ -46,14 +40,16 @@ namespace Segway {
                 std::snprintf(buf + tag_len, buf_len - tag_len, fmt, args...);
                 // append return carriage and endline characters if they are not present alredy
 
-                auto msg_len = std::strlen(buf);
-                if (msg_len < 2UL ||
-                    std::strncmp(buf + msg_len - std::strlen("\n\r"), "\n\r", std::strlen("\n\r")) != 0) {
+                if (std::strlen(buf) < 2UL ||
+                    std::strncmp(buf + std::strlen(buf) - std::strlen("\n\r"), "\n\r", std::strlen("\n\r")) != 0) {
                     std::strncat(buf, "\n\r", buf_len);
                 }
 
-                HAL_UART_Transmit(&huart2, reinterpret_cast<std::uint8_t*>(buf), std::strlen(buf), std::strlen(buf));
-                CDC_Transmit_FS(reinterpret_cast<std::uint8_t*>(buf), std::strlen(buf));
+                auto msg_len = std::strlen(buf);
+                auto msg = reinterpret_cast<std::uint8_t*>(buf);
+
+                HAL_UART_Transmit(&huart2, msg, msg_len, msg_len);
+                CDC_Transmit_FS(msg, msg_len);
 
                 if (dynamic_buf) {
                     std::free(buf);

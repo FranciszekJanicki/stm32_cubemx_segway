@@ -15,8 +15,8 @@ namespace Segway {
 
     using IMU = std::variant<ICM20948_DMP, MPU6050_DMP>;
 
-    std::float32_t get_tilt(IMU& imu) noexcept;
-    std::float32_t get_rotation(IMU& imu) noexcept;
+    std::float32_t get_tilt_angle(IMU& imu) noexcept;
+    std::float32_t get_rotation_angle(IMU& imu) noexcept;
 
 }; // namespace Segway
 

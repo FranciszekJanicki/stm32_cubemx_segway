@@ -17,6 +17,29 @@ namespace {
 
 namespace Segway {
 
+    void test(TestType const test_type) noexcept
+    {
+        switch (test_type) {
+            case TestType::ICM20948:
+                test_icm20948();
+                break;
+            case TestType::MPU6050:
+                test_mpu6050();
+                break;
+            case TestType::A4988_1:
+                test_a4988_1();
+                break;
+            case TestType::A4988_2:
+                test_a4988_2();
+                break;
+            case TestType::SEGWAY:
+                test_segway();
+                break;
+            default:
+                break;
+        }
+    }
+
     void test_icm20948() noexcept
     {
         auto i2c_device = I2CDevice{.i2c_bus = &hi2c1, .dev_address = ICM20948_I2C_ADDRESS};
@@ -144,17 +167,10 @@ namespace Segway {
                                MPU6050_DHPF};
         auto imu = IMU{std::in_place_type<MPU6050_DMP>, std::move(mpu6050)};
 
-        auto regulator = SFR{};
-        auto observer = SFO{};
-        auto config = Config{.Kx = {-7.14F, -1.900F, -0.0007F, -0.0015F, -0.707F, -0.8803F},
-                             .Ki = {1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F},
+        auto config = Config{.regulator = PID{.kP = PID_KP, .kI = PID_KI, .kD = PID_KD, .sat = PID_SAT},
                              .wheel_distance = WHEEL_DIST};
 
-        auto segway = Segway{.imu = std::move(imu),
-                             .regulator = regulator,
-                             .observer = observer,
-                             .config = config,
-                             .wheels = std::move(wheels)};
+        auto segway = Segway{.imu = std::move(imu), .config = config, .wheels = std::move(wheels)};
 
         HAL_TIM_Base_Start_IT(&htim2);
         HAL_TIM_PWM_Start_IT(&htim1, TIM_CHANNEL_1);
@@ -176,7 +192,7 @@ namespace Segway {
             if (nvic_mask.sampling_timer) {
                 nvic_mask.sampling_timer = false;
 
-                segway.run_segway(X_REF, DT);
+                segway.run_segway_pid(PID_Y_REF, DT);
                 HAL_TIM_Base_Start_IT(&htim2);
             }
 
@@ -201,4 +217,5 @@ namespace Segway {
             }
         }
     }
+
 }; // namespace Segway

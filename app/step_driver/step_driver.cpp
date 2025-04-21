@@ -27,9 +27,9 @@ namespace StepDriver {
         auto const counter_period = self.driver.pwm_device_.get_period();
 
         if (self.direction == Direction::BACKWARD) {
-            self.step_count = (self.step_count - 1U) % counter_period;
+            self.step_count = std::max(0LL, self.step_count - 1LL);
         } else if (self.direction == Direction::FORWARD) {
-            self.step_count = (self.step_count + 1U) % counter_period;
+            self.step_count = std::max(0LL, self.step_count + 1LL);
         }
     }
 
@@ -84,9 +84,12 @@ namespace StepDriver {
 
     void StepDriver::set_control_speed(this StepDriver& self, std::float32_t const control_speed) noexcept
     {
-        self.set_direction(speed_to_direction(control_speed));
-        self.set_microstep(speed_to_microstep(control_speed, self.step_change()));
-        self.set_frequency(speed_to_frequency(control_speed, self.step_change()));
+        auto speed = std::clamp(control_speed, -MAX_SPEED, MAX_SPEED);
+        auto step_change = self.step_change();
+
+        self.set_direction(speed_to_direction(speed));
+        self.set_microstep(speed_to_microstep(speed, step_change));
+        self.set_frequency(speed_to_frequency(speed, step_change));
     }
 
     void StepDriver::set_microstep(this StepDriver& self, Microstep const microstep) noexcept
@@ -115,6 +118,12 @@ namespace StepDriver {
     std::float32_t StepDriver::get_speed(this StepDriver& self, std::float32_t const dt) noexcept
     {
         auto const position = self.get_position(dt);
+
+        if (!self.is_initialized) {
+            self.prev_position = position;
+            self.is_initialized = true;
+            return 0.0F;
+        }
 
         return Utility::differentiate(position, std::exchange(self.prev_position, position), dt);
     }

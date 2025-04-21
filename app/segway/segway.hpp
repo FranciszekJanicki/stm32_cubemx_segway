@@ -13,12 +13,13 @@ namespace Segway {
         void
         operator()(this Segway& self, std::array<std::float32_t, 6UL> const& x_ref, std::float32_t const dt) noexcept;
 
-        void
-        run_segway(this Segway& self, std::array<std::float32_t, 6UL> const& x_ref, std::float32_t const dt) noexcept;
+        void run_segway_lqr(this Segway& self,
+                            std::array<std::float32_t, 6UL> const& x_ref,
+                            std::float32_t const dt) noexcept;
+
+        void run_segway_pid(this Segway& self, std::float32_t const tilt_ref, std::float32_t const dt) noexcept;
 
         IMU imu = {};
-        SFR regulator = {};
-        SFO observer = {};
         Config config = {};
         Wheels wheels = {};
     };
