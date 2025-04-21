@@ -26,14 +26,12 @@ namespace Segway {
                                 std::array<std::float32_t, 6UL> const& x_ref,
                                 std::float32_t const dt) noexcept
     {
-        auto& [regulator, wheel_dist] = self.config;
-
-        if (std::holds_alternative<LQR>(regulator)) {
-            auto& [Kx, Ki, prev_x, prev_e, int_e, x, e, u] = std::get<LQR>(regulator);
+        if (std::holds_alternative<LQR>(self.regulator)) {
+            auto& [Kx, Ki, prev_x, prev_e, int_e, x, e, u] = std::get<LQR>(self.regulator);
 
             x[1] = get_tilt_angle(self.imu);
             x[0] = Utility::differentiate(x[1], prev_x[1], dt);
-            x[3] = get_wheel_diff_rotation(self.wheels, dt, wheel_dist);
+            x[3] = get_wheel_diff_rotation(self.wheels, dt, self.wheel_distance);
             x[2] = Utility::differentiate(x[3], prev_x[3], dt);
             x[4] = get_wheel_diff_position(self.wheels, dt);
             x[5] = Utility::differentiate(x[4], prev_x[4], dt);
@@ -76,11 +74,9 @@ namespace Segway {
 
     void Segway::run_segway_pid(this Segway& self, std::float32_t const tilt_ref, std::float32_t const dt) noexcept
     {
-        auto& [regulator, _] = self.config;
-
-        if (std::holds_alternative<PID>(regulator)) {
+        if (std::holds_alternative<PID>(self.regulator)) {
             auto error = tilt_ref - get_tilt_angle(self.imu);
-            auto u = std::get<PID>(regulator).get_sat_u(error, dt);
+            auto u = std::get<PID>(self.regulator).get_u(error, dt);
             set_wheels_speed(self.wheels, u, u, dt);
         }
     }

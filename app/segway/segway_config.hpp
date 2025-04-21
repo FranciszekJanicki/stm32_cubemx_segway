@@ -34,10 +34,7 @@ namespace Segway {
         std::array<std::float32_t, 2UL> u = {};
     };
 
-    struct Config {
-        std::variant<PID, LQR> regulator = {};
-        std::float32_t wheel_distance = {};
-    };
+    using Regulator = std::variant<PID, LQR>;
 
     constexpr auto MS1_1 = GPIO::PA11;
     constexpr auto MS2_1 = GPIO::PA10;
@@ -71,11 +68,11 @@ namespace Segway {
 
     constexpr auto PID_Y_REF = 0.0F32;
     constexpr auto PID_KP = 200.0F32;
-    constexpr auto PID_KI = 400.0F32;
+    constexpr auto PID_KI = 0.0F32;
     constexpr auto PID_KD = 3.0F32;
     constexpr auto PID_SAT = 1000.0F32;
 
-    constexpr auto DT = 1.0F / ICM20948_FREQ;
+    constexpr auto DT = 1.0F32 / ICM20948_FREQ;
 
     constexpr auto STEPS_PER_360 = 200U;
     constexpr auto WHEEL_DIST = 1.0F;

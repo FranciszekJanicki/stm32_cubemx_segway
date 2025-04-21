@@ -165,12 +165,14 @@ namespace Segway {
                                MPU6050_ACCEL_RANGE,
                                MPU6050_DLPF,
                                MPU6050_DHPF};
-        auto imu = IMU{std::in_place_type<MPU6050_DMP>, std::move(mpu6050)};
+        auto imu = MPU6050_DMP{std::move(mpu6050)};
 
-        auto config = Config{.regulator = PID{.kP = PID_KP, .kI = PID_KI, .kD = PID_KD, .sat = PID_SAT},
+        auto regulator = PID{.kP = PID_KP, .kI = PID_KI, .kD = PID_KD, .sat = PID_SAT};
+
+        auto segway = Segway{.imu = std::move(imu),
+                             .regulator = regulator,
+                             .wheels = std::move(wheels),
                              .wheel_distance = WHEEL_DIST};
-
-        auto segway = Segway{.imu = std::move(imu), .config = config, .wheels = std::move(wheels)};
 
         HAL_TIM_Base_Start_IT(&htim2);
         HAL_TIM_PWM_Start_IT(&htim1, TIM_CHANNEL_1);
