@@ -191,17 +191,21 @@ namespace mpu6050 {
         auto packet = this->get_dmp_packet();
 
         return this->initialized_ ? std::optional<Quat3D<std::int16_t>>{std::in_place,
-                                                                        (packet[0] << 8) | packet[1],
-                                                                        (packet[4] << 8) | packet[5],
-                                                                        (packet[8] << 8) | packet[9],
-                                                                        (packet[12] << 8) | packet[13]}
+                                                                        static_cast<std::int16_t>(packet[0] << 8) |
+                                                                            static_cast<std::int16_t>(packet[1]),
+                                                                        static_cast<std::int16_t>(packet[4] << 8) |
+                                                                            static_cast<std::int16_t>(packet[5]),
+                                                                        static_cast<std::int16_t>(packet[8] << 8) |
+                                                                            static_cast<std::int16_t>(packet[9]),
+                                                                        static_cast<std::int16_t>(packet[12] << 8) |
+                                                                            static_cast<std::int16_t>(packet[13])}
                                   : std::optional<Quat3D<std::int16_t>>{std::nullopt};
     }
 
     std::optional<Quat3D<std::float64_t>> MPU6050_DMP::get_quaternion_scaled() const noexcept
     {
         return this->get_quaternion_raw().transform(
-            [this](Quat3D<std::int16_t> const& raw) { return static_cast<Quat3D<std::float64_t>>(raw) / QUAT_SCALE; });
+            [this](Quat3D<std::int16_t> const& raw) { return static_cast<Quat3D<std::float64_t>>(raw) * QUAT_SCALE; });
     }
 
     std::optional<std::float64_t> MPU6050_DMP::get_roll() const noexcept

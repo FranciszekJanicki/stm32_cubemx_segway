@@ -48,6 +48,7 @@ namespace step_driver {
     private:
         static constexpr auto MAX_SPEED = 1000.0F64;
         static constexpr auto MIN_SPEED = 1.0F64;
+        static constexpr auto MAX_FREQ_CHANGE = 50U;
 
         std::float64_t step_change(this StepDriver& self) noexcept;
 
@@ -56,8 +57,8 @@ namespace step_driver {
         void set_direction(this StepDriver& self, Direction const direction) noexcept;
         void set_frequency(this StepDriver& self, std::uint16_t const frequency) noexcept;
 
-        bool should_start(this StepDriver& self, std::float32_t const control_speed) noexcept;
-        bool should_stop(this StepDriver& self, std::float32_t const control_speed) noexcept;
+        bool should_start(this StepDriver& self, std::float64_t const control_speed) noexcept;
+        bool should_stop(this StepDriver& self, std::float64_t const control_speed) noexcept;
     };
 
 }; // namespace step_driver

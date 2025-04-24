@@ -79,16 +79,16 @@ namespace segway {
             LOG(TAG, "Measured ilt: %f", tilt);
             auto error_tilt = tilt_ref - tilt;
             LOG(TAG, "Error tilt: %f", error_tilt);
-            auto control_speed = regulator.get_sat_u(error_tilt, dt);
-            LOG(TAG, "Control speed: %f", control_speed);
+            auto wheel_speed = regulator.get_sat_u(error_tilt, dt);
+            LOG(TAG, "Wheel speed: %f", wheel_speed);
 
-            // if (self.should_start(tilt, control_speed)) {
-            //     self.start();
-            // } else if (self.should_stop(tilt, control_speed)) {
-            //     self.stop();
-            // }
+            if (self.should_start(tilt, wheel_speed)) {
+                self.start();
+            } else if (self.should_stop(tilt, wheel_speed)) {
+                self.stop();
+            }
 
-            set_wheels_speed(self.wheels, control_speed, -control_speed, dt);
+            set_wheels_speed(self.wheels, wheel_speed, -wheel_speed, dt);
         }
     }
 

@@ -20,7 +20,6 @@
 #include "main.h"
 #include "i2c.h"
 #include "tim.h"
-#include "usart.h"
 #include "usb_device.h"
 #include "gpio.h"
 

@@ -1,12 +1,12 @@
 #ifndef LOG_HPP
 #define LOG_HPP
 
-#include "usart.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 namespace segway {
@@ -48,7 +48,7 @@ namespace segway {
                 auto msg_len = std::strlen(buf);
                 auto msg = reinterpret_cast<std::uint8_t*>(buf);
 
-                HAL_UART_Transmit(&huart2, msg, msg_len, msg_len);
+                // HAL_UART_Transmit(&huart2, msg, msg_len, msg_len);
                 CDC_Transmit_FS(msg, msg_len);
 
                 if (dynamic_buf) {

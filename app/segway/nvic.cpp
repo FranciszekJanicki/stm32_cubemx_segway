@@ -10,6 +10,12 @@ extern "C" {
 
 using namespace segway;
 
+namespace {
+
+    constexpr auto TAG = "NVIC";
+
+};
+
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
 {
     if (htim->Instance == TIM1) {
