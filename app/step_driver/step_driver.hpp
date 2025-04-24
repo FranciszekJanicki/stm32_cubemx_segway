@@ -4,11 +4,10 @@
 #include "a4988.hpp"
 #include "pid.hpp"
 
-namespace StepDriver {
+namespace step_driver {
 
-    using namespace A4988;
-    using namespace Utility;
-    using A4988 = ::A4988::A4988;
+    using namespace a4988;
+    using namespace utility;
 
     Microstep speed_to_microstep(std::float64_t const speed, std::float64_t const step_change) noexcept;
     Direction speed_to_direction(std::float64_t const speed) noexcept;
@@ -56,8 +55,11 @@ namespace StepDriver {
         void set_microstep(this StepDriver& self, Microstep const microstep) noexcept;
         void set_direction(this StepDriver& self, Direction const direction) noexcept;
         void set_frequency(this StepDriver& self, std::uint16_t const frequency) noexcept;
+
+        bool should_start(this StepDriver& self, std::float32_t const control_speed) noexcept;
+        bool should_stop(this StepDriver& self, std::float32_t const control_speed) noexcept;
     };
 
-}; // namespace StepDriver
+}; // namespace step_driver
 
 #endif // STEP_DRIVER_HPP

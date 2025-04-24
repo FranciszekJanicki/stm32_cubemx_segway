@@ -23,5 +23,5 @@ int main()
 
     HAL_Delay(2000);
 
-    Segway::test(Segway::TestType::SEGWAY);
+    segway::test(segway::TestType::SEGWAY);
 }

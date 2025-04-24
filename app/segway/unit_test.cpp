@@ -12,29 +12,25 @@
 namespace {
 
     constexpr auto TAG = "Unit test";
+    constexpr auto USE_GPIO_EXTI = false;
 
-};
+}; // namespace
 
-namespace Segway {
+namespace segway {
 
     void test(TestType const test_type) noexcept
     {
         switch (test_type) {
             case TestType::ICM20948:
                 test_icm20948();
-                break;
             case TestType::MPU6050:
                 test_mpu6050();
-                break;
             case TestType::A4988_1:
                 test_a4988_1();
-                break;
             case TestType::A4988_2:
                 test_a4988_2();
-                break;
             case TestType::SEGWAY:
                 test_segway();
-                break;
             default:
                 break;
         }
@@ -47,19 +43,31 @@ namespace Segway {
 
         auto icm20948_dmp = ICM20948_DMP{std::move(i2c_device)};
 
+        HAL_TIM_Base_Start_IT(&htim2);
+
         while (1) {
-            if (nvic_mask.data_ready) {
-                nvic_mask.data_ready = false;
-                HAL_TIM_Base_Start(&htim4);
-            }
+            if (USE_GPIO_EXTI) {
+                if (nvic_mask.data_ready) {
+                    nvic_mask.data_ready = false;
+                    HAL_TIM_Base_Start(&htim4);
+                }
 
-            if (nvic_mask.debounce_timer) {
-                nvic_mask.debounce_timer = false;
-                HAL_TIM_Base_Stop_IT(&htim4);
+                if (nvic_mask.debounce_timer) {
+                    nvic_mask.debounce_timer = false;
+                    HAL_TIM_Base_Stop_IT(&htim4);
 
-                if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6)) {
+                    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6)) {
+                        auto const& [r, p, y] = icm20948_dmp.get_roll_pitch_yaw().value();
+                        LOG(TAG, "r: %f, p: %f, y: %f", r, p, y);
+                    }
+                }
+            } else {
+                if (nvic_mask.sampling_timer) {
+                    nvic_mask.sampling_timer = false;
+
                     auto const& [r, p, y] = icm20948_dmp.get_roll_pitch_yaw().value();
                     LOG(TAG, "r: %f, p: %f, y: %f", r, p, y);
+                    HAL_TIM_Base_Start_IT(&htim2);
                 }
             }
         }
@@ -79,19 +87,33 @@ namespace Segway {
 
         auto mpu6050_dmp = MPU6050_DMP{std::move(mpu6050)};
 
+        HAL_TIM_Base_Start_IT(&htim2);
+
         while (1) {
-            if (nvic_mask.data_ready) {
-                nvic_mask.data_ready = false;
-                HAL_TIM_Base_Start(&htim4);
-            }
+            if (USE_GPIO_EXTI) {
+                if (nvic_mask.data_ready) {
+                    nvic_mask.data_ready = false;
+                    HAL_TIM_Base_Start(&htim4);
+                }
 
-            if (nvic_mask.debounce_timer) {
-                nvic_mask.debounce_timer = false;
-                HAL_TIM_Base_Stop_IT(&htim4);
+                if (nvic_mask.debounce_timer) {
+                    nvic_mask.debounce_timer = false;
+                    HAL_TIM_Base_Stop_IT(&htim4);
 
-                if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6)) {
-                    auto const& [r, p, y] = mpu6050_dmp.get_roll_pitch_yaw().value();
-                    LOG(TAG, "roll: %f, pitch: %f, yaw: %f", r, p, y);
+                    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6)) {
+                        auto const& [r, p, y] = mpu6050_dmp.get_roll_pitch_yaw().value();
+                        LOG(TAG, "roll: %f, pitch: %f, yaw: %f", r, p, y);
+                    }
+                }
+            } else {
+                if (nvic_mask.sampling_timer) {
+                    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6)) {
+                        nvic_mask.sampling_timer = false;
+
+                        auto const& [r, p, y] = mpu6050_dmp.get_roll_pitch_yaw().value();
+                        LOG(TAG, "roll: %f, pitch: %f, yaw: %f", r, p, y);
+                        HAL_TIM_Base_Start_IT(&htim2);
+                    }
                 }
             }
         }
@@ -169,8 +191,12 @@ namespace Segway {
         auto regulator = PID{.kP = PID_KP, .kI = PID_KI, .kD = PID_KD, .tD = PID_TD, .kC = PID_KC, .sat = PID_SAT};
 
         auto config = Config{.wheel_distance = WHEEL_DIST,
-                             .fault_angle_enter = FAULT_ANGLE_ENTER,
-                             .fault_angle_exit = FAULT_ANGLE_EXIT};
+                             .tilt_fault_thresh_low = TILT_FAULT_THRESH_LOW,
+                             .tilt_fault_thresh_high = TILT_FAULT_THRESH_HIGH,
+                             .imu_fault_thresh_low = IMU_FAULT_THRESH_LOW,
+                             .imu_fault_thresh_high = IMU_FAULT_THRESH_HIGH,
+                             .wheel_fault_thresh_low = WHEEL_FAULT_THRESH_LOW,
+                             .wheel_fault_thresh_high = WHEEL_FAULT_THRESH_HIGH};
 
         auto segway =
             Segway{.imu = std::move(imu), .wheels = std::move(wheels), .regulator = regulator, .config = config};
@@ -180,23 +206,27 @@ namespace Segway {
         HAL_TIM_PWM_Start_IT(&htim3, TIM_CHANNEL_1);
 
         while (1) {
-            // if (nvic_mask.data_ready) {
-            //     nvic_mask.data_ready = false;
-            //     HAL_TIM_Base_Start_IT(&htim4);
-            // }
+            if (USE_GPIO_EXTI) {
+                if (nvic_mask.data_ready) {
+                    nvic_mask.data_ready = false;
+                    HAL_TIM_Base_Start_IT(&htim4);
+                }
 
-            // if (nvic_mask.debounce_timer) {
-            //     nvic_mask.debounce_timer = false;
-            //     HAL_TIM_Base_Stop_IT(&htim4);
+                if (nvic_mask.debounce_timer) {
+                    nvic_mask.debounce_timer = false;
+                    HAL_TIM_Base_Stop_IT(&htim4);
 
-            //     segway.run_segway(X_REF, DT);
-            // }
+                    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6)) {
+                        segway.run_segway_pid(PID_Y_REF, DT);
+                    }
+                }
+            } else {
+                if (nvic_mask.sampling_timer) {
+                    nvic_mask.sampling_timer = false;
 
-            if (nvic_mask.sampling_timer) {
-                nvic_mask.sampling_timer = false;
-
-                segway.run_segway_pid(PID_Y_REF, DT);
-                HAL_TIM_Base_Start_IT(&htim2);
+                    segway.run_segway_pid(PID_Y_REF, DT);
+                    HAL_TIM_Base_Start_IT(&htim2);
+                }
             }
 
             if (nvic_mask.motor1_pwm_pulse) {
@@ -221,4 +251,4 @@ namespace Segway {
         }
     }
 
-}; // namespace Segway
+}; // namespace segway

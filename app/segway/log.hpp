@@ -9,7 +9,7 @@
 #include <cstdio>
 #include <cstring>
 
-namespace Segway {
+namespace segway {
 
     inline void LOG(char const* tag, char const* fmt, auto const... args) noexcept
     {
@@ -58,6 +58,6 @@ namespace Segway {
         }
     }
 
-}; // namespace Segway
+}; // namespace segway
 
 #endif // LOG_HPP

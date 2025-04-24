@@ -7,7 +7,7 @@
 #include <array>
 #include <cstdint>
 
-namespace MPU6050 {
+namespace mpu6050 {
 
     struct MPU6050_DMP {
     public:
@@ -99,6 +99,6 @@ namespace MPU6050 {
         MPU6050 mpu6050_{};
     };
 
-}; // namespace MPU6050
+}; // namespace mpu6050
 
 #endif // MPU6050_DMP_HPP

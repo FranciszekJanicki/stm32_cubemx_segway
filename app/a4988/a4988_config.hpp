@@ -4,9 +4,9 @@
 #include "gpio.hpp"
 #include "pwm_device.hpp"
 
-namespace A4988 {
+namespace a4988 {
 
-    using namespace STM32_Utility;
+    using namespace stm32_utility;
 
     enum struct Microstep : std::uint8_t {
         FULL,
@@ -41,6 +41,6 @@ namespace A4988 {
         }
     }
 
-} // namespace A4988
+} // namespace a4988
 
 #endif // A4988_CONFIG_HPP

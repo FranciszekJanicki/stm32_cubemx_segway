@@ -5,7 +5,9 @@
 
 #include <cstdint>
 
-namespace Segway {
+#define PACKED __attribute__((__packed__))
+
+namespace segway {
 
     struct NVICMask {
         std::uint8_t : 2;
@@ -15,10 +17,12 @@ namespace Segway {
         std::uint8_t motor2_pwm_pulse : 1;
         std::uint8_t i2c_error : 1;
         std::uint8_t sampling_timer : 1;
-    } __attribute__((__packed__));
+    } PACKED;
 
     inline auto volatile nvic_mask = NVICMask{};
 
-}; // namespace Segway
+}; // namespace segway
+
+#undef PACKED
 
 #endif // NVIC_HPP

@@ -7,7 +7,7 @@ namespace {
 
 };
 
-namespace Segway {
+namespace segway {
 
     void WheelDriver::start(this WheelDriver& self) noexcept
     {
@@ -21,7 +21,7 @@ namespace Segway {
 
     std::float64_t WheelDriver::get_wheel_position(this WheelDriver& self, std::float64_t const dt) noexcept
     {
-        return self.driver.get_position(dt) / self.wheel_radius;
+        return self.driver.get_position(dt) * self.wheel_radius;
     }
 
     void WheelDriver::set_wheel_position(this WheelDriver& self,
@@ -29,12 +29,12 @@ namespace Segway {
                                          std::float64_t const dt) noexcept
     {
         assert(self.wheel_radius);
-        self.driver.set_position(wheel_position * self.wheel_radius, dt);
+        self.driver.set_position(wheel_position / self.wheel_radius, dt);
     }
 
     std::float64_t WheelDriver::get_wheel_speed(this WheelDriver& self, std::float64_t const dt) noexcept
     {
-        return self.driver.get_speed(dt) / self.wheel_radius;
+        return self.driver.get_speed(dt) * self.wheel_radius;
     }
 
     void WheelDriver::set_wheel_speed(this WheelDriver& self,
@@ -42,7 +42,7 @@ namespace Segway {
                                       std::float64_t const dt) noexcept
     {
         assert(self.wheel_radius);
-        self.driver.set_speed(wheel_speed * self.wheel_radius, dt);
+        self.driver.set_speed(wheel_speed / self.wheel_radius, dt);
     }
 
     char const* wheel_type_to_string(WheelType const wheel_type) noexcept
@@ -57,4 +57,4 @@ namespace Segway {
         }
     }
 
-}; // namespace Segway
+}; // namespace segway

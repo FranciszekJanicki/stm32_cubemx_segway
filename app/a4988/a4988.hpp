@@ -3,7 +3,7 @@
 
 #include "a4988_config.hpp"
 
-namespace A4988 {
+namespace a4988 {
 
     struct A4988 {
     public:
@@ -61,6 +61,6 @@ namespace A4988 {
         GPIO pin_enable_{};
     };
 
-}; // namespace A4988
+}; // namespace a4988
 
 #endif // A4988_HPP

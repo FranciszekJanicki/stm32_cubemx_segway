@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-namespace Segway {
+namespace segway {
 
     enum struct TestType : std::uint8_t {
         ICM20948,
@@ -20,6 +20,6 @@ namespace Segway {
     void test_a4988_2() noexcept;
     void test_segway() noexcept;
 
-}; // namespace Segway
+}; // namespace segway
 
 #endif // UNIT_TEST_HPP

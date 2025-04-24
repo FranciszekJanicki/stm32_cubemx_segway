@@ -4,7 +4,7 @@
 #include <array>
 #include <cstdint>
 
-namespace MPU6050 {
+namespace mpu6050 {
 
     inline auto dmp_img = std::array<std::uint8_t, 1929UL>{/* bank # 0 */
                                                            0xFB,
@@ -1943,6 +1943,6 @@ namespace MPU6050 {
                                                            0xD8,
                                                            0xFF};
 
-}; // namespace MPU6050
+}; // namespace mpu6050
 
 #endif // MPU6050_DMP_IMG_HPP

@@ -1,6 +1,6 @@
 #include "step_driver.hpp"
 
-namespace StepDriver {
+namespace step_driver {
 
     Microstep speed_to_microstep(std::float64_t const speed, std::float64_t const step_change) noexcept
     {
@@ -24,14 +24,18 @@ namespace StepDriver {
 
     void StepDriver::start(this StepDriver& self) noexcept
     {
-        self.driver.start();
-        self.is_stopped = false;
+        if (self.is_stopped) {
+            self.driver.start();
+            self.is_stopped = false;
+        }
     }
 
     void StepDriver::stop(this StepDriver& self) noexcept
     {
-        self.driver.stop();
-        self.is_stopped = true;
+        if (!self.is_stopped) {
+            self.driver.stop();
+            self.is_stopped = true;
+        }
     }
 
     void StepDriver::update_step_count(this StepDriver& self) noexcept
@@ -48,7 +52,7 @@ namespace StepDriver {
     void
     StepDriver::set_position(this StepDriver& self, std::float64_t const position, std::float64_t const dt) noexcept
     {
-        auto const speed = Utility::differentiate(position, std::exchange(self.prev_position, position), dt);
+        auto const speed = utility::differentiate(position, std::exchange(self.prev_position, position), dt);
 
         self.set_speed(speed, dt);
     }
@@ -59,20 +63,20 @@ namespace StepDriver {
         auto control_speed = speed;
         // self.regulator(error_speed, dt);
 
-        if (std::abs(control_speed) < MIN_SPEED) {
-            //  self.stop();
-            //  self.set_control_speed(0.0F64);
-        } else {
+        if (self.should_stop(control_speed)) {
+            self.stop();
+        } else if (self.should_start(control_speed)) {
             self.start();
-            self.set_control_speed(control_speed);
         }
+
+        self.set_control_speed(control_speed);
     }
 
     void StepDriver::set_acceleration(this StepDriver& self,
                                       std::float64_t const acceleration,
                                       std::float64_t const dt) noexcept
     {
-        auto const speed = Utility::integrate(acceleration, std::exchange(self.prev_acceleration, acceleration), dt);
+        auto const speed = utility::integrate(acceleration, std::exchange(self.prev_acceleration, acceleration), dt);
 
         self.set_speed(speed, dt);
     }
@@ -125,13 +129,24 @@ namespace StepDriver {
             self.is_initialized = true;
         }
 
-        return Utility::differentiate(position, std::exchange(self.prev_position, position), dt);
+        return utility::differentiate(position, std::exchange(self.prev_position, position), dt);
     }
 
     std::float64_t StepDriver::get_acceleration(this StepDriver& self, std::float64_t const dt) noexcept
     {
         auto const speed = self.get_speed(dt);
 
-        return Utility::differentiate(speed, std::exchange(self.prev_speed, speed), dt);
+        return utility::differentiate(speed, std::exchange(self.prev_speed, speed), dt);
     }
-}; // namespace StepDriver
+
+    bool StepDriver::should_start(this StepDriver& self, std::float32_t const control_speed) noexcept
+    {
+        return (std::abs(control_speed) > MIN_SPEED) && self.is_stopped;
+    }
+
+    bool StepDriver::should_stop(this StepDriver& self, std::float32_t const control_speed) noexcept
+    {
+        return (std::abs(control_speed) < MIN_SPEED) && !self.is_stopped;
+    }
+
+}; // namespace step_driver

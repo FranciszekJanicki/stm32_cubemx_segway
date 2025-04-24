@@ -3,7 +3,7 @@
 #include "mpu6050_dmp_img.hpp"
 #include "utility.hpp"
 
-namespace MPU6050 {
+namespace mpu6050 {
 
     MPU6050_DMP::MPU6050_DMP(MPU6050&& mpu6050) noexcept : mpu6050_{std::forward<MPU6050>(mpu6050)}
     {
@@ -206,22 +206,22 @@ namespace MPU6050 {
 
     std::optional<std::float64_t> MPU6050_DMP::get_roll() const noexcept
     {
-        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_roll<std::float64_t>);
+        return this->get_quaternion_scaled().transform(&utility::quaternion_to_roll<std::float64_t>);
     }
 
     std::optional<std::float64_t> MPU6050_DMP::get_pitch() const noexcept
     {
-        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_pitch<std::float64_t>);
+        return this->get_quaternion_scaled().transform(&utility::quaternion_to_pitch<std::float64_t>);
     }
 
     std::optional<std::float64_t> MPU6050_DMP::get_yaw() const noexcept
     {
-        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_yaw<std::float64_t>);
+        return this->get_quaternion_scaled().transform(&utility::quaternion_to_yaw<std::float64_t>);
     }
 
     std::optional<Vec3D<std::float64_t>> MPU6050_DMP::get_roll_pitch_yaw() const noexcept
     {
-        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_roll_pitch_yaw<std::float64_t>);
+        return this->get_quaternion_scaled().transform(&utility::quaternion_to_roll_pitch_yaw<std::float64_t>);
     }
 
     void MPU6050_DMP::set_int_pll_ready_enabled(bool const enabled) const noexcept
@@ -413,4 +413,4 @@ namespace MPU6050 {
     {
         this->mpu6050_.write_byte(std::to_underlying(RA::DMP_CFG_2), config);
     }
-}; // namespace MPU6050
+}; // namespace mpu6050

@@ -7,15 +7,15 @@
 #include "vector3d.hpp"
 #include <cstdint>
 
-namespace MPU6050 {
+namespace mpu6050 {
 
-    using I2CDevice = STM32_Utility::I2CDevice;
-
-    template <typename T>
-    using Vec3D = Utility::Vector3D<T>;
+    using I2CDevice = stm32_utility::I2CDevice;
 
     template <typename T>
-    using Quat3D = Utility::Quaternion3D<T>;
+    using Vec3D = utility::Vector3D<T>;
+
+    template <typename T>
+    using Quat3D = utility::Quaternion3D<T>;
 
     enum struct DevAddress : std::uint16_t {
         AD0_LOW = 0x68,
@@ -247,6 +247,6 @@ namespace MPU6050 {
         }
     }
 
-}; // namespace MPU6050
+}; // namespace mpu6050
 
 #endif // MPU6050_CONFIG_HPP

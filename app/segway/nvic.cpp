@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-using namespace Segway;
+using namespace segway;
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
 {

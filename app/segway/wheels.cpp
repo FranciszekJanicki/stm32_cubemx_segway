@@ -7,10 +7,12 @@ namespace {
 
 };
 
-namespace Segway {
+namespace segway {
 
     void start_wheels(Wheels& wheels) noexcept
     {
+        LOG(TAG, "Starting wheels!");
+
         for (auto& wheel : wheels) {
             wheel.driver.start();
         }
@@ -18,6 +20,8 @@ namespace Segway {
 
     void stop_wheels(Wheels& wheels) noexcept
     {
+        LOG(TAG, "Stopping wheels!");
+
         for (auto& wheel : wheels) {
             wheel.driver.stop();
         }
@@ -53,8 +57,12 @@ namespace Segway {
         auto& right_wheel_driver = get_wheel_driver(wheels, WheelType::RIGHT);
         right_wheel_driver.set_wheel_speed(right_wheel_speed, dt);
 
-        LOG(TAG, "Updating right wheel speed to: %f!", right_wheel_speed);
-        LOG(TAG, "Updating left wheel speed to: %f!", left_wheel_speed);
+        if (std::abs(left_wheel_speed) == std::abs(right_wheel_speed)) {
+            LOG(TAG, "Updating wheels speed to: %f!", left_wheel_speed);
+        } else {
+            LOG(TAG, "Updating right wheel speed to: %f!", right_wheel_speed);
+            LOG(TAG, "Updating left wheel speed to: %f!", left_wheel_speed);
+        }
     }
 
     std::float64_t get_wheel_speed(Wheels& wheels, WheelType const wheel_type, std::float64_t const dt) noexcept
@@ -107,8 +115,8 @@ namespace Segway {
         auto& left_wheel_driver = get_wheel_driver(wheels, WheelType::LEFT);
         auto& right_wheel_driver = get_wheel_driver(wheels, WheelType::RIGHT);
 
-        auto wheel_diff_rotation = (left_wheel_driver.get_wheel_position(dt) / left_wheel_driver.wheel_radius -
-                                    right_wheel_driver.get_wheel_position(dt) / right_wheel_driver.wheel_radius) /
+        auto wheel_diff_rotation = (left_wheel_driver.get_wheel_position(dt) * left_wheel_driver.wheel_radius -
+                                    right_wheel_driver.get_wheel_position(dt) * right_wheel_driver.wheel_radius) /
                                    wheel_distance;
 
         LOG(TAG, "Measured wheel diff rotation of: %f!", wheel_diff_rotation);
@@ -134,4 +142,4 @@ namespace Segway {
         return wheel->driver;
     }
 
-}; // namespace Segway
+}; // namespace segway

@@ -4,10 +4,9 @@
 #include "step_driver.hpp"
 #include <cstdint>
 
-namespace Segway {
+namespace segway {
 
-    using A4988 = ::A4988::A4988;
-    using Driver = StepDriver::StepDriver;
+    using Driver = step_driver::StepDriver;
 
     enum struct WheelType : std::uint8_t {
         LEFT,
@@ -41,6 +40,6 @@ namespace Segway {
         WheelDriver driver = {};
     };
 
-}; // namespace Segway
+}; // namespace segway
 
 #endif // WHEEL_HPP

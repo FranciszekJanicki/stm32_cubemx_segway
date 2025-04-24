@@ -1,6 +1,6 @@
 #include "icm20948_dmp.hpp"
 
-namespace ICM20948 {
+namespace icm20948 {
 
     ICM_20948_Status_e write_bytes(std::uint8_t const reg_address,
                                    std::uint8_t* const bytes,
@@ -43,22 +43,22 @@ namespace ICM20948 {
 
     std::optional<Vec3D<std::float64_t>> ICM20948_DMP::get_roll_pitch_yaw() noexcept
     {
-        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_roll_pitch_yaw<std::float64_t>);
+        return this->get_quaternion_scaled().transform(&utility::quaternion_to_roll_pitch_yaw<std::float64_t>);
     }
 
     std::optional<std::float64_t> ICM20948_DMP::get_roll() noexcept
     {
-        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_roll<std::float64_t>);
+        return this->get_quaternion_scaled().transform(&utility::quaternion_to_roll<std::float64_t>);
     }
 
     std::optional<std::float64_t> ICM20948_DMP::get_pitch() noexcept
     {
-        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_pitch<std::float64_t>);
+        return this->get_quaternion_scaled().transform(&utility::quaternion_to_pitch<std::float64_t>);
     }
 
     std::optional<std::float64_t> ICM20948_DMP::get_yaw() noexcept
     {
-        return this->get_quaternion_scaled().transform(&Utility::quaternion_to_yaw<std::float64_t>);
+        return this->get_quaternion_scaled().transform(&utility::quaternion_to_yaw<std::float64_t>);
     }
 
     std::optional<Quat3D<std::float64_t>> ICM20948_DMP::get_quaternion_scaled() noexcept
@@ -289,4 +289,4 @@ namespace ICM20948 {
         this->initialized_ = false;
     }
 
-} // namespace ICM20948
+} // namespace icm20948

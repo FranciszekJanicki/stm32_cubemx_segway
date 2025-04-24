@@ -3,7 +3,7 @@
 #include <cmath>
 #include <utility>
 
-namespace MPU6050 {
+namespace mpu6050 {
 
     MPU6050::MPU6050(I2CDevice&& i2c_device,
                      std::uint32_t const sampling_rate,
@@ -81,22 +81,22 @@ namespace MPU6050 {
 
     std::optional<Vec3D<std::float64_t>> MPU6050::get_roll_pitch_yaw() const noexcept
     {
-        return this->get_acceleration_scaled().transform(&Utility::accel_to_roll_pitch_yaw<std::float64_t>);
+        return this->get_acceleration_scaled().transform(&utility::accel_to_roll_pitch_yaw<std::float64_t>);
     }
 
     std::optional<std::float64_t> MPU6050::get_roll() const noexcept
     {
-        return this->get_acceleration_scaled().transform(&Utility::accel_to_roll<std::float64_t>);
+        return this->get_acceleration_scaled().transform(&utility::accel_to_roll<std::float64_t>);
     }
 
     std::optional<std::float64_t> MPU6050::get_pitch() const noexcept
     {
-        return this->get_acceleration_scaled().transform(&Utility::accel_to_pitch<std::float64_t>);
+        return this->get_acceleration_scaled().transform(&utility::accel_to_pitch<std::float64_t>);
     }
 
     std::optional<std::float64_t> MPU6050::get_yaw() const noexcept
     {
-        return this->get_acceleration_scaled().transform(&Utility::accel_to_yaw<std::float64_t>);
+        return this->get_acceleration_scaled().transform(&utility::accel_to_yaw<std::float64_t>);
     }
 
     std::uint8_t MPU6050::read_byte(std::uint8_t const reg_address) const noexcept
@@ -111,20 +111,20 @@ namespace MPU6050 {
 
     bool MPU6050::read_bit(std::uint8_t const reg_address, std::uint8_t const position) const noexcept
     {
-        return Utility::read_bit(this->read_byte(reg_address), position);
+        return utility::read_bit(this->read_byte(reg_address), position);
     }
 
     std::uint8_t MPU6050::read_bits(std::uint8_t const reg_address,
                                     std::uint8_t const position,
                                     std::uint8_t const size) const noexcept
     {
-        return Utility::read_bits(this->read_byte(reg_address), size, position);
+        return utility::read_bits(this->read_byte(reg_address), size, position);
     }
 
     void MPU6050::write_bit(std::uint8_t const reg_address, bool const bit, std::uint8_t const position) const noexcept
     {
         auto byte = this->read_byte(reg_address);
-        Utility::write_bit(byte, bit, position);
+        utility::write_bit(byte, bit, position);
         this->write_byte(reg_address, byte);
     }
 
@@ -134,7 +134,7 @@ namespace MPU6050 {
                              std::uint8_t const size) const noexcept
     {
         auto byte = this->read_byte(reg_address);
-        Utility::write_bits(byte, bits, size, position);
+        utility::write_bits(byte, bits, size, position);
         this->write_byte(reg_address, byte);
     }
 
@@ -996,4 +996,4 @@ namespace MPU6050 {
         return this->read_byte(std::to_underlying(RA::WHO_AM_I));
     }
 
-}; // namespace MPU6050
+}; // namespace mpu6050

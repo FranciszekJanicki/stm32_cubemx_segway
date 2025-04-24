@@ -14,13 +14,13 @@
 #include "step_driver.hpp"
 #include "wheel.hpp"
 
-namespace Segway {
+namespace segway {
 
-    using namespace MPU6050;
-    using namespace ICM20948;
-    using namespace StepDriver;
+    using namespace mpu6050;
+    using namespace icm20948;
+    using namespace step_driver;
 
-    using PID = ::Utility::PID<std::float64_t>;
+    using PID = ::utility::PID<std::float64_t>;
 
     struct LQR {
         std::array<std::float64_t, 6UL> Kx = {};
@@ -38,10 +38,12 @@ namespace Segway {
 
     struct Config {
         std::float64_t wheel_distance = {};
-
-        std::float64_t fault_angle_enter = {};
-        std::float64_t fault_angle_exit = {};
-        bool has_fault_occured = {};
+        std::float64_t tilt_fault_thresh_low = {};
+        std::float64_t tilt_fault_thresh_high = {};
+        std::float64_t imu_fault_thresh_low = {};
+        std::float64_t imu_fault_thresh_high = {};
+        std::float64_t wheel_fault_thresh_low = {};
+        std::float64_t wheel_fault_thresh_high = {};
     };
 
     constexpr auto MS1_1 = GPIO::PA11;
@@ -74,22 +76,26 @@ namespace Segway {
     constexpr auto LQR_KI = std::array{1.0F64, 0.0F64, 0.0F64, 0.0F64, 0.0F64, 0.0F64};
     constexpr auto LQR_KX = std::array{-7.14F64, -1.900F64, -0.0007F64, -0.0015F64, -0.707F64, -0.8803F64};
 
-    constexpr auto PID_Y_REF = 0.0F64;
+    constexpr auto PID_Y_REF = 4.5F64;
     constexpr auto PID_KP = 5.0F64;
     constexpr auto PID_KI = 0.0F64;
     constexpr auto PID_KD = 0.0F64;
-    constexpr auto PID_KC = 0.0F64;
+    constexpr auto PID_KC = 1.0F64;
     constexpr auto PID_TD = 0.0001F64;
-    constexpr auto PID_SAT = 1000.0F64;
+    constexpr auto PID_SAT = 1200.0F64;
 
     constexpr auto DT = 1.0F64 / ICM20948_FREQ;
 
     constexpr auto STEPS_PER_360 = 200U;
-    constexpr auto WHEEL_DIST = 1.0F64;
-    constexpr auto WHEEL_RADIUS = 1.0F64;
-    constexpr auto FAULT_ANGLE_ENTER = 45.0F64;
-    constexpr auto FAULT_ANGLE_EXIT = 30.0F64;
+    constexpr auto WHEEL_DIST = 10.0F64;
+    constexpr auto WHEEL_RADIUS = 4.0F64;
+    constexpr auto TILT_FAULT_THRESH_LOW = 90.0F64;
+    constexpr auto TILT_FAULT_THRESH_HIGH = 180.0F64;
+    constexpr auto IMU_FAULT_THRESH_LOW = 160.0F64;
+    constexpr auto IMU_FAULT_THRESH_HIGH = 180.0F64;
+    constexpr auto WHEEL_FAULT_THRESH_HIGH = 1200.0;
+    constexpr auto WHEEL_FAULT_THRESH_LOW = 800.0;
 
-}; // namespace Segway
+}; // namespace segway
 
 #endif // SEGWAY_CONFIG_HPP

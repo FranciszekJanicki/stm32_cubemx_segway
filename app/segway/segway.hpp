@@ -5,7 +5,7 @@
 #include "segway_config.hpp"
 #include "wheels.hpp"
 
-namespace Segway {
+namespace segway {
 
     struct Segway {
         void update_step_count(this Segway& self, WheelType const wheel_type) noexcept;
@@ -23,11 +23,16 @@ namespace Segway {
         Wheels wheels = {};
         Regulator regulator = {};
         Config config = {};
+        bool is_stopped = {};
 
     private:
-        void check_fault(this Segway& self, std::float64_t const tilt) noexcept;
+        void start(this Segway& self) noexcept;
+        void stop(this Segway& self) noexcept;
+
+        bool should_start(this Segway& self, std::float64_t const tilt, std::float64_t const wheel_speed) noexcept;
+        bool should_stop(this Segway& self, std::float64_t const tilt, std::float64_t const wheel_speed) noexcept;
     };
 
-}; // namespace Segway
+}; // namespace segway
 
 #endif // SEGWAY_HPP

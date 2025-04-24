@@ -7,17 +7,18 @@
 #include <stdfloat>
 #include <variant>
 
-namespace Segway {
+namespace segway {
 
-    using namespace ICM20948;
-    using namespace MPU6050;
-    using MPU6050 = ::MPU6050::MPU6050;
+    using namespace icm20948;
+    using namespace mpu6050;
 
     using IMU = std::variant<ICM20948_DMP, MPU6050_DMP>;
 
     std::float64_t get_tilt_angle(IMU& imu) noexcept;
     std::float64_t get_rotation_angle(IMU& imu) noexcept;
 
-}; // namespace Segway
+    bool bus_scan(IMU& imu) noexcept;
+
+}; // namespace segway
 
 #endif // IMU_HPP

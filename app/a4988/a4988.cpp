@@ -1,7 +1,7 @@
 #include "a4988.hpp"
 #include "a4988_config.hpp"
 
-namespace A4988 {
+namespace a4988 {
 
     A4988::A4988(PWMDevice&& pwm_device,
                  GPIO const pin_ms1,
@@ -165,4 +165,4 @@ namespace A4988 {
         self.stop();
     }
 
-}; // namespace A4988
+}; // namespace a4988

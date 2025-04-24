@@ -4,7 +4,7 @@
 #include "wheel.hpp"
 #include <array>
 
-namespace Segway {
+namespace segway {
 
     using Wheels = std::array<Wheel, 2UL>;
 
@@ -44,6 +44,6 @@ namespace Segway {
 
     WheelDriver& get_wheel_driver(Wheels& wheels, WheelType const wheel_type) noexcept;
 
-}; // namespace Segway
+}; // namespace segway
 
 #endif // WHEELS_HPP

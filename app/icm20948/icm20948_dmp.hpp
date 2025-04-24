@@ -13,15 +13,15 @@
 #include "vector3d.hpp"
 #include <optional>
 
-namespace ICM20948 {
+namespace icm20948 {
 
     template <typename T>
-    using Vec3D = Utility::Vector3D<T>;
+    using Vec3D = utility::Vector3D<T>;
 
     template <typename T>
-    using Quat3D = Utility::Quaternion3D<T>;
+    using Quat3D = utility::Quaternion3D<T>;
 
-    using I2CDevice = STM32_Utility::I2CDevice;
+    using I2CDevice = stm32_utility::I2CDevice;
 
     constexpr auto ACCEL_SCALE = 8.192F / 1000.0F * 9.81F;
     constexpr auto GYRO_SCALE = 16.4F;
@@ -63,6 +63,6 @@ namespace ICM20948 {
         ICM_20948_Device_t icm_20948_device_{};
     };
 
-}; // namespace ICM20948
+}; // namespace icm20948
 
 #endif // ICM20948_DMP_HPP

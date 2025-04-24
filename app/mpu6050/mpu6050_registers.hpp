@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-namespace MPU6050 {
+namespace mpu6050 {
 
     enum struct RA : std::uint8_t {
         XG_OFFS_TC = 0x00,
@@ -327,6 +327,6 @@ namespace MPU6050 {
         LENGTH = 6,
     };
 
-}; // namespace MPU6050
+}; // namespace mpu6050
 
 #endif // MPU6050_REGISTERS_HPP

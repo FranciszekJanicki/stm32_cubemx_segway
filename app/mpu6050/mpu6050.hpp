@@ -5,7 +5,7 @@
 #include "mpu6050_registers.hpp"
 #include <optional>
 
-namespace MPU6050 {
+namespace mpu6050 {
 
     struct MPU6050 {
         MPU6050() noexcept = default;
@@ -243,6 +243,6 @@ namespace MPU6050 {
         std::float64_t accel_scale_{};
     };
 
-}; // namespace MPU6050
+}; // namespace mpu6050
 
 #endif // MPU6050_HPP
