@@ -41,6 +41,8 @@ namespace a4988 {
         }
     }
 
+    constexpr auto PULSE_WIDTH = 100UL;
+
 } // namespace a4988
 
 #endif // A4988_CONFIG_HPP

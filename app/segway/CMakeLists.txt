@@ -7,6 +7,7 @@ target_sources(segway PRIVATE
     "wheel.cpp"
     "wheels.cpp"
     "imu.cpp"
+    "timers.cpp"
 )
 
 target_include_directories(segway PUBLIC 

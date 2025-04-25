@@ -77,10 +77,10 @@ namespace segway {
     constexpr auto LQR_KX = std::array{-7.14F64, -1.900F64, -0.0007F64, -0.0015F64, -0.707F64, -0.8803F64};
 
     constexpr auto PID_Y_REF = 4.5F64;
-    constexpr auto PID_KP = 1.0F64;
+    constexpr auto PID_KP = 5.0F64;
     constexpr auto PID_KI = 0.0F64;
     constexpr auto PID_KD = 0.0F64;
-    constexpr auto PID_KC = 1.0F64;
+    constexpr auto PID_KC = 0.0F64;
     constexpr auto PID_TD = 0.0001F64;
     constexpr auto PID_SAT = 1200.0F64;
 

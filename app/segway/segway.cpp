@@ -82,11 +82,12 @@ namespace segway {
             auto wheel_speed = regulator.get_sat_u(error_tilt, dt);
             LOG(TAG, "Wheel speed: %f", wheel_speed);
 
-            if (self.should_start(tilt, wheel_speed)) {
-                self.start();
-            } else if (self.should_stop(tilt, wheel_speed)) {
-                self.stop();
-            }
+            // if (self.should_start(tilt, wheel_speed)) {
+            //     self.start();
+            // } else if (self.should_stop(tilt, wheel_speed)) {
+            //     self.stop();
+            //     return;
+            // }
 
             set_wheels_speed(self.wheels, wheel_speed, -wheel_speed, dt);
         }

@@ -4,8 +4,9 @@
 namespace {
 
     constexpr auto TAG = "Wheels";
+    using namespace stm32_utility;
 
-};
+}; // namespace
 
 namespace segway {
 

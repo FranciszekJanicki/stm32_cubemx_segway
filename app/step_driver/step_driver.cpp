@@ -40,7 +40,7 @@ namespace step_driver {
 
     void StepDriver::update_step_count(this StepDriver& self) noexcept
     {
-        auto const counter_period = self.driver.pwm_device_.get_period();
+        auto const counter_period = self.driver.pwm_device.get_period();
 
         if (self.direction == Direction::BACKWARD) {
             self.step_count = std::max(0LL, self.step_count - 1LL);
@@ -62,12 +62,6 @@ namespace step_driver {
         // auto const error_speed = speed - self.get_speed(dt);
         auto control_speed = speed; // self.regulator(error_speed, dt);
 
-        if (self.should_stop(control_speed)) {
-            self.stop();
-        } else if (self.should_start(control_speed)) {
-            self.start();
-        }
-
         self.set_control_speed(control_speed);
     }
 
@@ -87,12 +81,19 @@ namespace step_driver {
 
     void StepDriver::set_control_speed(this StepDriver& self, std::float64_t const control_speed) noexcept
     {
-        auto speed = std::clamp(control_speed, -MAX_SPEED, MAX_SPEED);
+        // if (self.should_stop(control_speed)) {
+        //     self.stop();
+        //     return;
+        // } else if (self.should_start(control_speed)) {
+        //     self.start();
+        // }
+
+        auto clamped_speed = std::clamp(control_speed, -MAX_SPEED, MAX_SPEED);
         auto step_change = self.step_change();
 
-        self.set_direction(speed_to_direction(speed));
-        self.set_microstep(speed_to_microstep(speed, step_change));
-        self.set_frequency(speed_to_frequency(speed, step_change));
+        self.set_direction(speed_to_direction(clamped_speed));
+        self.set_microstep(speed_to_microstep(clamped_speed, step_change));
+        self.set_frequency(speed_to_frequency(clamped_speed, step_change));
     }
 
     void StepDriver::set_microstep(this StepDriver& self, Microstep const microstep) noexcept
