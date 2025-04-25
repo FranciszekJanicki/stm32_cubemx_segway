@@ -15,6 +15,9 @@ namespace step_driver {
 
     struct StepDriver {
     public:
+        void initialize(this StepDriver& self) noexcept;
+        void deinitialize(this StepDriver& self) noexcept;
+
         void start(this StepDriver& self) noexcept;
         void stop(this StepDriver& self) noexcept;
 
@@ -46,9 +49,8 @@ namespace step_driver {
         bool is_initialized = {};
 
     private:
-        static constexpr auto MAX_SPEED = 1000.0F64;
-        static constexpr auto MIN_SPEED = 1.0F64;
-        static constexpr auto MAX_FREQ_CHANGE = 50U;
+        static constexpr auto MAX_SPEED = 3000.0F64;
+        static constexpr auto MIN_SPEED = 0.0F64;
 
         std::float64_t step_change(this StepDriver& self) noexcept;
 

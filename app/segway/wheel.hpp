@@ -17,6 +17,9 @@ namespace segway {
     char const* wheel_type_to_string(WheelType const wheel_type) noexcept;
 
     struct WheelDriver {
+        void initialize(this WheelDriver& self) noexcept;
+        void deinitialize(this WheelDriver& self) noexcept;
+
         void start(this WheelDriver& self) noexcept;
         void stop(this WheelDriver& self) noexcept;
 

@@ -5,6 +5,8 @@ namespace a4988 {
 
     void A4988::initialize(this A4988& self) noexcept
     {
+        self.pwm_device.initialize();
+
         self.set_reset(false);
         self.set_enable(true);
         self.set_sleep(false);
@@ -12,7 +14,8 @@ namespace a4988 {
 
     void A4988::deinitialize(this A4988& self) noexcept
     {
-        self.stop_pwm();
+        self.pwm_device.deinitialize();
+
         self.set_reset(true);
         self.set_enable(false);
         self.set_sleep(true);

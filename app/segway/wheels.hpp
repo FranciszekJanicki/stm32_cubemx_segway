@@ -8,6 +8,9 @@ namespace segway {
 
     using Wheels = std::array<Wheel, 2UL>;
 
+    void initialize_wheels(Wheels& wheels) noexcept;
+    void deinitialize_wheels(Wheels& wheels) noexcept;
+
     void start_wheels(Wheels& wheels) noexcept;
     void stop_wheels(Wheels& wheels) noexcept;
 

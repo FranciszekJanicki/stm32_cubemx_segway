@@ -76,13 +76,13 @@ namespace segway {
     constexpr auto LQR_KI = std::array{1.0F64, 0.0F64, 0.0F64, 0.0F64, 0.0F64, 0.0F64};
     constexpr auto LQR_KX = std::array{-7.14F64, -1.900F64, -0.0007F64, -0.0015F64, -0.707F64, -0.8803F64};
 
-    constexpr auto PID_Y_REF = 4.5F64;
+    constexpr auto PID_Y_REF = 2.75F64;
     constexpr auto PID_KP = 10.0F64;
     constexpr auto PID_KI = 0.0F64;
     constexpr auto PID_KD = 0.0F64;
     constexpr auto PID_KC = 0.0F64;
     constexpr auto PID_TD = 0.0001F64;
-    constexpr auto PID_SAT = 1200.0F64;
+    constexpr auto PID_SAT = 3000.0F64;
 
     constexpr auto DT = 1.0F64 / ICM20948_FREQ;
 
@@ -93,8 +93,8 @@ namespace segway {
     constexpr auto TILT_FAULT_THRESH_HIGH = 30.0F64;
     constexpr auto IMU_FAULT_THRESH_LOW = 160.0F64;
     constexpr auto IMU_FAULT_THRESH_HIGH = 180.0F64;
-    constexpr auto WHEEL_FAULT_THRESH_HIGH = 1200.0;
-    constexpr auto WHEEL_FAULT_THRESH_LOW = 800.0;
+    constexpr auto WHEEL_FAULT_THRESH_HIGH = PID_SAT;
+    constexpr auto WHEEL_FAULT_THRESH_LOW = PID_SAT * 0.8;
 
 }; // namespace segway
 

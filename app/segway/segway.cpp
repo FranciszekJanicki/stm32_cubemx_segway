@@ -10,6 +10,16 @@ namespace {
 
 namespace segway {
 
+    void Segway::initialize(this Segway& self) noexcept
+    {
+        initialize_wheels(self.wheels);
+    }
+
+    void Segway::deinitialize(this Segway& self) noexcept
+    {
+        initialize_wheels(self.wheels);
+    }
+
     void Segway::update_step_count(this Segway& self, WheelType const wheel_type) noexcept
     {
         update_wheel_step_count(self.wheels, wheel_type);

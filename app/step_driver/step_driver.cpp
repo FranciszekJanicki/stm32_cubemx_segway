@@ -22,6 +22,16 @@ namespace step_driver {
         return static_cast<std::uint16_t>(std::abs(speed / step_change));
     }
 
+    void StepDriver::initialize(this StepDriver& self) noexcept
+    {
+        self.driver.initialize();
+    }
+
+    void StepDriver::deinitialize(this StepDriver& self) noexcept
+    {
+        self.driver.deinitialize();
+    }
+
     void StepDriver::start(this StepDriver& self) noexcept
     {
         if (self.is_stopped) {

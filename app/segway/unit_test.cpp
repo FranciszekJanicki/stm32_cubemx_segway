@@ -95,9 +95,8 @@ namespace segway {
     void test_a4988_1() noexcept
     {
         auto pwm_device = PWMDevice{.timer = &htim1, .channel_mask = TIM_CHANNEL_1};
-        pwm_device.initialize();
 
-        auto a4988 = A4988{.pwm_device = pwm_device,
+        auto a4988 = A4988{.pwm_device = std::move(pwm_device),
                            .pin_ms1 = MS1_1,
                            .pin_ms2 = MS2_1,
                            .pin_ms3 = MS3_1,
@@ -105,9 +104,10 @@ namespace segway {
                            .pin_sleep = SLEEP_1,
                            .pin_dir = DIR_1,
                            .pin_enable = EN_1};
-        a4988.initialize();
 
-        auto step_driver = Driver{.driver = a4988, .steps_per_360 = STEPS_PER_360};
+        auto step_driver = Driver{.driver = std::move(a4988), .steps_per_360 = STEPS_PER_360};
+
+        step_driver.initialize();
 
         auto i = 0.0F64;
 
@@ -126,9 +126,8 @@ namespace segway {
     void test_a4988_2() noexcept
     {
         auto pwm_device = PWMDevice{.timer = &htim3, .channel_mask = TIM_CHANNEL_1};
-        pwm_device.initialize();
 
-        auto a4988 = A4988{.pwm_device = pwm_device,
+        auto a4988 = A4988{.pwm_device = std::move(pwm_device),
                            .pin_ms1 = MS1_2,
                            .pin_ms2 = MS2_2,
                            .pin_ms3 = MS3_2,
@@ -136,9 +135,10 @@ namespace segway {
                            .pin_sleep = SLEEP_2,
                            .pin_dir = DIR_2,
                            .pin_enable = EN_2};
-        a4988.initialize();
 
-        auto step_driver = Driver{.driver = a4988, .steps_per_360 = STEPS_PER_360};
+        auto step_driver = Driver{.driver = std::move(a4988), .steps_per_360 = STEPS_PER_360};
+
+        step_driver.initialize();
 
         auto i = 0.0F;
 
@@ -157,10 +157,8 @@ namespace segway {
     void test_segway() noexcept
     {
         auto pwm_device_1 = PWMDevice{.timer = &htim1, .channel_mask = TIM_CHANNEL_1};
-        auto pwm_device_2 = PWMDevice{.timer = &htim3, .channel_mask = TIM_CHANNEL_1};
 
-        pwm_device_1.initialize();
-        pwm_device_2.initialize();
+        auto pwm_device_2 = PWMDevice{.timer = &htim3, .channel_mask = TIM_CHANNEL_1};
 
         auto a4988_1 = A4988{.pwm_device = pwm_device_1,
                              .pin_ms1 = MS1_1,
@@ -170,6 +168,7 @@ namespace segway {
                              .pin_sleep = SLEEP_1,
                              .pin_dir = DIR_1,
                              .pin_enable = EN_1};
+
         auto a4988_2 = A4988{.pwm_device = pwm_device_2,
                              .pin_ms1 = MS1_2,
                              .pin_ms2 = MS2_2,
@@ -179,10 +178,8 @@ namespace segway {
                              .pin_dir = DIR_2,
                              .pin_enable = EN_2};
 
-        a4988_2.initialize();
-        a4988_1.initialize();
-
         auto step_driver_1 = Driver{.driver = a4988_1, .steps_per_360 = STEPS_PER_360};
+
         auto step_driver_2 = Driver{.driver = a4988_2, .steps_per_360 = STEPS_PER_360};
 
         auto left_wheel = Wheel{.type = WheelType::LEFT,
@@ -194,7 +191,6 @@ namespace segway {
         auto wheels = Wheels{left_wheel, right_wheel};
 
         auto i2c_device = I2CDevice{.i2c_bus = &hi2c1, .dev_address = MPU6050_I2C_ADDRESS};
-        i2c_device.initialize();
 
         auto mpu6050 = MPU6050{std::move(i2c_device),
                                MPU6050_FREQ,
@@ -217,13 +213,15 @@ namespace segway {
 
         auto segway = Segway{.imu = std::move(imu), .wheels = wheels, .regulator = regulator, .config = config};
 
+        segway.initialize();
+
         sampling_timer_start();
 
         while (1) {
             // if (nvic_mask.sampling_timer) {
             nvic_mask.sampling_timer = false;
 
-            segway.run_segway_pid(PID_Y_REF, DT);
+            segway.run_segway_pid(PID_Y_REF, 2 * DT);
             sampling_timer_start();
             // }
 
@@ -248,4 +246,5 @@ namespace segway {
             // }
         }
     }
+
 }; // namespace segway

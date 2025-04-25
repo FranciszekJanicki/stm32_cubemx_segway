@@ -8,6 +8,9 @@
 namespace segway {
 
     struct Segway {
+        void initialize(this Segway& self) noexcept;
+        void deinitialize(this Segway& self) noexcept;
+
         void update_step_count(this Segway& self, WheelType const wheel_type) noexcept;
 
         void

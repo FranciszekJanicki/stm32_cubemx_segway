@@ -9,6 +9,16 @@ namespace {
 
 namespace segway {
 
+    void WheelDriver::initialize(this WheelDriver& self) noexcept
+    {
+        self.driver.initialize();
+    }
+
+    void WheelDriver::deinitialize(this WheelDriver& self) noexcept
+    {
+        self.driver.deinitialize();
+    }
+
     void WheelDriver::start(this WheelDriver& self) noexcept
     {
         self.driver.start();
