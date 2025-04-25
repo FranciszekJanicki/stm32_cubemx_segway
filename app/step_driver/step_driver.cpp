@@ -25,7 +25,7 @@ namespace step_driver {
     void StepDriver::start(this StepDriver& self) noexcept
     {
         if (self.is_stopped) {
-            self.driver.start();
+            self.driver.start_pwm();
             self.is_stopped = false;
         }
     }
@@ -33,15 +33,13 @@ namespace step_driver {
     void StepDriver::stop(this StepDriver& self) noexcept
     {
         if (!self.is_stopped) {
-            self.driver.stop();
+            self.driver.stop_pwm();
             self.is_stopped = true;
         }
     }
 
     void StepDriver::update_step_count(this StepDriver& self) noexcept
     {
-        auto const counter_period = self.driver.pwm_device.get_period();
-
         if (self.direction == Direction::BACKWARD) {
             self.step_count = std::max(0LL, self.step_count - 1LL);
         } else if (self.direction == Direction::FORWARD) {
@@ -81,12 +79,12 @@ namespace step_driver {
 
     void StepDriver::set_control_speed(this StepDriver& self, std::float64_t const control_speed) noexcept
     {
-        // if (self.should_stop(control_speed)) {
-        //     self.stop();
-        //     return;
-        // } else if (self.should_start(control_speed)) {
-        //     self.start();
-        // }
+        if (self.should_stop(control_speed)) {
+            self.stop();
+            return;
+        } else if (self.should_start(control_speed)) {
+            self.start();
+        }
 
         auto clamped_speed = std::clamp(control_speed, -MAX_SPEED, MAX_SPEED);
         auto step_change = self.step_change();
@@ -99,7 +97,7 @@ namespace step_driver {
     void StepDriver::set_microstep(this StepDriver& self, Microstep const microstep) noexcept
     {
         self.microstep = microstep;
-        //  self.driver.set_microstep(microstep);
+        self.driver.set_microstep(microstep);
     }
 
     void StepDriver::set_direction(this StepDriver& self, Direction const direction) noexcept
@@ -140,7 +138,7 @@ namespace step_driver {
 
     bool StepDriver::should_start(this StepDriver& self, std::float64_t const control_speed) noexcept
     {
-        return (std::abs(control_speed) > MIN_SPEED || std::abs(control_speed) < MAX_SPEED) && self.is_stopped;
+        return (std::abs(control_speed) > MIN_SPEED && std::abs(control_speed) < MAX_SPEED) && self.is_stopped;
     }
 
     bool StepDriver::should_stop(this StepDriver& self, std::float64_t const control_speed) noexcept

@@ -109,10 +109,11 @@ namespace segway {
 
         auto step_driver = Driver{.driver = a4988, .steps_per_360 = STEPS_PER_360};
 
-        auto i = 0.0F;
+        auto i = 0.0F64;
 
         while (1) {
-            step_driver.set_speed(-100.0F, DT);
+            step_driver.set_speed(i += 1.0F64, DT);
+            HAL_Delay(1);
 
             if (nvic_mask.motor1_pwm_pulse) {
                 nvic_mask.motor1_pwm_pulse = false;
@@ -143,6 +144,7 @@ namespace segway {
 
         while (1) {
             step_driver.set_speed(i += 1.0F, DT);
+            HAL_Delay(1);
 
             if (nvic_mask.motor2_pwm_pulse) {
                 nvic_mask.motor2_pwm_pulse = false;
@@ -218,14 +220,14 @@ namespace segway {
         sampling_timer_start();
 
         while (1) {
-            if (nvic_mask.sampling_timer) {
-                nvic_mask.sampling_timer = false;
+            // if (nvic_mask.sampling_timer) {
+            nvic_mask.sampling_timer = false;
 
-                segway.run_segway_pid(PID_Y_REF, DT);
-                sampling_timer_start();
-            }
+            segway.run_segway_pid(PID_Y_REF, DT);
+            sampling_timer_start();
+            // }
 
-            HAL_Delay(5);
+            HAL_Delay(10);
 
             // if (nvic_mask.motor1_pwm_pulse) {
             //     nvic_mask.motor1_pwm_pulse = false;

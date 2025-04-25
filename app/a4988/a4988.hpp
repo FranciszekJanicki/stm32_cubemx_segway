@@ -7,15 +7,15 @@ namespace a4988 {
 
     struct A4988 {
     public:
-        void initialize(this A4988 const& self) noexcept;
-        void deinitialize(this A4988 const& self) noexcept;
+        void initialize(this A4988& self) noexcept;
+        void deinitialize(this A4988& self) noexcept;
 
-        void start(this A4988 const& self) noexcept;
-        void stop(this A4988 const& self) noexcept;
+        void start_pwm(this A4988& self) noexcept;
+        void stop_pwm(this A4988& self) noexcept;
 
-        void set_frequency(this A4988 const& self, std::uint32_t const frequency) noexcept;
-        void set_microstep(this A4988 const& self, Microstep const microstep) noexcept;
-        void set_direction(this A4988 const& self, Direction const direction) noexcept;
+        void set_frequency(this A4988& self, std::uint32_t const frequency) noexcept;
+        void set_microstep(this A4988& self, Microstep const microstep) noexcept;
+        void set_direction(this A4988& self, Direction const direction) noexcept;
 
         void set_reset(this A4988 const& self, bool const reset = true) noexcept;
         void set_enable(this A4988 const& self, bool const enable = true) noexcept;
@@ -31,16 +31,18 @@ namespace a4988 {
         GPIO pin_dir = GPIO::NC;
         GPIO pin_enable = GPIO::NC;
 
-    private:
-        void set_forward_direction(this A4988 const& self) noexcept;
-        void set_backward_direction(this A4988 const& self) noexcept;
-        void set_stop_direction(this A4988 const& self) noexcept;
+        bool is_pwm_started = {};
 
-        void set_full_microstep(this A4988 const& self) noexcept;
-        void set_half_microstep(this A4988 const& self) noexcept;
-        void set_quarter_microstep(this A4988 const& self) noexcept;
-        void set_eighth_microstep(this A4988 const& self) noexcept;
-        void set_sixteenth_microstep(this A4988 const& self) noexcept;
+    private:
+        void set_forward_direction(this A4988& self) noexcept;
+        void set_backward_direction(this A4988& self) noexcept;
+        void set_stop_direction(this A4988& self) noexcept;
+
+        void set_full_microstep(this A4988& self) noexcept;
+        void set_half_microstep(this A4988& self) noexcept;
+        void set_quarter_microstep(this A4988& self) noexcept;
+        void set_eighth_microstep(this A4988& self) noexcept;
+        void set_sixteenth_microstep(this A4988& self) noexcept;
     };
 
 }; // namespace a4988

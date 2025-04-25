@@ -41,7 +41,7 @@ namespace a4988 {
         }
     }
 
-    constexpr auto PULSE_WIDTH = 100UL;
+    constexpr auto PULSE_WIDTH = 1000UL;
 
 } // namespace a4988
 
