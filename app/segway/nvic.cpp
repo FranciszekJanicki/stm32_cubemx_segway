@@ -16,6 +16,20 @@ namespace {
 
 };
 
+void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef* hi2c)
+{
+    if (hi2c->Instance == I2C1) {
+        nvic_mask.i2c_tx_cplt = true;
+    }
+}
+
+void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef* hi2c)
+{
+    if (hi2c->Instance == I2C1) {
+        nvic_mask.i2c_rx_cplt = true;
+    }
+}
+
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
 {
     if (htim->Instance == TIM1) {

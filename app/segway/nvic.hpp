@@ -10,7 +10,6 @@
 namespace segway {
 
     struct NVICMask {
-        std::uint8_t : 1;
         std::uint8_t data_ready : 1;
         std::uint8_t motor1_pwm_pulse : 1;
         std::uint8_t motor2_pwm_pulse : 1;
@@ -18,6 +17,8 @@ namespace segway {
         std::uint8_t sampling_timer : 1;
         std::uint8_t motor1_step_timer : 1;
         std::uint8_t motor2_step_timer : 1;
+        std::uint8_t i2c_rx_cplt : 1;
+        std::uint8_t i2c_tx_cplt : 1;
     } PACKED;
 
     inline auto volatile nvic_mask = NVICMask{};

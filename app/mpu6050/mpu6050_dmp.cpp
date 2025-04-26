@@ -158,7 +158,7 @@ namespace mpu6050 {
 
     std::array<std::uint8_t, 42UL> MPU6050_DMP::get_dmp_packet() const noexcept
     {
-        auto dmp_packet = std::array<std::uint8_t, 42UL>{};
+        static auto dmp_packet = std::array<std::uint8_t, 42UL>{};
 
         if (!this->get_int_dmp_status()) {
             return dmp_packet;
@@ -177,10 +177,14 @@ namespace mpu6050 {
         this->mpu6050.get_fifo_bytes(dmp_packet.data(), dmp_packet.size());
         return dmp_packet;
     }
-
+#include "log.hpp"
     std::optional<Quat3D<std::int16_t>> MPU6050_DMP::get_quaternion_raw() const noexcept
     {
+        auto before = HAL_GetTick();
         auto packet = this->get_dmp_packet();
+        auto after = HAL_GetTick();
+
+        stm32_utility::LOG("MPU", "Time: %d", after - before);
 
         return this->initialized ? std::optional<Quat3D<std::int16_t>>{std::in_place,
                                                                        static_cast<std::int16_t>(packet[0] << 8) |
