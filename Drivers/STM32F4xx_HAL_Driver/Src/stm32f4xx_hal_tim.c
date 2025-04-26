@@ -208,13 +208,19 @@ static void TIM_OC1_SetConfig(TIM_TypeDef* TIMx, const TIM_OC_InitTypeDef* OC_Co
 static void TIM_OC3_SetConfig(TIM_TypeDef* TIMx, const TIM_OC_InitTypeDef* OC_Config);
 static void TIM_OC4_SetConfig(TIM_TypeDef* TIMx, const TIM_OC_InitTypeDef* OC_Config);
 static void TIM_TI1_ConfigInputStage(TIM_TypeDef* TIMx, uint32_t TIM_ICPolarity, uint32_t TIM_ICFilter);
-static void
-TIM_TI2_SetConfig(TIM_TypeDef* TIMx, uint32_t TIM_ICPolarity, uint32_t TIM_ICSelection, uint32_t TIM_ICFilter);
+static void TIM_TI2_SetConfig(TIM_TypeDef* TIMx,
+                              uint32_t TIM_ICPolarity,
+                              uint32_t TIM_ICSelection,
+                              uint32_t TIM_ICFilter);
 static void TIM_TI2_ConfigInputStage(TIM_TypeDef* TIMx, uint32_t TIM_ICPolarity, uint32_t TIM_ICFilter);
-static void
-TIM_TI3_SetConfig(TIM_TypeDef* TIMx, uint32_t TIM_ICPolarity, uint32_t TIM_ICSelection, uint32_t TIM_ICFilter);
-static void
-TIM_TI4_SetConfig(TIM_TypeDef* TIMx, uint32_t TIM_ICPolarity, uint32_t TIM_ICSelection, uint32_t TIM_ICFilter);
+static void TIM_TI3_SetConfig(TIM_TypeDef* TIMx,
+                              uint32_t TIM_ICPolarity,
+                              uint32_t TIM_ICSelection,
+                              uint32_t TIM_ICFilter);
+static void TIM_TI4_SetConfig(TIM_TypeDef* TIMx,
+                              uint32_t TIM_ICPolarity,
+                              uint32_t TIM_ICSelection,
+                              uint32_t TIM_ICFilter);
 static void TIM_ITRx_SetConfig(TIM_TypeDef* TIMx, uint32_t InputTriggerSource);
 static void TIM_DMAPeriodElapsedCplt(DMA_HandleTypeDef* hdma);
 static void TIM_DMAPeriodElapsedHalfCplt(DMA_HandleTypeDef* hdma);
@@ -986,8 +992,10 @@ HAL_StatusTypeDef HAL_TIM_OC_Stop_IT(TIM_HandleTypeDef* htim, uint32_t Channel)
  * @param  Length The length of data to be transferred from memory to TIM peripheral
  * @retval HAL status
  */
-HAL_StatusTypeDef
-HAL_TIM_OC_Start_DMA(TIM_HandleTypeDef* htim, uint32_t Channel, const uint32_t* pData, uint16_t Length)
+HAL_StatusTypeDef HAL_TIM_OC_Start_DMA(TIM_HandleTypeDef* htim,
+                                       uint32_t Channel,
+                                       const uint32_t* pData,
+                                       uint16_t Length)
 {
     HAL_StatusTypeDef status = HAL_OK;
     uint32_t tmpsmcr;
@@ -1599,8 +1607,10 @@ HAL_StatusTypeDef HAL_TIM_PWM_Stop_IT(TIM_HandleTypeDef* htim, uint32_t Channel)
  * @param  Length The length of data to be transferred from memory to TIM peripheral
  * @retval HAL status
  */
-HAL_StatusTypeDef
-HAL_TIM_PWM_Start_DMA(TIM_HandleTypeDef* htim, uint32_t Channel, const uint32_t* pData, uint16_t Length)
+HAL_StatusTypeDef HAL_TIM_PWM_Start_DMA(TIM_HandleTypeDef* htim,
+                                        uint32_t Channel,
+                                        const uint32_t* pData,
+                                        uint16_t Length)
 {
     HAL_StatusTypeDef status = HAL_OK;
     uint32_t tmpsmcr;
@@ -3880,8 +3890,9 @@ HAL_StatusTypeDef HAL_TIM_IC_ConfigChannel(TIM_HandleTypeDef* htim, const TIM_IC
  *            @arg TIM_CHANNEL_4: TIM Channel 4 selected
  * @retval HAL status
  */
-HAL_StatusTypeDef
-HAL_TIM_PWM_ConfigChannel(TIM_HandleTypeDef* htim, const TIM_OC_InitTypeDef* sConfig, uint32_t Channel)
+HAL_StatusTypeDef HAL_TIM_PWM_ConfigChannel(TIM_HandleTypeDef* htim,
+                                            const TIM_OC_InitTypeDef* sConfig,
+                                            uint32_t Channel)
 {
     HAL_StatusTypeDef status = HAL_OK;
 
@@ -5317,15 +5328,15 @@ __weak void HAL_TIM_IC_CaptureHalfCpltCallback(TIM_HandleTypeDef* htim)
  * @param  htim TIM handle
  * @retval None
  */
-// __weak void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
-// {
-//     /* Prevent unused argument(s) compilation warning */
-//     UNUSED(htim);
+__weak void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
+{
+    /* Prevent unused argument(s) compilation warning */
+    UNUSED(htim);
 
-//     /* NOTE : This function should not be modified, when the callback is needed,
-//               the HAL_TIM_PWM_PulseFinishedCallback could be implemented in the user file
-//      */
-// }
+    /* NOTE : This function should not be modified, when the callback is needed,
+              the HAL_TIM_PWM_PulseFinishedCallback could be implemented in the user file
+     */
+}
 
 /**
  * @brief  PWM Pulse finished half complete callback in non-blocking mode
@@ -5423,8 +5434,9 @@ __weak void HAL_TIM_ErrorCallback(TIM_HandleTypeDef* htim)
  *          @param pCallback pointer to the callback function
  *          @retval status
  */
-HAL_StatusTypeDef
-HAL_TIM_RegisterCallback(TIM_HandleTypeDef* htim, HAL_TIM_CallbackIDTypeDef CallbackID, pTIM_CallbackTypeDef pCallback)
+HAL_StatusTypeDef HAL_TIM_RegisterCallback(TIM_HandleTypeDef* htim,
+                                           HAL_TIM_CallbackIDTypeDef CallbackID,
+                                           pTIM_CallbackTypeDef pCallback)
 {
     HAL_StatusTypeDef status = HAL_OK;
 
@@ -6832,8 +6844,10 @@ static void TIM_TI1_ConfigInputStage(TIM_TypeDef* TIMx, uint32_t TIM_ICPolarity,
  *       (on channel1 path) is used as the input signal. Therefore CCMR1 must be
  *        protected against un-initialized filter and polarity values.
  */
-static void
-TIM_TI2_SetConfig(TIM_TypeDef* TIMx, uint32_t TIM_ICPolarity, uint32_t TIM_ICSelection, uint32_t TIM_ICFilter)
+static void TIM_TI2_SetConfig(TIM_TypeDef* TIMx,
+                              uint32_t TIM_ICPolarity,
+                              uint32_t TIM_ICSelection,
+                              uint32_t TIM_ICFilter)
 {
     uint32_t tmpccmr1;
     uint32_t tmpccer;
@@ -6915,8 +6929,10 @@ static void TIM_TI2_ConfigInputStage(TIM_TypeDef* TIMx, uint32_t TIM_ICPolarity,
  *       (on channel1 path) is used as the input signal. Therefore CCMR2 must be
  *        protected against un-initialized filter and polarity values.
  */
-static void
-TIM_TI3_SetConfig(TIM_TypeDef* TIMx, uint32_t TIM_ICPolarity, uint32_t TIM_ICSelection, uint32_t TIM_ICFilter)
+static void TIM_TI3_SetConfig(TIM_TypeDef* TIMx,
+                              uint32_t TIM_ICPolarity,
+                              uint32_t TIM_ICSelection,
+                              uint32_t TIM_ICFilter)
 {
     uint32_t tmpccmr2;
     uint32_t tmpccer;
@@ -6963,8 +6979,10 @@ TIM_TI3_SetConfig(TIM_TypeDef* TIMx, uint32_t TIM_ICPolarity, uint32_t TIM_ICSel
  *        protected against un-initialized filter and polarity values.
  * @retval None
  */
-static void
-TIM_TI4_SetConfig(TIM_TypeDef* TIMx, uint32_t TIM_ICPolarity, uint32_t TIM_ICSelection, uint32_t TIM_ICFilter)
+static void TIM_TI4_SetConfig(TIM_TypeDef* TIMx,
+                              uint32_t TIM_ICPolarity,
+                              uint32_t TIM_ICSelection,
+                              uint32_t TIM_ICFilter)
 {
     uint32_t tmpccmr2;
     uint32_t tmpccer;

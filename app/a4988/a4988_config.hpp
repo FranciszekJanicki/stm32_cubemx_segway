@@ -3,6 +3,7 @@
 
 #include "gpio.hpp"
 #include "pwm_device.hpp"
+#include <stdfloat>
 
 namespace a4988 {
 
@@ -37,12 +38,21 @@ namespace a4988 {
                 return 0.0625F;
             default:
                 return 0.0F;
-                break;
         }
     }
 
-    constexpr auto PULSE_WIDTH = 1000UL;
+    struct Config {
+        PWMDevice pwm_device = {};
 
-} // namespace a4988
+        GPIO pin_ms1 = GPIO::NC;
+        GPIO pin_ms2 = GPIO::NC;
+        GPIO pin_ms3 = GPIO::NC;
+        GPIO pin_reset = GPIO::NC;
+        GPIO pin_sleep = GPIO::NC;
+        GPIO pin_dir = GPIO::NC;
+        GPIO pin_enable = GPIO::NC;
+    };
+
+}; // namespace a4988
 
 #endif // A4988_CONFIG_HPP

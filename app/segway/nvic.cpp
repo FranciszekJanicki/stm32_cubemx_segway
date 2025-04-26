@@ -34,10 +34,12 @@ void HAL_I2C_ErrorCallback(I2C_HandleTypeDef* hi2c)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
-    if (htim->Instance == TIM2) {
+    if (htim->Instance == TIM1) {
+        nvic_mask.motor1_step_timer = true;
+    } else if (htim->Instance == TIM3) {
+        nvic_mask.motor2_step_timer = true;
+    } else if (htim->Instance == TIM2) {
         nvic_mask.sampling_timer = true;
-    } else if (htim->Instance == TIM4) {
-        nvic_mask.debounce_timer = true;
     }
 }
 

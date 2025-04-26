@@ -12,12 +12,7 @@ namespace step_driver {
         return speed > 0.0F ? Direction::FORWARD : Direction::BACKWARD;
     }
 
-    std::float64_t frequency_to_speed(std::uint16_t const frequency, std::float64_t const step_change) noexcept
-    {
-        return static_cast<std::float64_t>(std::abs(frequency * step_change));
-    }
-
-    std::uint16_t speed_to_frequency(std::float64_t const speed, std::float64_t const step_change) noexcept
+    std::uint32_t speed_to_frequency(std::float64_t const speed, std::float64_t const step_change) noexcept
     {
         return static_cast<std::uint16_t>(std::abs(speed / step_change));
     }
@@ -57,8 +52,9 @@ namespace step_driver {
         }
     }
 
-    void
-    StepDriver::set_position(this StepDriver& self, std::float64_t const position, std::float64_t const dt) noexcept
+    void StepDriver::set_position(this StepDriver& self,
+                                  std::float64_t const position,
+                                  std::float64_t const dt) noexcept
     {
         auto const speed = utility::differentiate(position, std::exchange(self.prev_position, position), dt);
 
@@ -116,7 +112,7 @@ namespace step_driver {
         self.driver.set_direction(direction);
     }
 
-    void StepDriver::set_frequency(this StepDriver& self, std::uint16_t const frequency) noexcept
+    void StepDriver::set_frequency(this StepDriver& self, std::uint32_t const frequency) noexcept
     {
         self.frequency = frequency;
         self.driver.set_frequency(frequency);

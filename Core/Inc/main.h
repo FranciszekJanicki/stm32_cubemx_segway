@@ -57,14 +57,10 @@ void SystemClock_Config(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define MOT2_STEP_Pin GPIO_PIN_6
-#define MOT2_STEP_GPIO_Port GPIOA
 #define MOT2_DIR_Pin GPIO_PIN_7
 #define MOT2_DIR_GPIO_Port GPIOA
 #define MOT1_DIR_Pin GPIO_PIN_15
 #define MOT1_DIR_GPIO_Port GPIOB
-#define MOT1_STEP_Pin GPIO_PIN_8
-#define MOT1_STEP_GPIO_Port GPIOA
 #define ICM20948_INT_Pin GPIO_PIN_6
 #define ICM20948_INT_GPIO_Port GPIOB
 #define ICM20948_INT_EXTI_IRQn EXTI9_5_IRQn

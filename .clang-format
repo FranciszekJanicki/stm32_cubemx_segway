@@ -75,3 +75,5 @@ PointerAlignment: Left
 IndentWrappedFunctionNames: false
 IndentFunctionDeclarationAfterType: true
 Standard: c++20
+
+PenaltyReturnTypeOnItsOwnLine: 1000

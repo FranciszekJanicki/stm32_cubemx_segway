@@ -8,6 +8,7 @@
 #include "mpu6050.hpp"
 #include "mpu6050_dmp.hpp"
 #include "nvic.hpp"
+#include "pid.hpp"
 #include "pwm_device.hpp"
 #include "sfo.hpp"
 #include "sfr.hpp"
@@ -53,6 +54,7 @@ namespace segway {
     constexpr auto EN_1 = GPIO::NC;
     constexpr auto SLEEP_1 = GPIO::NC;
     constexpr auto RESET_1 = GPIO::NC;
+    constexpr auto STEP_1 = GPIO::PA8;
 
     constexpr auto MS1_2 = GPIO::PA3;
     constexpr auto MS2_2 = GPIO::PA4;
@@ -61,6 +63,7 @@ namespace segway {
     constexpr auto EN_2 = GPIO::NC;
     constexpr auto SLEEP_2 = GPIO::NC;
     constexpr auto RESET_2 = GPIO::NC;
+    constexpr auto STEP_2 = GPIO::PA6;
 
     constexpr auto MPU6050_FREQ = 200UL;
     constexpr auto MPU6050_I2C_ADDRESS = std::to_underlying(DevAddress::AD0_LOW);
@@ -84,7 +87,7 @@ namespace segway {
     constexpr auto PID_TD = 0.0001F64;
     constexpr auto PID_SAT = 3000.0F64;
 
-    constexpr auto DT = 1.0F64 / ICM20948_FREQ;
+    constexpr auto DT = 2 * 1.0F64 / ICM20948_FREQ;
 
     constexpr auto STEPS_PER_360 = 200U;
     constexpr auto WHEEL_DIST = 10.0F64;

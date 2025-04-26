@@ -2,16 +2,15 @@
 #define STEP_DRIVER_HPP
 
 #include "a4988.hpp"
-#include "pid.hpp"
+#include "utility.hpp"
 
 namespace step_driver {
 
     using namespace a4988;
-    using namespace utility;
 
     Microstep speed_to_microstep(std::float64_t const speed, std::float64_t const step_change) noexcept;
     Direction speed_to_direction(std::float64_t const speed) noexcept;
-    std::uint16_t speed_to_frequency(std::float64_t const speed, std::float64_t const step_change) noexcept;
+    std::uint32_t speed_to_frequency(std::float64_t const speed, std::float64_t const step_change) noexcept;
 
     struct StepDriver {
     public:
@@ -25,8 +24,9 @@ namespace step_driver {
 
         void set_position(this StepDriver& self, std::float64_t const position, std::float64_t const dt) noexcept;
         void set_speed(this StepDriver& self, std::float64_t const speed, std::float64_t const dt) noexcept;
-        void
-        set_acceleration(this StepDriver& self, std::float64_t const acceleration, std::float64_t const dt) noexcept;
+        void set_acceleration(this StepDriver& self,
+                              std::float64_t const acceleration,
+                              std::float64_t const dt) noexcept;
 
         std::float64_t get_position(this StepDriver& self, std::float64_t const dt) noexcept;
         std::float64_t get_speed(this StepDriver& self, std::float64_t const dt) noexcept;
@@ -37,7 +37,7 @@ namespace step_driver {
 
         Microstep microstep = {};
         Direction direction = {};
-        std::uint16_t frequency = {};
+        std::uint32_t frequency = {};
 
         std::int64_t step_count = {};
 
@@ -57,7 +57,7 @@ namespace step_driver {
         void set_control_speed(this StepDriver& self, std::float64_t const control_speed) noexcept;
         void set_microstep(this StepDriver& self, Microstep const microstep) noexcept;
         void set_direction(this StepDriver& self, Direction const direction) noexcept;
-        void set_frequency(this StepDriver& self, std::uint16_t const frequency) noexcept;
+        void set_frequency(this StepDriver& self, std::uint32_t const frequency) noexcept;
 
         bool should_start(this StepDriver& self, std::float64_t const control_speed) noexcept;
         bool should_stop(this StepDriver& self, std::float64_t const control_speed) noexcept;
