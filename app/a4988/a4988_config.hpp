@@ -42,15 +42,27 @@ namespace a4988 {
     }
 
     struct Config {
-        PWMDevice pwm_device = {};
+        std::int16_t pin_ms1 = -1;
+        std::int16_t pin_ms2 = -1;
+        std::int16_t pin_ms3 = -1;
+        std::int16_t pin_reset = -1;
+        std::int16_t pin_sleep = -1;
+        std::int16_t pin_dir = -1;
+        std::int16_t pin_enable = -1;
+    };
 
-        GPIO pin_ms1 = GPIO::NC;
-        GPIO pin_ms2 = GPIO::NC;
-        GPIO pin_ms3 = GPIO::NC;
-        GPIO pin_reset = GPIO::NC;
-        GPIO pin_sleep = GPIO::NC;
-        GPIO pin_dir = GPIO::NC;
-        GPIO pin_enable = GPIO::NC;
+    struct Interface {
+        void* gpio_user = nullptr;
+        void (*gpio_init)(void*);
+        void (*gpio_deinit)(void*);
+        void (*gpio_write_pin)(void*, std::int16_t, bool);
+
+        void* pulse_user = nullptr;
+        void (*pulse_init)(void*);
+        void (*pulse_deinit)(void*);
+        void (*pulse_start)(void*);
+        void (*pulse_stop)(void*);
+        void (*pulse_set_freq)(void*, std::uint32_t);
     };
 
 }; // namespace a4988

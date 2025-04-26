@@ -30,7 +30,7 @@ namespace step_driver {
     void StepDriver::start(this StepDriver& self) noexcept
     {
         if (self.is_stopped) {
-            self.driver.start_pwm();
+            self.driver.start_pulses();
             self.is_stopped = false;
         }
     }
@@ -38,7 +38,7 @@ namespace step_driver {
     void StepDriver::stop(this StepDriver& self) noexcept
     {
         if (!self.is_stopped) {
-            self.driver.stop_pwm();
+            self.driver.stop_pulses();
             self.is_stopped = true;
         }
     }

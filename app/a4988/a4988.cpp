@@ -6,7 +6,8 @@ namespace a4988 {
 
     void A4988::initialize(this A4988& self) noexcept
     {
-        // self.config.pwm_device.initialize();
+        self.pulse_init();
+        self.gpio_init();
 
         self.set_reset(false);
         self.set_enable(true);
@@ -15,38 +16,33 @@ namespace a4988 {
 
     void A4988::deinitialize(this A4988& self) noexcept
     {
-        // self.config.pwm_device.deinitialize();
-
         self.set_reset(true);
         self.set_enable(false);
         self.set_sleep(true);
+
+        self.pulse_deinit();
+        self.gpio_deinit();
     }
 
-    void A4988::start_pwm(this A4988& self) noexcept
+    void A4988::start_pulses(this A4988& self) noexcept
     {
-        if (!self.is_pwm_started) {
-            // self.config.pwm_device.set_compare_half();
-            self.is_pwm_started = true;
+        if (!self.has_pulses_started) {
+            self.pulse_start();
+            self.has_pulses_started = true;
         }
     }
 
-    void A4988::stop_pwm(this A4988& self) noexcept
+    void A4988::stop_pulses(this A4988& self) noexcept
     {
-        if (self.is_pwm_started) {
-            // self.config.pwm_device.set_compare_min();
-            self.is_pwm_started = false;
+        if (self.has_pulses_started) {
+            self.pulse_stop();
+            self.has_pulses_started = false;
         }
     }
 
     void A4988::set_frequency(this A4988& self, std::uint32_t const frequency) noexcept
     {
-        //  self.config.pwm_device.set_frequency(frequency);
-        auto prescaler = 0UL;
-        auto period = 0UL;
-        utility::frequency_to_prescaler_and_period(frequency, 84000000, 0, 0xFFFF, 0xFFFF, prescaler, period);
-
-        self.config.pwm_device.timer->Instance->PSC = prescaler;
-        self.config.pwm_device.timer->Instance->ARR = period;
+        self.pulse_set_freq(frequency);
     }
 
     void A4988::set_microstep(this A4988& self, Microstep const microstep) noexcept
@@ -74,37 +70,37 @@ namespace a4988 {
 
     void A4988::set_full_microstep(this A4988& self) noexcept
     {
-        gpio_write_pin(self.config.pin_ms1, GPIOState::PIN_RESET);
-        gpio_write_pin(self.config.pin_ms2, GPIOState::PIN_RESET);
-        gpio_write_pin(self.config.pin_ms3, GPIOState::PIN_RESET);
+        self.gpio_write_pin(self.config.pin_ms1, false);
+        self.gpio_write_pin(self.config.pin_ms2, false);
+        self.gpio_write_pin(self.config.pin_ms3, false);
     }
 
     void A4988::set_half_microstep(this A4988& self) noexcept
     {
-        gpio_write_pin(self.config.pin_ms1, GPIOState::PIN_SET);
-        gpio_write_pin(self.config.pin_ms2, GPIOState::PIN_RESET);
-        gpio_write_pin(self.config.pin_ms3, GPIOState::PIN_RESET);
+        self.gpio_write_pin(self.config.pin_ms1, true);
+        self.gpio_write_pin(self.config.pin_ms2, false);
+        self.gpio_write_pin(self.config.pin_ms3, false);
     }
 
     void A4988::set_quarter_microstep(this A4988& self) noexcept
     {
-        gpio_write_pin(self.config.pin_ms1, GPIOState::PIN_RESET);
-        gpio_write_pin(self.config.pin_ms2, GPIOState::PIN_SET);
-        gpio_write_pin(self.config.pin_ms3, GPIOState::PIN_RESET);
+        self.gpio_write_pin(self.config.pin_ms1, true);
+        self.gpio_write_pin(self.config.pin_ms2, true);
+        self.gpio_write_pin(self.config.pin_ms3, false);
     }
 
     void A4988::set_eighth_microstep(this A4988& self) noexcept
     {
-        gpio_write_pin(self.config.pin_ms1, GPIOState::PIN_SET);
-        gpio_write_pin(self.config.pin_ms2, GPIOState::PIN_SET);
-        gpio_write_pin(self.config.pin_ms3, GPIOState::PIN_RESET);
+        self.gpio_write_pin(self.config.pin_ms1, true);
+        self.gpio_write_pin(self.config.pin_ms2, true);
+        self.gpio_write_pin(self.config.pin_ms3, false);
     }
 
     void A4988::set_sixteenth_microstep(this A4988& self) noexcept
     {
-        gpio_write_pin(self.config.pin_ms1, GPIOState::PIN_RESET);
-        gpio_write_pin(self.config.pin_ms2, GPIOState::PIN_RESET);
-        gpio_write_pin(self.config.pin_ms3, GPIOState::PIN_SET);
+        self.gpio_write_pin(self.config.pin_ms1, false);
+        self.gpio_write_pin(self.config.pin_ms2, false);
+        self.gpio_write_pin(self.config.pin_ms3, true);
     }
 
     void A4988::set_direction(this A4988& self, Direction const direction) noexcept
@@ -125,34 +121,90 @@ namespace a4988 {
 
     void A4988::set_forward_direction(this A4988& self) noexcept
     {
-        gpio_write_pin(self.config.pin_dir, GPIOState::PIN_RESET);
-        self.start_pwm();
+        self.gpio_write_pin(self.config.pin_dir, false);
+        self.start_pulses();
     }
 
     void A4988::set_backward_direction(this A4988& self) noexcept
     {
-        gpio_write_pin(self.config.pin_dir, GPIOState::PIN_SET);
-        self.start_pwm();
+        self.gpio_write_pin(self.config.pin_dir, true);
+        self.start_pulses();
     }
 
     void A4988::set_stop_direction(this A4988& self) noexcept
     {
-        self.stop_pwm();
+        self.stop_pulses();
     }
 
     void A4988::set_reset(this A4988 const& self, bool const reset) noexcept
     {
-        gpio_write_pin(self.config.pin_reset, reset ? GPIOState::PIN_RESET : GPIOState::PIN_SET);
+        self.gpio_write_pin(self.config.pin_enable, !reset);
     }
 
     void A4988::set_enable(this A4988 const& self, bool const enable) noexcept
     {
-        gpio_write_pin(self.config.pin_enable, enable ? GPIOState::PIN_RESET : GPIOState::PIN_SET);
+        self.gpio_write_pin(self.config.pin_enable, !enable);
     }
 
     void A4988::set_sleep(this A4988 const& self, bool const sleep) noexcept
     {
-        gpio_write_pin(self.config.pin_sleep, sleep ? GPIOState::PIN_RESET : GPIOState::PIN_SET);
+        self.gpio_write_pin(self.config.pin_sleep, !sleep);
+    }
+
+    void A4988::pulse_init(this A4988 const& self) noexcept
+    {
+        if (self.interface.pulse_init) {
+            self.interface.pulse_init(self.interface.pulse_user);
+        }
+    }
+
+    void A4988::pulse_deinit(this A4988 const& self) noexcept
+    {
+        if (self.interface.pulse_deinit) {
+            self.interface.pulse_deinit(self.interface.pulse_user);
+        }
+    }
+
+    void A4988::pulse_start(this A4988 const& self) noexcept
+    {
+        if (self.interface.pulse_start) {
+            self.interface.pulse_start(self.interface.pulse_user);
+        }
+    }
+
+    void A4988::pulse_stop(this A4988 const& self) noexcept
+    {
+        if (self.interface.pulse_stop) {
+            self.interface.pulse_stop(self.interface.pulse_user);
+        }
+    }
+
+    void A4988::pulse_set_freq(this A4988 const& self, std::uint32_t const freq) noexcept
+    {
+        if (self.interface.pulse_set_freq) {
+            self.interface.pulse_set_freq(self.interface.pulse_user, freq);
+        }
+    }
+
+    void A4988::gpio_init(this A4988 const& self) noexcept
+    {
+        if (self.interface.gpio_init) {
+            self.interface.gpio_init(self.interface.gpio_user);
+        }
+    }
+
+    void A4988::gpio_deinit(this A4988 const& self) noexcept
+    {
+        if (self.interface.gpio_deinit) {
+            self.interface.gpio_deinit(self.interface.gpio_user);
+        }
+    }
+
+    void A4988::gpio_write_pin(this A4988 const& self, std::int16_t const pin, bool const state) noexcept
+    {
+        if (self.interface.gpio_write_pin) {
+            self.interface.gpio_write_pin(self.interface.gpio_user, pin, state);
+        }
     }
 
 }; // namespace a4988

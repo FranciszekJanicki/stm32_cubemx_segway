@@ -10,8 +10,8 @@ namespace a4988 {
         void initialize(this A4988& self) noexcept;
         void deinitialize(this A4988& self) noexcept;
 
-        void start_pwm(this A4988& self) noexcept;
-        void stop_pwm(this A4988& self) noexcept;
+        void start_pulses(this A4988& self) noexcept;
+        void stop_pulses(this A4988& self) noexcept;
 
         void set_frequency(this A4988& self, std::uint32_t const frequency) noexcept;
 
@@ -32,8 +32,20 @@ namespace a4988 {
         void set_sleep(this A4988 const& self, bool const sleep = true) noexcept;
 
         Config config = {};
+        Interface interface = {};
 
-        bool is_pwm_started = {};
+        bool has_pulses_started = {};
+
+    private:
+        void pulse_init(this A4988 const& self) noexcept;
+        void pulse_deinit(this A4988 const& self) noexcept;
+        void pulse_start(this A4988 const& self) noexcept;
+        void pulse_stop(this A4988 const& self) noexcept;
+        void pulse_set_freq(this A4988 const& self, std::uint32_t const freq) noexcept;
+
+        void gpio_init(this A4988 const& self) noexcept;
+        void gpio_deinit(this A4988 const& self) noexcept;
+        void gpio_write_pin(this A4988 const& self, std::int16_t const pin, bool const state) noexcept;
     };
 
 }; // namespace a4988

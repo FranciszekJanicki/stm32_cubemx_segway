@@ -47,22 +47,22 @@ namespace segway {
         std::float64_t wheel_fault_thresh_high = {};
     };
 
-    constexpr auto MS1_1 = GPIO::PA11;
-    constexpr auto MS2_1 = GPIO::PA10;
-    constexpr auto MS3_1 = GPIO::PA9;
-    constexpr auto DIR_1 = GPIO::PB15;
-    constexpr auto EN_1 = GPIO::NC;
-    constexpr auto SLEEP_1 = GPIO::NC;
-    constexpr auto RESET_1 = GPIO::NC;
+    constexpr auto MS1_1 = std::to_underlying(GPIO::PA11);
+    constexpr auto MS2_1 = std::to_underlying(GPIO::PA10);
+    constexpr auto MS3_1 = std::to_underlying(GPIO::PA9);
+    constexpr auto DIR_1 = std::to_underlying(GPIO::PB15);
+    constexpr auto EN_1 = std::to_underlying(GPIO::NC);
+    constexpr auto SLEEP_1 = std::to_underlying(GPIO::NC);
+    constexpr auto RESET_1 = std::to_underlying(GPIO::NC);
     constexpr auto STEP_1 = GPIO::PA8;
 
-    constexpr auto MS1_2 = GPIO::PA3;
-    constexpr auto MS2_2 = GPIO::PA4;
-    constexpr auto MS3_2 = GPIO::PA5;
-    constexpr auto DIR_2 = GPIO::PA7;
-    constexpr auto EN_2 = GPIO::NC;
-    constexpr auto SLEEP_2 = GPIO::NC;
-    constexpr auto RESET_2 = GPIO::NC;
+    constexpr auto MS1_2 = std::to_underlying(GPIO::PA3);
+    constexpr auto MS2_2 = std::to_underlying(GPIO::PA4);
+    constexpr auto MS3_2 = std::to_underlying(GPIO::PA5);
+    constexpr auto DIR_2 = std::to_underlying(GPIO::PA7);
+    constexpr auto EN_2 = std::to_underlying(GPIO::NC);
+    constexpr auto SLEEP_2 = std::to_underlying(GPIO::NC);
+    constexpr auto RESET_2 = std::to_underlying(GPIO::NC);
     constexpr auto STEP_2 = GPIO::PA6;
 
     constexpr auto MPU6050_FREQ = 200UL;
@@ -80,12 +80,12 @@ namespace segway {
     constexpr auto LQR_KX = std::array{-7.14F64, -1.900F64, -0.0007F64, -0.0015F64, -0.707F64, -0.8803F64};
 
     constexpr auto PID_Y_REF = 2.75F64;
-    constexpr auto PID_KP = 10.0F64;
+    constexpr auto PID_KP = 15.0F64;
     constexpr auto PID_KI = 0.0F64;
     constexpr auto PID_KD = 0.0F64;
     constexpr auto PID_KC = 0.0F64;
     constexpr auto PID_TD = 0.0001F64;
-    constexpr auto PID_SAT = 3000.0F64;
+    constexpr auto PID_SAT = 1000.0F64;
 
     constexpr auto DT = 2 * 1.0F64 / ICM20948_FREQ;
 
