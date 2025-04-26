@@ -29,16 +29,8 @@ namespace icm20948 {
 
     struct ICM20948_DMP {
     public:
-        ICM20948_DMP() noexcept = default;
-        ICM20948_DMP(I2CDevice&& i2c_device) noexcept;
-
-        ICM20948_DMP(ICM20948_DMP const& other) = delete;
-        ICM20948_DMP(ICM20948_DMP&& other) noexcept = default;
-
-        ICM20948_DMP& operator=(ICM20948_DMP const& other) = delete;
-        ICM20948_DMP& operator=(ICM20948_DMP&& other) noexcept = default;
-
-        ~ICM20948_DMP() noexcept;
+        void initialize() noexcept;
+        void deinitialize() noexcept;
 
         std::optional<Vec3D<std::float64_t>> get_roll_pitch_yaw() noexcept;
         std::optional<std::float64_t> get_roll() noexcept;
@@ -46,21 +38,17 @@ namespace icm20948 {
         std::optional<std::float64_t> get_yaw() noexcept;
 
         std::optional<Quat3D<std::float64_t>> get_quaternion_scaled() noexcept;
-
-    private:
         std::optional<Quat3D<std::int32_t>> get_quaternion_raw() noexcept;
 
-        void initialize() noexcept;
+        bool initialized = false;
+
+        I2CDevice i2c_device = {};
+
+        ICM_20948_Serif_t icm_20948_serif = {};
+        ICM_20948_Device_t icm_20948_device = {};
+
+    private:
         void initialize_dmp() noexcept;
-
-        void deinitialize() noexcept;
-
-        bool initialized_{false};
-
-        I2CDevice i2c_device_{};
-
-        ICM_20948_Serif_t icm_20948_serif_{};
-        ICM_20948_Device_t icm_20948_device_{};
     };
 
 }; // namespace icm20948

@@ -40,7 +40,7 @@ namespace segway {
         auto i2c_device = stm32_utility::I2CDevice{.i2c_bus = &hi2c1, .dev_address = ICM20948_I2C_ADDRESS};
         i2c_device.bus_scan();
 
-        auto icm20948_dmp = icm20948::ICM20948_DMP{std::move(i2c_device)};
+        auto icm20948_dmp = icm20948::ICM20948_DMP{.i2c_device = std::move(i2c_device)};
 
         while (1) {
             if (nvic_mask.data_ready) {
@@ -57,14 +57,28 @@ namespace segway {
         auto i2c_device = stm32_utility::I2CDevice{.i2c_bus = &hi2c1, .dev_address = MPU6050_I2C_ADDRESS};
         i2c_device.bus_scan();
 
-        auto mpu6050 = mpu6050::MPU6050{std::move(i2c_device),
-                                        MPU6050_FREQ,
-                                        MPU6050_GYRO_RANGE,
-                                        MPU6050_ACCEL_RANGE,
-                                        MPU6050_DLPF,
-                                        MPU6050_DHPF};
+        auto mpu6050_write_bytes = [](void* user, std::uint8_t address, std::uint8_t* bytes, std::size_t size) {
+            static_cast<I2CDevice*>(user)->write_bytes(address, bytes, size);
+        };
+        auto mpu6050_read_bytes = [](void* user, std::uint8_t address, std::uint8_t* bytes, std::size_t size) {
+            static_cast<I2CDevice*>(user)->read_bytes(address, bytes, size);
+        };
+        auto mpu6050_delay_ms = [](void* user, std::uint32_t ms) { HAL_Delay(ms); };
 
-        auto mpu6050_dmp = mpu6050::MPU6050_DMP{std::move(mpu6050)};
+        auto mpu6050_interface = mpu6050::Interface{.user = &i2c_device,
+                                                    .write_bytes = mpu6050_write_bytes,
+                                                    .read_bytes = mpu6050_read_bytes,
+                                                    .delay_ms = mpu6050_delay_ms};
+        auto mpu6050_config = mpu6050::Config{.sampling_rate = MPU6050_FREQ,
+                                              .gyro_range = MPU6050_GYRO_RANGE,
+                                              .accel_range = MPU6050_ACCEL_RANGE,
+                                              .dlpf_setting = MPU6050_DLPF,
+                                              .dhpf_setting = MPU6050_DHPF};
+
+        auto mpu6050 = mpu6050::MPU6050{.config = std::move(mpu6050_config), .interface = std::move(mpu6050_interface)};
+
+        auto mpu6050_dmp = mpu6050::MPU6050_DMP{.mpu6050 = std::move(mpu6050)};
+        mpu6050_dmp.initialize();
 
         while (1) {
             if (nvic_mask.data_ready) {
@@ -240,15 +254,30 @@ namespace segway {
         auto wheels = segway::Wheels{std::move(left_wheel), std::move(right_wheel)};
 
         auto i2c_device = stm32_utility::I2CDevice{.i2c_bus = &hi2c1, .dev_address = MPU6050_I2C_ADDRESS};
+        i2c_device.bus_scan();
 
-        auto mpu6050 = mpu6050::MPU6050{std::move(i2c_device),
-                                        MPU6050_FREQ,
-                                        MPU6050_GYRO_RANGE,
-                                        MPU6050_ACCEL_RANGE,
-                                        MPU6050_DLPF,
-                                        MPU6050_DHPF};
+        auto mpu6050_write_bytes = [](void* user, std::uint8_t address, std::uint8_t* bytes, std::size_t size) {
+            static_cast<I2CDevice*>(user)->write_bytes(address, bytes, size);
+        };
+        auto mpu6050_read_bytes = [](void* user, std::uint8_t address, std::uint8_t* bytes, std::size_t size) {
+            static_cast<I2CDevice*>(user)->read_bytes(address, bytes, size);
+        };
+        auto mpu6050_delay_ms = [](void* user, std::uint32_t ms) { HAL_Delay(ms); };
 
-        auto imu = mpu6050::MPU6050_DMP{std::move(mpu6050)};
+        auto mpu6050_interface = mpu6050::Interface{.user = &i2c_device,
+                                                    .write_bytes = mpu6050_write_bytes,
+                                                    .read_bytes = mpu6050_read_bytes,
+                                                    .delay_ms = mpu6050_delay_ms};
+
+        auto mpu6050_config = mpu6050::Config{.sampling_rate = MPU6050_FREQ,
+                                              .gyro_range = MPU6050_GYRO_RANGE,
+                                              .accel_range = MPU6050_ACCEL_RANGE,
+                                              .dlpf_setting = MPU6050_DLPF,
+                                              .dhpf_setting = MPU6050_DHPF};
+
+        auto mpu6050 = mpu6050::MPU6050{.config = std::move(mpu6050_config), .interface = std::move(mpu6050_interface)};
+
+        auto imu = mpu6050::MPU6050_DMP{.mpu6050 = std::move(mpu6050)};
 
         auto regulator = PID{.kP = PID_KP, .kI = PID_KI, .kD = PID_KD, .tD = PID_TD, .kC = PID_KC, .sat = PID_SAT};
 

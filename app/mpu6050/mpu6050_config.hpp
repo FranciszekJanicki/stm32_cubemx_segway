@@ -136,6 +136,21 @@ namespace mpu6050 {
         FREQ_40 = 0x3,
     };
 
+    struct Config {
+        std::uint32_t sampling_rate = {};
+        GyroRange gyro_range = {};
+        AccelRange accel_range = {};
+        DLPF dlpf_setting = {};
+        DHPF dhpf_setting = {};
+    };
+
+    struct Interface {
+        void* user = nullptr;
+        void (*write_bytes)(void*, std::uint8_t, std::uint8_t*, std::size_t);
+        void (*read_bytes)(void*, std::uint8_t, std::uint8_t*, std::size_t);
+        void (*delay_ms)(void*, std::uint32_t);
+    };
+
     constexpr auto PI = std::numbers::pi_v<std::float64_t>;
 
     constexpr auto GYRO_OUTPUT_RATE_DLPF_EN_HZ = 1000U;

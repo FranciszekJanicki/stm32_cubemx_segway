@@ -11,17 +11,8 @@ namespace mpu6050 {
 
     struct MPU6050_DMP {
     public:
-        MPU6050_DMP() noexcept = default;
-
-        MPU6050_DMP(MPU6050&& mpu6050) noexcept;
-
-        MPU6050_DMP(MPU6050_DMP const& other) noexcept = delete;
-        MPU6050_DMP(MPU6050_DMP&& other) noexcept = default;
-
-        MPU6050_DMP& operator=(MPU6050_DMP const& other) noexcept = delete;
-        MPU6050_DMP& operator=(MPU6050_DMP&& other) noexcept = default;
-
-        ~MPU6050_DMP() noexcept;
+        void initialize() noexcept;
+        void deinitialize() noexcept;
 
         std::optional<std::float64_t> get_roll() const noexcept;
         std::optional<std::float64_t> get_pitch() const noexcept;
@@ -30,12 +21,15 @@ namespace mpu6050 {
 
         std::optional<Quat3D<std::float64_t>> get_quaternion_scaled() const noexcept;
 
-        std::optional<Quat3D<std::int16_t>> get_quaternion_raw() const noexcept;
+        bool initialized = false;
 
-        void initialize() noexcept;
+        MPU6050 mpu6050 = {};
+
+    private:
         void initialize_dmp() const noexcept;
         void initialize_offsets() const noexcept;
-        void deinitialize() noexcept;
+
+        std::optional<Quat3D<std::int16_t>> get_quaternion_raw() const noexcept;
 
         bool get_otp_bank_valid() const noexcept;
         void set_otp_bank_valid(bool const enabled) const noexcept;
@@ -93,10 +87,6 @@ namespace mpu6050 {
         void set_dmp_config2(std::uint8_t const config) const noexcept;
 
         std::array<std::uint8_t, 42UL> get_dmp_packet() const noexcept;
-
-        bool initialized_{false};
-
-        MPU6050 mpu6050_{};
     };
 
 }; // namespace mpu6050

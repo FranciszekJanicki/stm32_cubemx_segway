@@ -8,22 +8,9 @@
 namespace mpu6050 {
 
     struct MPU6050 {
-        MPU6050() noexcept = default;
-
-        MPU6050(I2CDevice&& i2c_device,
-                std::uint32_t const sampling_rate,
-                GyroRange const gyro_range,
-                AccelRange const accel_range,
-                DLPF const dlpf,
-                DHPF const dhpf) noexcept;
-
-        MPU6050(MPU6050 const& other) noexcept = delete;
-        MPU6050(MPU6050&& other) noexcept = default;
-
-        MPU6050& operator=(MPU6050 const& other) noexcept = delete;
-        MPU6050& operator=(MPU6050&& other) noexcept = default;
-
-        ~MPU6050() noexcept;
+    public:
+        void initialize() noexcept;
+        void deinitialize() noexcept;
 
         /* celsius */
         std::optional<std::float64_t> get_temperature_celsius() const noexcept;
@@ -52,8 +39,9 @@ namespace mpu6050 {
 
         bool read_bit(std::uint8_t const reg_address, std::uint8_t const position) const noexcept;
 
-        std::uint8_t
-        read_bits(std::uint8_t const reg_address, std::uint8_t const position, std::uint8_t const size) const noexcept;
+        std::uint8_t read_bits(std::uint8_t const reg_address,
+                               std::uint8_t const position,
+                               std::uint8_t const size) const noexcept;
 
         void write_bit(std::uint8_t const reg_address, bool const bit, std::uint8_t const position) const noexcept;
 
@@ -62,28 +50,15 @@ namespace mpu6050 {
                         std::uint8_t const position,
                         std::uint8_t const size) const noexcept;
 
-        void
-        read_bytes(std::uint8_t const reg_address, std::uint8_t* const bytes, std::uint8_t const size) const noexcept;
+        void read_bytes(std::uint8_t const reg_address,
+                        std::uint8_t* const bytes,
+                        std::uint8_t const size) const noexcept;
 
-        void
-        write_bytes(std::uint8_t const reg_address, std::uint8_t* const bytes, std::uint8_t const size) const noexcept;
+        void write_bytes(std::uint8_t const reg_address,
+                         std::uint8_t* const bytes,
+                         std::uint8_t const size) const noexcept;
 
-        bool is_valid_device_id() const noexcept;
-
-        void initialize(std::uint32_t const sampling_rate,
-                        GyroRange const gyro_range,
-                        AccelRange const accel_range,
-                        DLPF const dlpf,
-                        DHPF const dhpf) noexcept;
-        void initialize_base(GyroRange const gyro_range, AccelRange const accel_range) const noexcept;
-        void initialize_advanced(std::uint32_t const sampling_rate, DLPF const dlpf, DHPF const dhpf) const noexcept;
-        void initialize_interrupt() const noexcept;
-        void initialize_data_ready_interrupt() const noexcept;
-        void initialize_f_sync_interrupt() const noexcept;
-        void initialize_motion_interrupt() const noexcept;
-        void initialize_zero_motion_interrupt() const noexcept;
-        void initialize_free_fall_interrupt() const noexcept;
-        void deinitialize() noexcept;
+        void delay_ms(std::uint32_t const ms) const noexcept;
 
         void set_sampling_rate(std::uint8_t const sampling_rate, DLPF const dlpf) const noexcept;
         void set_external_frame_sync(ExtSync const frame_sync) const noexcept;
@@ -235,12 +210,23 @@ namespace mpu6050 {
 
         std::uint8_t get_device_id() const noexcept;
 
-        bool initialized_{false};
+        bool initialized = false;
 
-        I2CDevice i2c_device_{};
+        Config config = {};
+        Interface interface = {};
 
-        std::float64_t gyro_scale_{};
-        std::float64_t accel_scale_{};
+        std::float64_t gyro_scale = {};
+        std::float64_t accel_scale = {};
+
+    private:
+        void initialize_base() noexcept;
+        void initialize_advanced() noexcept;
+        void initialize_interrupt() noexcept;
+        void initialize_data_ready_interrupt() noexcept;
+        void initialize_f_sync_interrupt() noexcept;
+        void initialize_motion_interrupt() noexcept;
+        void initialize_zero_motion_interrupt() noexcept;
+        void initialize_free_fall_interrupt() noexcept;
     };
 
 }; // namespace mpu6050

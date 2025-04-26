@@ -14,10 +14,11 @@ namespace segway {
 
     using IMU = std::variant<ICM20948_DMP, MPU6050_DMP>;
 
+    void initialize_imu(IMU& imu) noexcept;
+    void deinitialize_imu(IMU& imu) noexcept;
+
     std::float64_t get_tilt_angle(IMU& imu) noexcept;
     std::float64_t get_rotation_angle(IMU& imu) noexcept;
-
-    bool bus_scan(IMU& imu) noexcept;
 
 }; // namespace segway
 

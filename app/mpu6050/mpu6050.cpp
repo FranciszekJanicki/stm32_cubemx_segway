@@ -5,22 +5,82 @@
 
 namespace mpu6050 {
 
-    MPU6050::MPU6050(I2CDevice&& i2c_device,
-                     std::uint32_t const sampling_rate,
-                     GyroRange const gyro_range,
-                     AccelRange const accel_range,
-                     DLPF const dlpf,
-                     DHPF const dhpf) noexcept :
-        i2c_device_{std::forward<I2CDevice>(i2c_device)},
-        gyro_scale_{gyro_range_to_scale(gyro_range)},
-        accel_scale_{accel_range_to_scale(accel_range)}
+    void MPU6050::initialize() noexcept
     {
-        this->initialize(sampling_rate, gyro_range, accel_range, dlpf, dhpf);
+        this->device_wake_up();
+        this->initialize_base();
+        this->initialize_advanced();
+        this->initialize_interrupt();
+        this->initialized = true;
     }
 
-    MPU6050::~MPU6050() noexcept
+    void MPU6050::initialize_base() noexcept
     {
-        this->deinitialize();
+        this->gyro_scale = gyro_range_to_scale(this->config.gyro_range);
+        this->accel_scale = accel_range_to_scale(this->config.accel_range);
+
+        this->set_clock_source(Clock::PLL_ZGYRO);
+        this->set_full_scale_gyro_range(this->config.gyro_range);
+        this->set_full_scale_accel_range(this->config.accel_range);
+        this->set_sleep_enabled(false);
+    }
+
+    void MPU6050::initialize_advanced() noexcept
+    {
+        this->set_sampling_rate(this->config.sampling_rate, this->config.dlpf_setting);
+        this->set_dlpf_mode(this->config.dlpf_setting);
+        this->set_dhpf_mode(this->config.dhpf_setting);
+        this->set_external_frame_sync(ExtSync::TEMP_OUT_L);
+    }
+
+    void MPU6050::initialize_interrupt() noexcept
+    {
+        this->initialize_f_sync_interrupt();
+        this->initialize_data_ready_interrupt();
+        this->initialize_motion_interrupt();
+    }
+
+    void MPU6050::initialize_f_sync_interrupt() noexcept
+    {
+        this->set_f_sync_interrupt_mode(IntMode::ACTIVEHIGH);
+        this->set_f_sync_interrupt_enabled(true);
+    }
+
+    void MPU6050::initialize_data_ready_interrupt() noexcept
+    {
+        this->set_interrupt_latch(IntLatch::PULSE50US);
+        this->set_interrupt_latch_clear(IntClear::STATUSREAD);
+        this->set_interrupt_drive(IntDrive::PUSHPULL);
+        this->set_interrupt_mode(IntMode::ACTIVEHIGH);
+        // this->set_int_data_ready_enabled(true);
+    }
+
+    void MPU6050::initialize_motion_interrupt() noexcept
+    {
+        this->set_motion_detection_duration(80);
+        this->set_motion_detection_threshold(2);
+        this->set_motion_detection_control(0x15);
+        // this->set_int_motion_enabled(true);
+    }
+
+    void MPU6050::initialize_zero_motion_interrupt() noexcept
+    {
+        this->set_zero_motion_detection_duration(0);
+        this->set_zero_motion_detection_threshold(156);
+        // this->set_int_zero_motion_enabled(true);
+    }
+
+    void MPU6050::initialize_free_fall_interrupt() noexcept
+    {
+        this->set_free_fall_detection_duration(2);
+        this->set_free_fall_detection_threshold(5);
+        this->set_int_free_fall_enabled(true);
+    }
+
+    void MPU6050::deinitialize() noexcept
+    {
+        this->device_reset();
+        this->initialized = false;
     }
 
     std::optional<std::float64_t> MPU6050::get_temperature_celsius() const noexcept
@@ -32,50 +92,50 @@ namespace mpu6050 {
     std::optional<std::float64_t> MPU6050::get_acceleration_x_scaled() const noexcept
     {
         return this->get_acceleration_x_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->accel_scale_; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->accel_scale; });
     }
 
     std::optional<std::float64_t> MPU6050::get_acceleration_y_scaled() const noexcept
     {
         return this->get_acceleration_y_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->accel_scale_; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->accel_scale; });
     }
 
     std::optional<std::float64_t> MPU6050::get_acceleration_z_scaled() const noexcept
     {
         return this->get_acceleration_z_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->accel_scale_; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->accel_scale; });
     }
 
     std::optional<Vec3D<std::float64_t>> MPU6050::get_acceleration_scaled() const noexcept
     {
         return this->get_acceleration_raw().transform([this](Vec3D<std::int16_t> const& raw) {
-            return static_cast<Vec3D<std::float64_t>>(raw) / this->accel_scale_;
+            return static_cast<Vec3D<std::float64_t>>(raw) / this->accel_scale;
         });
     }
 
     std::optional<std::float64_t> MPU6050::get_rotation_x_scaled() const noexcept
     {
         return this->get_rotation_x_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->gyro_scale_; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->gyro_scale; });
     }
 
     std::optional<std::float64_t> MPU6050::get_rotation_y_scaled() const noexcept
     {
         return this->get_rotation_y_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->gyro_scale_; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->gyro_scale; });
     }
 
     std::optional<std::float64_t> MPU6050::get_rotation_z_scaled() const noexcept
     {
         return this->get_rotation_z_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->gyro_scale_; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->gyro_scale; });
     }
 
     std::optional<Vec3D<std::float64_t>> MPU6050::get_rotation_scaled() const noexcept
     {
         return this->get_rotation_raw().transform([this](Vec3D<std::int16_t> const& raw) {
-            return static_cast<Vec3D<std::float64_t>>(raw) / this->gyro_scale_;
+            return static_cast<Vec3D<std::float64_t>>(raw) / this->gyro_scale;
         });
     }
 
@@ -101,12 +161,15 @@ namespace mpu6050 {
 
     std::uint8_t MPU6050::read_byte(std::uint8_t const reg_address) const noexcept
     {
-        return this->i2c_device_.read_byte(reg_address);
+        std::uint8_t data[1];
+        this->read_bytes(reg_address, data, sizeof(data));
+        return *data;
     }
 
     void MPU6050::write_byte(std::uint8_t const reg_address, std::uint8_t const byte) const noexcept
     {
-        this->i2c_device_.write_byte(reg_address, byte);
+        std::uint8_t data[1] = {byte};
+        this->write_bytes(reg_address, data, sizeof(data));
     }
 
     bool MPU6050::read_bit(std::uint8_t const reg_address, std::uint8_t const position) const noexcept
@@ -142,103 +205,24 @@ namespace mpu6050 {
                              std::uint8_t* const bytes,
                              std::uint8_t const size) const noexcept
     {
-        this->i2c_device_.read_bytes(reg_address, bytes, size);
+        if (this->interface.write_bytes) {
+            this->interface.read_bytes(this->interface.user, reg_address, bytes, size);
+        }
     }
 
     void MPU6050::write_bytes(std::uint8_t const reg_address,
                               std::uint8_t* const bytes,
                               std::uint8_t const size) const noexcept
     {
-        this->i2c_device_.write_bytes(reg_address, bytes, size);
-    }
-
-    bool MPU6050::is_valid_device_id() const noexcept
-    {
-        return this->get_device_id() == this->i2c_device_.dev_address;
-    }
-
-    void MPU6050::initialize(std::uint32_t const sampling_rate,
-                             GyroRange const gyro_range,
-                             AccelRange const accel_range,
-                             DLPF const dlpf,
-                             DHPF const dhpf) noexcept
-    {
-        if (this->is_valid_device_id()) {
-            this->device_wake_up();
-            HAL_Delay(200);
-            this->initialize_base(gyro_range, accel_range);
-            this->initialize_advanced(sampling_rate, dlpf, dhpf);
-            this->initialize_interrupt();
-            this->initialized_ = true;
+        if (this->interface.write_bytes) {
+            this->interface.write_bytes(this->interface.user, reg_address, bytes, size);
         }
     }
 
-    void MPU6050::initialize_base(GyroRange const gyro_range, AccelRange const accel_range) const noexcept
+    void MPU6050::delay_ms(std::uint32_t const ms) const noexcept
     {
-        this->set_clock_source(Clock::PLL_ZGYRO);
-        this->set_full_scale_gyro_range(gyro_range);
-        this->set_full_scale_accel_range(accel_range);
-        this->set_sleep_enabled(false);
-    }
-
-    void
-    MPU6050::initialize_advanced(std::uint32_t const sampling_rate, DLPF const dlpf, DHPF const dhpf) const noexcept
-    {
-        this->set_sampling_rate(sampling_rate, dlpf);
-        this->set_dlpf_mode(dlpf);
-        this->set_dhpf_mode(dhpf);
-        this->set_external_frame_sync(ExtSync::TEMP_OUT_L);
-    }
-
-    void MPU6050::initialize_interrupt() const noexcept
-    {
-        this->initialize_f_sync_interrupt();
-        this->initialize_data_ready_interrupt();
-        this->initialize_motion_interrupt();
-    }
-
-    void MPU6050::initialize_f_sync_interrupt() const noexcept
-    {
-        this->set_f_sync_interrupt_mode(IntMode::ACTIVEHIGH);
-        this->set_f_sync_interrupt_enabled(true);
-    }
-
-    void MPU6050::initialize_data_ready_interrupt() const noexcept
-    {
-        this->set_interrupt_latch(IntLatch::PULSE50US);
-        this->set_interrupt_latch_clear(IntClear::STATUSREAD);
-        this->set_interrupt_drive(IntDrive::PUSHPULL);
-        this->set_interrupt_mode(IntMode::ACTIVEHIGH);
-        // this->set_int_data_ready_enabled(true);
-    }
-
-    void MPU6050::initialize_motion_interrupt() const noexcept
-    {
-        this->set_motion_detection_duration(80);
-        this->set_motion_detection_threshold(2);
-        this->set_motion_detection_control(0x15);
-        // this->set_int_motion_enabled(true);
-    }
-
-    void MPU6050::initialize_zero_motion_interrupt() const noexcept
-    {
-        this->set_zero_motion_detection_duration(0);
-        this->set_zero_motion_detection_threshold(156);
-        // this->set_int_zero_motion_enabled(true);
-    }
-
-    void MPU6050::initialize_free_fall_interrupt() const noexcept
-    {
-        this->set_free_fall_detection_duration(2);
-        this->set_free_fall_detection_threshold(5);
-        this->set_int_free_fall_enabled(true);
-    }
-
-    void MPU6050::deinitialize() noexcept
-    {
-        if (this->is_valid_device_id()) {
-            this->device_reset();
-            this->initialized_ = false;
+        if (this->interface.delay_ms) {
+            this->interface.delay_ms(this->interface.user, ms);
         }
     }
 
@@ -656,11 +640,11 @@ namespace mpu6050 {
         std::uint8_t buffer[6];
         this->read_bytes(std::to_underlying(RA::ACCEL_XOUT_H), buffer, sizeof(buffer));
 
-        return this->initialized_ ? std::optional<Vec3D<std::int16_t>>{std::in_place,
-                                                                       (buffer[0] << 8) | buffer[1],
-                                                                       (buffer[2] << 8) | buffer[3],
-                                                                       (buffer[4] << 8) | buffer[5]}
-                                  : std::optional<Vec3D<std::int16_t>>{std::nullopt};
+        return this->initialized ? std::optional<Vec3D<std::int16_t>>{std::in_place,
+                                                                      (buffer[0] << 8) | buffer[1],
+                                                                      (buffer[2] << 8) | buffer[3],
+                                                                      (buffer[4] << 8) | buffer[5]}
+                                 : std::optional<Vec3D<std::int16_t>>{std::nullopt};
     }
 
     std::optional<std::int16_t> MPU6050::get_acceleration_x_raw() const noexcept
@@ -668,8 +652,8 @@ namespace mpu6050 {
         std::uint8_t buffer[2];
         this->read_bytes(std::to_underlying(RA::ACCEL_XOUT_H), buffer, sizeof(buffer));
 
-        return this->initialized_ ? std::optional<std::int16_t>{(buffer[0] << 8) | buffer[1]}
-                                  : std::optional<std::int16_t>{std::nullopt};
+        return this->initialized ? std::optional<std::int16_t>{(buffer[0] << 8) | buffer[1]}
+                                 : std::optional<std::int16_t>{std::nullopt};
     }
 
     std::optional<std::int16_t> MPU6050::get_acceleration_y_raw() const noexcept
@@ -677,8 +661,8 @@ namespace mpu6050 {
         std::uint8_t buffer[2];
         this->read_bytes(std::to_underlying(RA::ACCEL_YOUT_H), buffer, sizeof(buffer));
 
-        return this->initialized_ ? std::optional<std::int16_t>{(buffer[0] << 8) | buffer[1]}
-                                  : std::optional<std::int16_t>{std::nullopt};
+        return this->initialized ? std::optional<std::int16_t>{(buffer[0] << 8) | buffer[1]}
+                                 : std::optional<std::int16_t>{std::nullopt};
     }
 
     std::optional<std::int16_t> MPU6050::get_acceleration_z_raw() const noexcept
@@ -686,8 +670,8 @@ namespace mpu6050 {
         std::uint8_t buffer[2];
         this->read_bytes(std::to_underlying(RA::ACCEL_ZOUT_H), buffer, sizeof(buffer));
 
-        return this->initialized_ ? std::optional<std::int16_t>{(buffer[0] << 8) | buffer[1]}
-                                  : std::optional<std::int16_t>{std::nullopt};
+        return this->initialized ? std::optional<std::int16_t>{(buffer[0] << 8) | buffer[1]}
+                                 : std::optional<std::int16_t>{std::nullopt};
     }
 
     std::optional<std::int16_t> MPU6050::get_temperature_raw() const noexcept
@@ -695,8 +679,8 @@ namespace mpu6050 {
         std::uint8_t buffer[2];
         this->read_bytes(std::to_underlying(RA::TEMP_OUT_H), buffer, sizeof(buffer));
 
-        return this->initialized_ ? std::optional<std::int16_t>{(buffer[0] << 8) | buffer[1]}
-                                  : std::optional<std::int16_t>{std::nullopt};
+        return this->initialized ? std::optional<std::int16_t>{(buffer[0] << 8) | buffer[1]}
+                                 : std::optional<std::int16_t>{std::nullopt};
     }
 
     std::optional<Vec3D<std::int16_t>> MPU6050::get_rotation_raw() const noexcept
@@ -704,11 +688,11 @@ namespace mpu6050 {
         std::uint8_t buffer[6];
         this->read_bytes(std::to_underlying(RA::GYRO_XOUT_H), buffer, sizeof(buffer));
 
-        return this->initialized_ ? std::optional<Vec3D<std::int16_t>>{std::in_place,
-                                                                       (buffer[0] << 8) | buffer[1],
-                                                                       (buffer[2] << 8) | buffer[3],
-                                                                       (buffer[4] << 8) | buffer[5]}
-                                  : std::optional<Vec3D<std::int16_t>>{std::nullopt};
+        return this->initialized ? std::optional<Vec3D<std::int16_t>>{std::in_place,
+                                                                      (buffer[0] << 8) | buffer[1],
+                                                                      (buffer[2] << 8) | buffer[3],
+                                                                      (buffer[4] << 8) | buffer[5]}
+                                 : std::optional<Vec3D<std::int16_t>>{std::nullopt};
     }
 
     std::optional<std::int16_t> MPU6050::get_rotation_x_raw() const noexcept
@@ -716,8 +700,8 @@ namespace mpu6050 {
         std::uint8_t buffer[2];
         this->read_bytes(std::to_underlying(RA::GYRO_XOUT_H), buffer, sizeof(buffer));
 
-        return this->initialized_ ? std::optional<std::int16_t>{(buffer[0] << 8) | buffer[1]}
-                                  : std::optional<std::int16_t>{std::nullopt};
+        return this->initialized ? std::optional<std::int16_t>{(buffer[0] << 8) | buffer[1]}
+                                 : std::optional<std::int16_t>{std::nullopt};
     }
 
     std::optional<std::int16_t> MPU6050::get_rotation_y_raw() const noexcept
@@ -725,8 +709,8 @@ namespace mpu6050 {
         std::uint8_t buffer[2];
         this->read_bytes(std::to_underlying(RA::GYRO_YOUT_H), buffer, sizeof(buffer));
 
-        return this->initialized_ ? std::optional<std::int16_t>{(buffer[0] << 8) | buffer[1]}
-                                  : std::optional<std::int16_t>{std::nullopt};
+        return this->initialized ? std::optional<std::int16_t>{(buffer[0] << 8) | buffer[1]}
+                                 : std::optional<std::int16_t>{std::nullopt};
     }
 
     std::optional<std::int16_t> MPU6050::get_rotation_z_raw() const noexcept
@@ -734,8 +718,8 @@ namespace mpu6050 {
         std::uint8_t buffer[2];
         this->read_bytes(std::to_underlying(RA::GYRO_ZOUT_H), buffer, sizeof(buffer));
 
-        return this->initialized_ ? std::optional<std::int16_t>{(buffer[0] << 8) | buffer[1]}
-                                  : std::optional<std::int16_t>{std::nullopt};
+        return this->initialized ? std::optional<std::int16_t>{(buffer[0] << 8) | buffer[1]}
+                                 : std::optional<std::int16_t>{std::nullopt};
     }
 
     std::uint8_t MPU6050::get_external_sensor_byte(std::uint8_t const position) const noexcept
@@ -900,6 +884,7 @@ namespace mpu6050 {
     void MPU6050::device_wake_up() const noexcept
     {
         this->write_byte(std::to_underlying(RA::PWR_MGMT_1), 0x00);
+        this->delay_ms(200);
     }
 
     void MPU6050::set_sleep_enabled(bool const enabled) const noexcept
@@ -995,5 +980,4 @@ namespace mpu6050 {
     {
         return this->read_byte(std::to_underlying(RA::WHO_AM_I));
     }
-
 }; // namespace mpu6050
