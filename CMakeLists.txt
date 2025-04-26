@@ -27,7 +27,11 @@ add_subdirectory(app/a4988)
 add_subdirectory(app/mpu6050)
 add_subdirectory(app/icm20948)
 add_subdirectory(app/step_driver)
-add_subdirectory(app/segway)
+add_subdirectory(app/segway/imu_task)
+add_subdirectory(app/segway/main_task)
+add_subdirectory(app/segway/control_task)
+add_subdirectory(app/segway/wheel_task)
+add_subdirectory(app/segway/common)
 add_subdirectory(app/main)
 
 target_compile_options(stm32cubemx INTERFACE 

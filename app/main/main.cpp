@@ -1,8 +1,11 @@
 #include "main.h"
+#include "FreeRTOS.h"
+#include "cmsis_os.h"
 #include "gpio.h"
 #include "i2c.h"
+#include "main_task.hpp"
+#include "task.h"
 #include "tim.h"
-#include "unit_test.hpp"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
 
@@ -18,7 +21,7 @@ int main()
     MX_TIM3_Init();
     MX_USB_DEVICE_Init();
 
-    HAL_Delay(2000);
-
-    segway::test(segway::TestType::SEGWAY);
+    osKernelInitialize();
+    segway::main_task::task_init();
+    osKernelStart();
 }
