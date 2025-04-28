@@ -7,6 +7,13 @@ namespace segway {
 
         constexpr auto TAG = "control_manager";
 
+        struct Context {
+            struct Config {
+                std::float64_t tilt_fault_thresh_low = {};
+                std::float64_t tilt_fault_thresh_high = {};
+            } config;
+        } ctx;
+
         void process_imu_data(ControlEventPayload const& payload) noexcept
         {}
 

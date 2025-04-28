@@ -1,5 +1,6 @@
 #include "wheel.hpp"
 #include "log.hpp"
+#include <cassert>
 
 namespace {
 
@@ -27,6 +28,11 @@ namespace segway {
     void WheelDriver::stop(this WheelDriver& self) noexcept
     {
         self.driver.stop();
+    }
+
+    void WheelDriver::update_step_count(this WheelDriver& self) noexcept
+    {
+        self.driver.update_step_count();
     }
 
     std::float64_t WheelDriver::get_wheel_position(this WheelDriver& self, std::float64_t const dt) noexcept

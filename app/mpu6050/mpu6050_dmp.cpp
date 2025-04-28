@@ -5,19 +5,22 @@
 
 namespace mpu6050 {
 
-    void MPU6050_DMP::initialize() noexcept
+    void MPU6050_DMP::initialize(Config const& config) noexcept
     {
-        if (!this->mpu6050.initialized) {
-            this->mpu6050.initialize();
+        if (!this->initialized) {
+            this->mpu6050.initialize(config);
+            this->initialize_dmp();
+            this->initialized = true;
         }
-
-        this->initialize_offsets();
-        this->initialize_dmp();
-        this->initialized = true;
     }
 
     void MPU6050_DMP::initialize_dmp() const noexcept
     {
+        this->set_x_gyro_offset(220);
+        this->set_y_gyro_offset(76);
+        this->set_z_gyro_offset(-85);
+        this->set_z_accel_offset(1788);
+
         this->mpu6050.device_wake_up();
         this->mpu6050.delay_ms(200);
         this->mpu6050.set_sleep_enabled(false);
@@ -57,17 +60,12 @@ namespace mpu6050 {
         this->set_dmp_enabled(true);
     }
 
-    void MPU6050_DMP::initialize_offsets() const noexcept
-    {
-        this->set_x_gyro_offset(220);
-        this->set_y_gyro_offset(76);
-        this->set_z_gyro_offset(-85);
-        this->set_z_accel_offset(1788);
-    }
-
     void MPU6050_DMP::deinitialize() noexcept
     {
-        this->initialized = false;
+        if (this->initialized) {
+            this->mpu6050.deinitialize();
+            this->initialized = false;
+        }
     }
 
     bool MPU6050_DMP::get_otp_bank_valid() const noexcept

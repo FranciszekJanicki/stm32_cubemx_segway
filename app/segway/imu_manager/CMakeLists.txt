@@ -12,6 +12,7 @@ target_include_directories(imu_manager PUBLIC
     ${CMAKE_SOURCE_DIR}/app/segway/event_group_manager
     ${CMAKE_SOURCE_DIR}/app/mpu6050
     ${CMAKE_SOURCE_DIR}/app/icm20948
+    ${CMAKE_SOURCE_DIR}/app/segway/queue_manager
 )
 
 target_link_libraries(imu_manager PRIVATE
@@ -20,6 +21,7 @@ target_link_libraries(imu_manager PRIVATE
     event_group_manager
     mpu6050
     icm20948
+    queue_manager
 )
 
 target_compile_options(imu_manager PUBLIC

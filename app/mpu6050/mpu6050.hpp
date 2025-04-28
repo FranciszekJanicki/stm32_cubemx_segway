@@ -9,7 +9,7 @@ namespace mpu6050 {
 
     struct MPU6050 {
     public:
-        void initialize() noexcept;
+        void initialize(Config const& config) noexcept;
         void deinitialize() noexcept;
 
         /* celsius */
@@ -212,21 +212,8 @@ namespace mpu6050 {
 
         bool initialized = false;
 
-        Config config = {};
         Interface interface = {};
-
-        std::float64_t gyro_scale = {};
-        std::float64_t accel_scale = {};
-
-    private:
-        void initialize_base() noexcept;
-        void initialize_advanced() noexcept;
-        void initialize_interrupt() noexcept;
-        void initialize_data_ready_interrupt() noexcept;
-        void initialize_f_sync_interrupt() noexcept;
-        void initialize_motion_interrupt() noexcept;
-        void initialize_zero_motion_interrupt() noexcept;
-        void initialize_free_fall_interrupt() noexcept;
+        Scale scale = {};
     };
 
 }; // namespace mpu6050

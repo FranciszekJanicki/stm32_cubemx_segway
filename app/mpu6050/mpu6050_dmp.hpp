@@ -11,7 +11,7 @@ namespace mpu6050 {
 
     struct MPU6050_DMP {
     public:
-        void initialize() noexcept;
+        void initialize(Config const& config) noexcept;
         void deinitialize() noexcept;
 
         std::optional<std::float64_t> get_roll() const noexcept;
@@ -27,7 +27,6 @@ namespace mpu6050 {
 
     private:
         void initialize_dmp() const noexcept;
-        void initialize_offsets() const noexcept;
 
         std::optional<Quat3D<std::int16_t>> get_quaternion_raw() const noexcept;
 

@@ -23,6 +23,8 @@ namespace segway {
         void start(this WheelDriver& self) noexcept;
         void stop(this WheelDriver& self) noexcept;
 
+        void update_step_count(this WheelDriver& self) noexcept;
+
         std::float64_t get_wheel_position(this WheelDriver& self, std::float64_t const dt) noexcept;
 
         void set_wheel_position(this WheelDriver& self,
@@ -31,8 +33,9 @@ namespace segway {
 
         std::float64_t get_wheel_speed(this WheelDriver& self, std::float64_t const dt) noexcept;
 
-        void
-        set_wheel_speed(this WheelDriver& self, std::float64_t const wheel_speed, std::float64_t const dt) noexcept;
+        void set_wheel_speed(this WheelDriver& self,
+                             std::float64_t const wheel_speed,
+                             std::float64_t const dt) noexcept;
 
         Driver driver = {};
         std::float64_t wheel_radius = 0.0F;

@@ -3,6 +3,7 @@ add_library(mpu6050 STATIC)
 target_sources(mpu6050 PRIVATE 
     "mpu6050.cpp"
     "mpu6050_dmp.cpp"
+    "mpu6050_utility.cpp"
 )
 
 target_include_directories(mpu6050 PUBLIC 

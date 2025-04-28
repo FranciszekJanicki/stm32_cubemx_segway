@@ -1,86 +1,55 @@
 #include "mpu6050.hpp"
+#include "mpu6050_utility.hpp"
 #include "utility.hpp"
 #include <cmath>
 #include <utility>
 
 namespace mpu6050 {
 
-    void MPU6050::initialize() noexcept
+    void MPU6050::initialize(Config const& config) noexcept
     {
-        this->device_wake_up();
-        this->initialize_base();
-        this->initialize_advanced();
-        this->initialize_interrupt();
-        this->initialized = true;
-    }
+        if (!this->initialized) {
+            this->device_wake_up();
+            this->set_clock_source(Clock::PLL_ZGYRO);
+            this->set_full_scale_gyro_range(config.gyro_range);
+            this->set_full_scale_accel_range(config.accel_range);
+            this->set_sleep_enabled(false);
 
-    void MPU6050::initialize_base() noexcept
-    {
-        this->gyro_scale = gyro_range_to_scale(this->config.gyro_range);
-        this->accel_scale = accel_range_to_scale(this->config.accel_range);
+            this->set_sampling_rate(config.sampling_rate, config.dlpf_setting);
+            this->set_dlpf_mode(config.dlpf_setting);
+            this->set_dhpf_mode(config.dhpf_setting);
+            this->set_external_frame_sync(ExtSync::TEMP_OUT_L);
 
-        this->set_clock_source(Clock::PLL_ZGYRO);
-        this->set_full_scale_gyro_range(this->config.gyro_range);
-        this->set_full_scale_accel_range(this->config.accel_range);
-        this->set_sleep_enabled(false);
-    }
+            this->set_f_sync_interrupt_mode(IntMode::ACTIVEHIGH);
+            this->set_f_sync_interrupt_enabled(true);
+            this->set_interrupt_latch(IntLatch::PULSE50US);
+            this->set_interrupt_latch_clear(IntClear::STATUSREAD);
+            this->set_interrupt_drive(IntDrive::PUSHPULL);
+            this->set_interrupt_mode(IntMode::ACTIVEHIGH);
+            // this->set_int_data_ready_enabled(true);
+            this->set_motion_detection_duration(80);
+            this->set_motion_detection_threshold(2);
+            this->set_motion_detection_control(0x15);
+            // this->set_int_motion_enabled(true);
+            // this->set_zero_motion_detection_duration(0);
+            // this->set_zero_motion_detection_threshold(156);
+            // this->set_int_zero_motion_enabled(true);
+            // this->set_free_fall_detection_duration(2);
+            // this->set_free_fall_detection_threshold(5);
+            // this->set_int_free_fall_enabled(true);
 
-    void MPU6050::initialize_advanced() noexcept
-    {
-        this->set_sampling_rate(this->config.sampling_rate, this->config.dlpf_setting);
-        this->set_dlpf_mode(this->config.dlpf_setting);
-        this->set_dhpf_mode(this->config.dhpf_setting);
-        this->set_external_frame_sync(ExtSync::TEMP_OUT_L);
-    }
-
-    void MPU6050::initialize_interrupt() noexcept
-    {
-        this->initialize_f_sync_interrupt();
-        this->initialize_data_ready_interrupt();
-        this->initialize_motion_interrupt();
-    }
-
-    void MPU6050::initialize_f_sync_interrupt() noexcept
-    {
-        this->set_f_sync_interrupt_mode(IntMode::ACTIVEHIGH);
-        this->set_f_sync_interrupt_enabled(true);
-    }
-
-    void MPU6050::initialize_data_ready_interrupt() noexcept
-    {
-        this->set_interrupt_latch(IntLatch::PULSE50US);
-        this->set_interrupt_latch_clear(IntClear::STATUSREAD);
-        this->set_interrupt_drive(IntDrive::PUSHPULL);
-        this->set_interrupt_mode(IntMode::ACTIVEHIGH);
-        // this->set_int_data_ready_enabled(true);
-    }
-
-    void MPU6050::initialize_motion_interrupt() noexcept
-    {
-        this->set_motion_detection_duration(80);
-        this->set_motion_detection_threshold(2);
-        this->set_motion_detection_control(0x15);
-        // this->set_int_motion_enabled(true);
-    }
-
-    void MPU6050::initialize_zero_motion_interrupt() noexcept
-    {
-        this->set_zero_motion_detection_duration(0);
-        this->set_zero_motion_detection_threshold(156);
-        // this->set_int_zero_motion_enabled(true);
-    }
-
-    void MPU6050::initialize_free_fall_interrupt() noexcept
-    {
-        this->set_free_fall_detection_duration(2);
-        this->set_free_fall_detection_threshold(5);
-        this->set_int_free_fall_enabled(true);
+            this->scale.gyro_scale = gyro_range_to_scale(config.gyro_range);
+            this->scale.accel_scale = accel_range_to_scale(config.accel_range);
+            this->initialized = true;
+        }
     }
 
     void MPU6050::deinitialize() noexcept
     {
-        this->device_reset();
-        this->initialized = false;
+        if (this->initialized) {
+            this->device_reset();
+            this->initialized = false;
+        }
     }
 
     std::optional<std::float64_t> MPU6050::get_temperature_celsius() const noexcept
@@ -92,50 +61,50 @@ namespace mpu6050 {
     std::optional<std::float64_t> MPU6050::get_acceleration_x_scaled() const noexcept
     {
         return this->get_acceleration_x_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->accel_scale; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->scale.accel_scale; });
     }
 
     std::optional<std::float64_t> MPU6050::get_acceleration_y_scaled() const noexcept
     {
         return this->get_acceleration_y_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->accel_scale; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->scale.accel_scale; });
     }
 
     std::optional<std::float64_t> MPU6050::get_acceleration_z_scaled() const noexcept
     {
         return this->get_acceleration_z_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->accel_scale; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->scale.accel_scale; });
     }
 
     std::optional<Vec3D<std::float64_t>> MPU6050::get_acceleration_scaled() const noexcept
     {
         return this->get_acceleration_raw().transform([this](Vec3D<std::int16_t> const& raw) {
-            return static_cast<Vec3D<std::float64_t>>(raw) / this->accel_scale;
+            return static_cast<Vec3D<std::float64_t>>(raw) / this->scale.accel_scale;
         });
     }
 
     std::optional<std::float64_t> MPU6050::get_rotation_x_scaled() const noexcept
     {
         return this->get_rotation_x_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->gyro_scale; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->scale.gyro_scale; });
     }
 
     std::optional<std::float64_t> MPU6050::get_rotation_y_scaled() const noexcept
     {
         return this->get_rotation_y_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->gyro_scale; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->scale.gyro_scale; });
     }
 
     std::optional<std::float64_t> MPU6050::get_rotation_z_scaled() const noexcept
     {
         return this->get_rotation_z_raw().transform(
-            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->gyro_scale; });
+            [this](std::int16_t const raw) { return static_cast<std::float64_t>(raw) / this->scale.gyro_scale; });
     }
 
     std::optional<Vec3D<std::float64_t>> MPU6050::get_rotation_scaled() const noexcept
     {
         return this->get_rotation_raw().transform([this](Vec3D<std::int16_t> const& raw) {
-            return static_cast<Vec3D<std::float64_t>>(raw) / this->gyro_scale;
+            return static_cast<Vec3D<std::float64_t>>(raw) / this->scale.gyro_scale;
         });
     }
 

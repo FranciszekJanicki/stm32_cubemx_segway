@@ -5,6 +5,7 @@ target_sources(wheel_manager PRIVATE
     "wheel_manager.cpp"
     "wheel_queue.cpp"
     "wheel_event_group.cpp"
+    "wheel.cpp"
 )
 
 target_include_directories(wheel_manager PUBLIC 
@@ -14,6 +15,7 @@ target_include_directories(wheel_manager PUBLIC
     ${CMAKE_SOURCE_DIR}/app/segway/event_group_manager
     ${CMAKE_SOURCE_DIR}/app/step_driver
     ${CMAKE_SOURCE_DIR}/app/a4988
+    ${CMAKE_SOURCE_DIR}/app/utility
 )
 
 target_link_libraries(wheel_manager PRIVATE
@@ -23,6 +25,7 @@ target_link_libraries(wheel_manager PRIVATE
     event_group_manager
     step_driver
     a4988
+    utility
 )
 
 target_compile_options(wheel_manager PUBLIC
