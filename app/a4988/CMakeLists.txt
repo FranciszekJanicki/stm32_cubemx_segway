@@ -6,12 +6,11 @@ target_sources(a4988 PRIVATE
 
 target_include_directories(a4988 PUBLIC 
     ${CMAKE_SOURCE_DIR}/app/stm32_utility
-    ${CMAKE_SOURCE_DIR}/app/utility
+    ${CMAKE_SOURCE_DIR}/app/a4988
 )
 
 target_link_libraries(a4988 PRIVATE
     stm32_utility
-    utility
 )
 
 target_compile_options(a4988 PUBLIC

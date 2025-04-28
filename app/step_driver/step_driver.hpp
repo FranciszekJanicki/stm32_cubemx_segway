@@ -2,7 +2,6 @@
 #define STEP_DRIVER_HPP
 
 #include "a4988.hpp"
-#include "utility.hpp"
 
 namespace step_driver {
 

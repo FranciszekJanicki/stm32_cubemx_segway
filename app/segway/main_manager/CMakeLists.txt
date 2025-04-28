@@ -15,7 +15,6 @@ target_link_libraries(main_manager PRIVATE
     control_manager
     imu_manager
     wheel_manager
-    stm32cubemx
     common
 )
 

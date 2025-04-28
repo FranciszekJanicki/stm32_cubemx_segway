@@ -1,4 +1,5 @@
 #include "step_driver.hpp"
+#include "utility.hpp"
 
 namespace step_driver {
 

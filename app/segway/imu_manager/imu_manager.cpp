@@ -33,23 +33,23 @@ namespace segway {
 
             auto event_bits = xEventGroupWaitBits(event_group, IMUEventBit::ALL, pdTRUE, pdFALSE, pdMS_TO_TICKS(10));
 
-            if (event_bits & IMUEventBit::DATA_READY) {
+            if ((event_bits & IMUEventBit::DATA_READY) == IMUEventBit::DATA_READY) {
                 process_data_ready();
             }
 
-            if (event_bits & IMUEventBit::I2C_ERROR) {
+            if ((event_bits & IMUEventBit::I2C_ERROR) == IMUEventBit::I2C_ERROR) {
                 process_i2c_error();
             }
 
-            if (event_bits & IMUEventBit::RX_COMPLETE) {
+            if ((event_bits & IMUEventBit::RX_COMPLETE) == IMUEventBit::RX_COMPLETE) {
                 process_rx_complete();
             }
 
-            if (event_bits & IMUEventBit::TX_COMPLETE) {
+            if ((event_bits & IMUEventBit::TX_COMPLETE) == IMUEventBit::TX_COMPLETE) {
                 process_tx_complete();
             }
 
-            if (event_bits & IMUEventBit::SAMPLING_TIMER) {
+            if ((event_bits & IMUEventBit::SAMPLING_TIMER) == IMUEventBit::SAMPLING_TIMER) {
                 process_sampling_timer();
             }
         }

@@ -1,0 +1,8 @@
+add_subdirectory(utility)
+add_subdirectory(stm32_utility)
+add_subdirectory(a4988)
+add_subdirectory(mpu6050)
+add_subdirectory(icm20948)
+add_subdirectory(step_driver)
+add_subdirectory(segway)
+add_subdirectory(main)

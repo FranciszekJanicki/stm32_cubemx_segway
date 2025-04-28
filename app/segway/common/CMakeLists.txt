@@ -6,7 +6,6 @@ target_sources(common INTERFACE
 
 target_link_libraries(common INTERFACE
     stm32cubemx
-    task_manager
 )
 
 target_include_directories(common INTERFACE 

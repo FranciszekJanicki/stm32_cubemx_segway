@@ -1,6 +1,5 @@
 #include "a4988.hpp"
 #include "a4988_config.hpp"
-#include "utility.hpp"
 
 namespace a4988 {
 

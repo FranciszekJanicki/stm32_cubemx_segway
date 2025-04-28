@@ -4,7 +4,6 @@
 #include "event_groups.h"
 #include "gpio.h"
 #include "i2c.h"
-#include "log.hpp"
 #include "tim.h"
 #include <utility>
 
@@ -12,13 +11,7 @@
 extern "C" {
 #endif
 
-namespace {
-
-    constexpr auto TAG = "nvic_manager";
-
-    using namespace segway;
-
-}; // namespace
+using namespace segway;
 
 void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef* hi2c)
 {

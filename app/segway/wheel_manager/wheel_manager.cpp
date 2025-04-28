@@ -1,7 +1,7 @@
 #include "wheel_manager.hpp"
 #include "event_group_manager.hpp"
 #include "queue_manager.hpp"
-#include "wheels.hpp"
+#include "wheel.hpp"
 
 namespace segway {
 
@@ -10,7 +10,7 @@ namespace segway {
         constexpr auto TAG = "wheel_manager";
 
         struct Context {
-            Wheels wheels = {};
+            //  Wheels wheels = {};
         };
 
         auto ctx = Context{};
@@ -56,19 +56,19 @@ namespace segway {
 
             auto event_bits = xEventGroupWaitBits(event_group, WheelEventBit::ALL, pdTRUE, pdFALSE, pdMS_TO_TICKS(10));
 
-            if (event_bits & WheelEventBit::LEFT_PWM_PULSE) {
+            if ((event_bits & WheelEventBit::LEFT_PWM_PULSE) == WheelEventBit::LEFT_PWM_PULSE) {
                 process_left_pwm_pulse();
             }
 
-            if (event_bits & WheelEventBit::RIGHT_PWM_PULSE) {
+            if ((event_bits & WheelEventBit::RIGHT_PWM_PULSE) == WheelEventBit::RIGHT_PWM_PULSE) {
                 process_right_pwm_pulse();
             }
 
-            if (event_bits & WheelEventBit::LEFT_STEP_TIMER) {
+            if ((event_bits & WheelEventBit::LEFT_STEP_TIMER) == WheelEventBit::LEFT_STEP_TIMER) {
                 process_left_step_timer();
             }
 
-            if (event_bits & WheelEventBit::RIGHT_STEP_TIMER) {
+            if ((event_bits & WheelEventBit::RIGHT_STEP_TIMER) == WheelEventBit::RIGHT_STEP_TIMER) {
                 process_right_step_timer();
             }
         };
@@ -76,9 +76,7 @@ namespace segway {
     }; // namespace
 
     void wheel_manager_init() noexcept
-    {
-        wheels[std::to_underlying(WheelType::LEFT)];
-    }
+    {}
 
     void wheel_manager_process() noexcept
     {
