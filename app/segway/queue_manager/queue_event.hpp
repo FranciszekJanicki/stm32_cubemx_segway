@@ -16,6 +16,7 @@ namespace segway {
             std::float64_t roll;
             std::float64_t pitch;
             std::float64_t yaw;
+            std::float64_t dt;
         } imu_data;
     };
 

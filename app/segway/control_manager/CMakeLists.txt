@@ -10,12 +10,14 @@ target_include_directories(control_manager PUBLIC
     ${CMAKE_SOURCE_DIR}/app/segway/common
     ${CMAKE_SOURCE_DIR}/app/segway/task_manager
     ${CMAKE_SOURCE_DIR}/app/segway/queue_manager
+    ${CMAKE_SOURCE_DIR}/app/utility
 )
 
 target_link_libraries(control_manager PRIVATE
     common
     task_manager
     queue_manager
+    utility
 )
 
 target_compile_options(control_manager PUBLIC

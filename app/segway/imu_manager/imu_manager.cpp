@@ -1,7 +1,6 @@
 #include "imu_manager.hpp"
 #include "event_group_manager.hpp"
 #include "i2c.h"
-#include "icm20948_dmp.hpp"
 #include "log.hpp"
 #include "mpu6050_dmp.hpp"
 #include "queue_manager.hpp"
@@ -14,28 +13,23 @@ namespace segway {
         constexpr auto TAG = "imu_manager";
 
         struct Context {
-            std::variant<mpu6050::MPU6050_DMP, icm20948::ICM20948_DMP> imu = {};
+            mpu6050::MPU6050_DMP imu = {};
 
             struct Config {
                 std::float64_t imu_fault_thresh_low = {};
                 std::float64_t imu_fault_thresh_high = {};
+                std::float64_t sampling_time = {};
             } config;
         } ctx;
 
         void process_data_ready() noexcept
         {
-            auto const& [r, p, y] =
-                std::visit([](auto& sensor) { return sensor.get_roll_pitch_yaw().value(); }, ctx.imu);
-
+            auto const& [r, p, y] = ctx.imu.get_roll_pitch_yaw().value();
             LOG(TAG, "r: %f, p: %f, y: %f", r, p, y);
 
             auto handle = get_queue(QueueType::CONTROL);
-
-            auto event = ControlEvent{};
-            event.type = ControlEventType::IMU_DATA;
-            event.payload.imu_data.roll = r;
-            event.payload.imu_data.pitch = p;
-            event.payload.imu_data.yaw = y;
+            auto event = ControlEvent{.type = ControlEventType::IMU_DATA};
+            event.payload.imu_data = {.roll = r, .pitch = p, .yaw = y, .dt = ctx.config.sampling_time};
 
             xQueueSend(handle, &event, pdMS_TO_TICKS(10));
         }
@@ -57,18 +51,12 @@ namespace segway {
 
         void process_sampling_timer() noexcept
         {
-            auto const& [r, p, y] =
-                std::visit([](auto& sensor) { return sensor.get_roll_pitch_yaw().value(); }, ctx.imu);
-
+            auto const& [r, p, y] = ctx.imu.get_roll_pitch_yaw().value();
             LOG(TAG, "r: %f, p: %f, y: %f", r, p, y);
 
             auto handle = get_queue(QueueType::CONTROL);
-
-            auto event = ControlEvent{};
-            event.type = ControlEventType::IMU_DATA;
-            event.payload.imu_data.roll = r;
-            event.payload.imu_data.pitch = p;
-            event.payload.imu_data.yaw = y;
+            auto event = ControlEvent{.type = ControlEventType::IMU_DATA};
+            event.payload.imu_data = {.roll = r, .pitch = p, .yaw = y, .dt = ctx.config.sampling_time};
 
             xQueueSend(handle, &event, pdMS_TO_TICKS(10));
         }
@@ -76,7 +64,6 @@ namespace segway {
         void process_event_group_bits() noexcept
         {
             auto event_group = get_event_group(EventGroupType::IMU);
-
             auto event_bits = xEventGroupWaitBits(event_group, IMUEventBit::ALL, pdTRUE, pdFALSE, pdMS_TO_TICKS(10));
 
             if ((event_bits & IMUEventBit::DATA_READY) == IMUEventBit::DATA_READY) {
