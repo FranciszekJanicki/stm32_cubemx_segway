@@ -27,16 +27,16 @@ namespace segway {
 
     // 1:
     enum struct WheelEventType : std::uint8_t {
-        LEFT_WHEEL_SPEED,
-        RIGHT_WHEEL_SPEED,
+        WHEEL_DATA,
         NONE,
     };
 
     union WheelEventPayload {
         struct {
-            std::float64_t speed;
+            std::float64_t left_wheel_speed;
+            std::float64_t right_wheel_speed;
             std::float64_t dt;
-        } left_wheel_data, right_wheel_data;
+        } wheel_data;
     };
 
     struct WheelEvent {

@@ -13,15 +13,18 @@ namespace segway {
 
         constexpr auto TAG = "wheel_manager";
 
+        constexpr auto WHEEL_FAULT_THRESH_HIGH = 1000.0F64;
+        constexpr auto WHEEL_FAULT_THRESH_LOW = 800.0F64;
+
         using namespace stm32_utility;
 
         struct Context {
-            std::array<Wheel, 2UL> wheels = {};
+            std::array<Wheel, 2UL> wheels;
 
             struct Config {
-                std::float64_t wheel_fault_thresh_low = {};
-                std::float64_t wheel_fault_thresh_high = {};
-                std::float64_t wheel_distance = {};
+                std::float64_t wheel_fault_thresh_low;
+                std::float64_t wheel_fault_thresh_high;
+                std::float64_t wheel_distance;
             } config;
         } ctx;
 
@@ -35,16 +38,22 @@ namespace segway {
             return it->driver;
         }
 
-        void process_left_wheel_speed(WheelEventPayload const& payload) noexcept
+        void process_left_wheel_data(WheelEventPayload const& payload) noexcept
         {
             auto& driver = get_wheel_driver(WheelType::LEFT);
-            driver.set_wheel_speed(payload.left_wheel_data.speed, payload.left_wheel_data.dt);
+            driver.set_wheel_speed(payload.wheel_data.left_wheel_speed, payload.wheel_data.dt);
         }
 
-        void process_right_wheel_speed(WheelEventPayload const& payload) noexcept
+        void process_right_wheel_data(WheelEventPayload const& payload) noexcept
         {
             auto& driver = get_wheel_driver(WheelType::RIGHT);
-            driver.set_wheel_speed(payload.right_wheel_data.speed, payload.right_wheel_data.dt);
+            driver.set_wheel_speed(payload.wheel_data.right_wheel_speed, payload.wheel_data.dt);
+        }
+
+        void process_wheel_data(WheelEventPayload const& payload) noexcept
+        {
+            process_left_wheel_data(payload);
+            process_right_wheel_data(payload);
         }
 
         void process_queue_events() noexcept
@@ -55,11 +64,8 @@ namespace segway {
             while (uxQueueMessagesWaiting(queue)) {
                 if (xQueueReceive(queue, &event, pdMS_TO_TICKS(10))) {
                     switch (event.type) {
-                        case WheelEventType::LEFT_WHEEL_SPEED:
-                            process_left_wheel_speed(event.payload);
-                            break;
-                        case WheelEventType::RIGHT_WHEEL_SPEED:
-                            process_right_wheel_speed(event.payload);
+                        case WheelEventType::WHEEL_DATA:
+                            process_wheel_data(event.payload);
                             break;
                         default:
                             break;

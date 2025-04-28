@@ -12,13 +12,16 @@ namespace segway {
 
         constexpr auto TAG = "imu_manager";
 
+        constexpr auto IMU_FAULT_THRESH_LOW = 160.0F64;
+        constexpr auto IMU_FAULT_THRESH_HIGH = 180.0F64;
+
         struct Context {
-            mpu6050::MPU6050_DMP imu = {};
+            mpu6050::MPU6050_DMP imu;
 
             struct Config {
-                std::float64_t imu_fault_thresh_low = {};
-                std::float64_t imu_fault_thresh_high = {};
-                std::float64_t sampling_time = {};
+                std::float64_t imu_fault_thresh_low;
+                std::float64_t imu_fault_thresh_high;
+                std::float64_t sampling_time;
             } config;
         } ctx;
 
