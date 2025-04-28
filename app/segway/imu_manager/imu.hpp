@@ -3,7 +3,6 @@
 
 #include "icm20948_dmp.hpp"
 #include "mpu6050_dmp.hpp"
-#include "segway_config.hpp"
 #include <stdfloat>
 #include <variant>
 

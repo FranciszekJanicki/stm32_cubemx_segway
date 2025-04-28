@@ -6,7 +6,7 @@
 
 namespace segway {
 
-    enum ControlEventType : std::uint8_t {
+    enum struct ControlEventType : std::uint8_t {
         IMU_DATA,
         NONE,
     };
@@ -24,14 +24,21 @@ namespace segway {
         ControlEventPayload payload;
     };
 
-    enum WheelEventType : std::uint8_t {
+    // 1:
+    enum struct WheelEventType : std::uint8_t {
         LEFT_WHEEL_SPEED,
         RIGHT_WHEEL_SPEED,
+        NONE,
     };
 
     union WheelEventPayload {
-        std::float64_t left_wheel_speed;
-        std::float64_t right_wheel_speed;
+        struct {
+            std::float64_t speed;
+        } left_wheel_speed;
+
+        struct {
+            std::float64_t speed;
+        } right_wheel_speed;
     };
 
     struct WheelEvent {

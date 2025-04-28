@@ -7,9 +7,35 @@ namespace segway {
 
         constexpr auto TAG = "control_manager";
 
+        void process_imu_data(ControlEventPayload const& payload) noexcept
+        {}
+
+        void process_queue_events() noexcept
+        {
+            auto event = ControlEvent{};
+            auto queue = get_queue(QueueType::CONTROL);
+
+            while (uxQueueMessagesWaiting(queue)) {
+                if (xQueueReceive(queue, &event, pdMS_TO_TICKS(10))) {
+                    switch (event.type) {
+                        case ControlEventType::IMU_DATA:
+                            process_imu_data(event.payload);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+
     }; // namespace
 
-    void control_manager_process() noexcept
+    void control_manager_init() noexcept
     {}
+
+    void control_manager_process() noexcept
+    {
+        process_queue_events();
+    }
 
 }; // namespace segway

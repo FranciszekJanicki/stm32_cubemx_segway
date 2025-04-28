@@ -14,7 +14,6 @@ target_link_libraries(step_driver PRIVATE
     a4988
     utility
     stm32_utility
-    stm32cubemx
 )
 
 target_compile_options(step_driver PUBLIC

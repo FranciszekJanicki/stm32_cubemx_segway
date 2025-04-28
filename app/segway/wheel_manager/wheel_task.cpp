@@ -19,6 +19,8 @@ namespace segway {
         {
             LOG(TAG, "wheel_task start");
 
+            wheel_manager_init();
+
             while (1) {
                 wheel_manager_process();
                 vTaskDelay(pdMS_TO_TICKS(10));

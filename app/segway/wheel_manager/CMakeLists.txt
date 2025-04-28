@@ -12,6 +12,7 @@ target_include_directories(wheel_manager PUBLIC
     ${CMAKE_SOURCE_DIR}/app/segway/task_manager
     ${CMAKE_SOURCE_DIR}/app/segway/queue_manager
     ${CMAKE_SOURCE_DIR}/app/segway/event_group_manager
+    ${CMAKE_SOURCE_DIR}/app/step_driver
 )
 
 target_link_libraries(wheel_manager PRIVATE
@@ -19,6 +20,7 @@ target_link_libraries(wheel_manager PRIVATE
     task_manager
     queue_manager
     event_group_manager
+    step_driver
 )
 
 target_compile_options(wheel_manager PUBLIC
