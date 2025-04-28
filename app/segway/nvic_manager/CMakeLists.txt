@@ -1,19 +1,23 @@
-add_library(control_task STATIC)
+add_library(nvic_manager STATIC)
 
-target_sources(control_task PRIVATE 
-    "control_task.cpp"
+target_sources(nvic_manager PRIVATE 
+    "nvic_manager.cpp"
 )
 
-target_include_directories(control_task PUBLIC 
+target_include_directories(nvic_manager PUBLIC 
+    ${CMAKE_SOURCE_DIR}/cmake/stm32cubemx
+    ${CMAKE_SOURCE_DIR}/app/segway/event_group_manager
     ${CMAKE_SOURCE_DIR}/app/segway/common
 )
 
-target_link_libraries(control_task PRIVATE
+target_link_libraries(nvic_manager PRIVATE
+    stm32cubemx
+    event_group_manager
     common
 )
 
-target_compile_options(control_task PUBLIC
-    -std=c++20
+target_compile_options(nvic_manager PUBLIC
+    -std=c++23
     -Wall
     -Wextra
     -Wconversion

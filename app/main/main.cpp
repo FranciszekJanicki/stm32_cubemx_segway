@@ -22,6 +22,6 @@ int main()
     MX_USB_DEVICE_Init();
 
     osKernelInitialize();
-    segway::main_task::task_init();
+    segway::main_task_init();
     osKernelStart();
 }

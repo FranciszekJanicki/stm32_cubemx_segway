@@ -1,5 +1,5 @@
-#ifndef SEGWAY_CONFIG_HPP
-#define SEGWAY_CONFIG_HPP
+#ifndef SEGWAY_GLOBAL_CONFIG_HPP
+#define SEGWAY_GLOBAL_CONFIG_HPP
 
 #include "a4988.hpp"
 #include "gpio.hpp"
@@ -101,4 +101,4 @@ namespace segway {
 
 }; // namespace segway
 
-#endif // SEGWAY_CONFIG_HPP
+#endif // SEGWAY_GLOBAL_CONFIG_HPP

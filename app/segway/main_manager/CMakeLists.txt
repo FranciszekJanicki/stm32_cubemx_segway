@@ -1,26 +1,26 @@
-add_library(main_task STATIC)
+add_library(main_manager STATIC)
 
-target_sources(main_task PRIVATE 
+target_sources(main_manager PRIVATE 
     "main_task.cpp"
 )
 
-target_include_directories(main_task PUBLIC 
-    ${CMAKE_SOURCE_DIR}/app/segway/control_task
-    ${CMAKE_SOURCE_DIR}/app/segway/imu_task
-    ${CMAKE_SOURCE_DIR}/app/segway/wheel_task
+target_include_directories(main_manager PUBLIC 
+    ${CMAKE_SOURCE_DIR}/app/segway/control_manager
+    ${CMAKE_SOURCE_DIR}/app/segway/imu_manager
+    ${CMAKE_SOURCE_DIR}/app/segway/wheel_manager
     ${CMAKE_SOURCE_DIR}/app/segway/common
 )
 
-target_link_libraries(main_task PRIVATE
-    control_task
-    imu_task
-    wheel_task
+target_link_libraries(main_manager PRIVATE
+    control_manager
+    imu_manager
+    wheel_manager
     stm32cubemx
     common
 )
 
-target_compile_options(main_task PUBLIC
-    -std=c++20
+target_compile_options(main_manager PUBLIC
+    -std=c++23
     -Wall
     -Wextra
     -Wconversion

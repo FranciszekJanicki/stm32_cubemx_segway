@@ -1,19 +1,19 @@
-add_library(imu_task STATIC)
+add_library(queue_manager STATIC)
 
-target_sources(imu_task PRIVATE 
-    "imu_task.cpp"
+target_sources(queue_manager PRIVATE 
+    "queue_manager.cpp"
 )
 
-target_include_directories(imu_task PUBLIC 
-    ${CMAKE_SOURCE_DIR}/app/segway/common
+target_include_directories(queue_manager PUBLIC 
+    ${CMAKE_SOURCE_DIR}/cmake/stm32cubemx
 )
 
-target_link_libraries(imu_task PRIVATE
-    common
+target_link_libraries(queue_manager PRIVATE
+    stm32cubemx
 )
 
-target_compile_options(imu_task PUBLIC
-    -std=c++20
+target_compile_options(queue_manager PUBLIC
+    -std=c++23
     -Wall
     -Wextra
     -Wconversion

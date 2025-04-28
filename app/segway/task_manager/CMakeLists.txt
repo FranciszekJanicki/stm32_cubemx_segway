@@ -1,19 +1,19 @@
-add_library(wheel_task STATIC)
+add_library(task_manager STATIC)
 
-target_sources(wheel_task PRIVATE 
-    "wheel_task.cpp"
+target_sources(task_manager PRIVATE 
+    "task_manager.cpp"
 )
 
-target_include_directories(wheel_task PUBLIC
-    ${CMAKE_SOURCE_DIR}/app/segway/common
+target_include_directories(task_manager PUBLIC 
+    ${CMAKE_SOURCE_DIR}/cmake/stm32cubemx
 )
 
-target_link_libraries(wheel_task PRIVATE
-    common
+target_link_libraries(task_manager PRIVATE
+    stm32cubemx
 )
 
-target_compile_options(wheel_task PUBLIC
-    -std=c++20
+target_compile_options(task_manager PUBLIC
+    -std=c++23
     -Wall
     -Wextra
     -Wconversion

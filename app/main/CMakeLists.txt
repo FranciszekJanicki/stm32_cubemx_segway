@@ -6,12 +6,12 @@ target_sources(main PRIVATE
 
 target_include_directories(main PRIVATE 
     ${CMAKE_SOURCE_DIR}/cmake/stm32cubemx
-    ${CMAKE_SOURCE_DIR}/app/segway/main_task
+    ${CMAKE_SOURCE_DIR}/app/segway/main_manager
 )
 
 target_link_libraries(main PUBLIC
     stm32cubemx
-    main_task
+    main_manager
 )
 
 target_compile_options(main PUBLIC
