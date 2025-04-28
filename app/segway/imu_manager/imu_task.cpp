@@ -31,15 +31,15 @@ namespace segway {
 
     void imu_task_init() noexcept
     {
-        auto task_handle = xTaskCreateStatic(&imu_task,
-                                             IMU_TASK_NAME,
-                                             imu_task_stack.size(),
-                                             IMU_TASK_ARG,
-                                             IMU_TASK_PRIORITY,
-                                             imu_task_stack.data(),
-                                             &imu_static_task);
+        auto task = xTaskCreateStatic(&imu_task,
+                                      IMU_TASK_NAME,
+                                      imu_task_stack.size(),
+                                      IMU_TASK_ARG,
+                                      IMU_TASK_PRIORITY,
+                                      imu_task_stack.data(),
+                                      &imu_static_task);
 
-        set_task_handle(TaskType::IMU_TASK, task_handle);
+        set_task(TaskType::IMU, task);
     }
 
 }; // namespace segway

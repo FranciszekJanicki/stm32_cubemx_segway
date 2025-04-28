@@ -31,15 +31,15 @@ namespace segway {
 
     void wheel_task_init() noexcept
     {
-        auto task_handle = xTaskCreateStatic(&wheel_task,
-                                             WHEEL_TASK_NAME,
-                                             wheel_task_stack.size(),
-                                             WHEEL_TASK_ARG,
-                                             WHEEL_TASK_PRIORITY,
-                                             wheel_task_stack.data(),
-                                             &wheel_static_task);
+        auto task = xTaskCreateStatic(&wheel_task,
+                                      WHEEL_TASK_NAME,
+                                      wheel_task_stack.size(),
+                                      WHEEL_TASK_ARG,
+                                      WHEEL_TASK_PRIORITY,
+                                      wheel_task_stack.data(),
+                                      &wheel_static_task);
 
-        set_task_handle(TaskType::WHEEL_TASK, task_handle);
+        set_task(TaskType::WHEEL, task);
     }
 
 }; // namespace segway

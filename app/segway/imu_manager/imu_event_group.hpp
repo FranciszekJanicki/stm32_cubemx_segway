@@ -1,5 +1,5 @@
-#ifndef SEGWAY_IMU_EVENT_GROUP_HPP
-#define SEGWAY_IMU_EVENT_GROUP_HPP
+#ifndef SEGWAY_IMU_HPP
+#define SEGWAY_IMU_HPP
 
 namespace segway {
 
@@ -7,4 +7,4 @@ namespace segway {
 
 };
 
-#endif // SEGWAY_IMU_EVENT_GROUP
+#endif // SEGWAY_IMU

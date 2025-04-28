@@ -9,14 +9,14 @@
 namespace segway {
 
     enum struct QueueType : std::uint8_t {
-        CONTROL_QUEUE,
-        WHEEL_QUEUE,
+        CONTROL,
+        WHEEL,
         QUEUE_NUM,
     };
 
-    void set_queue_handle(QueueType const type, QueueHandle_t const handle) noexcept;
+    void set_queue(QueueType const type, QueueHandle_t const handle) noexcept;
 
-    QueueHandle_t get_queue_handle(QueueType const type) noexcept;
+    QueueHandle_t get_queue(QueueType const type) noexcept;
 
 }; // namespace segway
 

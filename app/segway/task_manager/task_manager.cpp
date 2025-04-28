@@ -9,28 +9,28 @@ namespace segway {
 
         constexpr auto TASK_NUM = std::to_underlying(TaskType::TASK_NUM);
 
-        auto task_handles = std::array<TaskHandle_t, TASK_NUM>{};
+        auto tasks = std::array<TaskHandle_t, TASK_NUM>{};
 
     }; // namespace
 
-    void set_task_handle(TaskType const type, TaskHandle_t const handle) noexcept
+    void set_task(TaskType const type, TaskHandle_t const handle) noexcept
     {
         auto const index = std::to_underlying(type);
 
         assert(index < TASK_NUM);
-        assert(task_handles[index] == nullptr);
+        assert(tasks[index] == nullptr);
 
-        task_handles[index] = handle;
+        tasks[index] = handle;
     }
 
-    TaskHandle_t get_task_handle(TaskType const type) noexcept
+    TaskHandle_t get_task(TaskType const type) noexcept
     {
         auto const index = std::to_underlying(type);
 
         assert(index < TASK_NUM);
-        assert(task_handles[index] != nullptr);
+        assert(tasks[index] != nullptr);
 
-        return task_handles[index];
+        return tasks[index];
     }
 
 }; // namespace segway

@@ -8,15 +8,15 @@
 namespace segway {
 
     enum struct TaskType : std::uint8_t {
-        CONTROL_TASK,
-        IMU_TASK,
-        WHEEL_TASK,
+        CONTROL,
+        IMU,
+        WHEEL,
         TASK_NUM,
     };
 
-    void set_task_handle(TaskType const type, TaskHandle_t const handle) noexcept;
+    void set_task(TaskType const type, TaskHandle_t const handle) noexcept;
 
-    TaskHandle_t get_task_handle(TaskType const type) noexcept;
+    TaskHandle_t get_task(TaskType const type) noexcept;
 
 }; // namespace segway
 

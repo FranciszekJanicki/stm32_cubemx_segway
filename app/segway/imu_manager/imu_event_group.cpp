@@ -15,7 +15,7 @@ namespace segway {
     {
         auto handle = xEventGroupCreateStatic(&imu_static_event_group);
 
-        set_event_group_handle(EventGroupType::IMU_EVENT_GROUP, handle);
+        set_event_group(EventGroupType::IMU, handle);
     }
 
 }; // namespace segway

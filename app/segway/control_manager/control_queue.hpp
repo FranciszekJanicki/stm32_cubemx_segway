@@ -6,7 +6,7 @@
 
 namespace segway {
 
-    constexpr auto CONTROL_QUEUE_ITEM_SIZE = sizeof(ControlQueueEvent);
+    constexpr auto CONTROL_QUEUE_ITEM_SIZE = sizeof(ControlEvent);
     constexpr auto CONTROL_QUEUE_ITEMS = 10UL;
     constexpr auto CONTROL_QUEUE_STORAGE_SIZE = CONTROL_QUEUE_ITEM_SIZE * CONTROL_QUEUE_ITEMS;
 

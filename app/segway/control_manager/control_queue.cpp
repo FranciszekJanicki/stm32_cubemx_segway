@@ -20,7 +20,7 @@ namespace segway {
                                          control_queue_storage.data(),
                                          &control_static_queue);
 
-        set_queue_handle(QueueType::CONTROL_QUEUE, handle);
+        set_queue(QueueType::CONTROL, handle);
     }
 
 }; // namespace segway

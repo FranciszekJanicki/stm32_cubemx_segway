@@ -1,5 +1,5 @@
-#ifndef SEGWAY_WHEEL_EVENT_GROUP_HPP
-#define SEGWAY_WHEEL_EVENT_GROUP_HPP
+#ifndef SEGWAY_WHEEL_HPP
+#define SEGWAY_WHEEL_HPP
 
 namespace segway {
 
@@ -7,4 +7,4 @@ namespace segway {
 
 };
 
-#endif // SEGWAY_WHEEL_EVENT_GROUP
+#endif // SEGWAY_WHEEL

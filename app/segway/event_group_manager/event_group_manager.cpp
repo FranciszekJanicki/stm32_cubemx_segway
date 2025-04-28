@@ -9,28 +9,28 @@ namespace segway {
 
         constexpr auto EVENT_GROUP_NUM = std::to_underlying(EventGroupType::EVENT_GROUP_NUM);
 
-        auto event_group_handles = std::array<EventGroupHandle_t, EVENT_GROUP_NUM>{};
+        auto event_groups = std::array<EventGroupHandle_t, EVENT_GROUP_NUM>{};
 
     }; // namespace
 
-    void set_event_group_handle(EventGroupType const type, EventGroupHandle_t const handle) noexcept
+    void set_event_group(EventGroupType const type, EventGroupHandle_t const handle) noexcept
     {
         auto const index = std::to_underlying(type);
 
         assert(index < EVENT_GROUP_NUM);
-        assert(event_group_handles[index] == nullptr);
+        assert(event_groups[index] == nullptr);
 
-        event_group_handles[index] = handle;
+        event_groups[index] = handle;
     }
 
-    EventGroupHandle_t get_event_group_handle(EventGroupType const type) noexcept
+    EventGroupHandle_t get_event_group(EventGroupType const type) noexcept
     {
         auto const index = std::to_underlying(type);
 
         assert(index < EVENT_GROUP_NUM);
-        assert(event_group_handles[index] != nullptr);
+        assert(event_groups[index] != nullptr);
 
-        return event_group_handles[index];
+        return event_groups[index];
     }
 
 }; // namespace segway

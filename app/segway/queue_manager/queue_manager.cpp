@@ -9,28 +9,28 @@ namespace segway {
 
         constexpr auto QUEUE_NUM = std::to_underlying(QueueType::QUEUE_NUM);
 
-        auto queue_handles = std::array<QueueHandle_t, QUEUE_NUM>{};
+        auto queues = std::array<QueueHandle_t, QUEUE_NUM>{};
 
     }; // namespace
 
-    void set_queue_handle(QueueType const type, QueueHandle_t const handle) noexcept
+    void set_queue(QueueType const type, QueueHandle_t const handle) noexcept
     {
         auto const index = std::to_underlying(type);
 
         assert(index < QUEUE_NUM);
-        assert(queue_handles[index] == nullptr);
+        assert(queues[index] == nullptr);
 
-        queue_handles[index] = handle;
+        queues[index] = handle;
     }
 
-    QueueHandle_t get_queue_handle(QueueType const type) noexcept
+    QueueHandle_t get_queue(QueueType const type) noexcept
     {
         auto const index = std::to_underlying(type);
 
         assert(index < QUEUE_NUM);
-        assert(queue_handles[index] != nullptr);
+        assert(queues[index] != nullptr);
 
-        return queue_handles[index];
+        return queues[index];
     }
 
 }; // namespace segway
