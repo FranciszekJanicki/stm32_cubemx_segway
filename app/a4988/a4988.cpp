@@ -5,22 +5,26 @@ namespace a4988 {
 
     void A4988::initialize(this A4988& self) noexcept
     {
-        self.pulse_init();
-        self.gpio_init();
-
-        self.set_reset(false);
-        self.set_enable(true);
-        self.set_sleep(false);
+        if (!self.is_initialized) {
+            self.pulse_init();
+            self.gpio_init();
+            self.set_reset(false);
+            self.set_enable(true);
+            self.set_sleep(false);
+            self.is_initialized = true;
+        }
     }
 
     void A4988::deinitialize(this A4988& self) noexcept
     {
-        self.set_reset(true);
-        self.set_enable(false);
-        self.set_sleep(true);
-
-        self.pulse_deinit();
-        self.gpio_deinit();
+        if (self.is_initialized) {
+            self.set_reset(true);
+            self.set_enable(false);
+            self.set_sleep(true);
+            self.pulse_deinit();
+            self.gpio_deinit();
+            self.is_initialized = false;
+        }
     }
 
     void A4988::start_pulses(this A4988& self) noexcept

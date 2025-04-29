@@ -1,6 +1,7 @@
 #include "wheel_manager.hpp"
 #include "event_group_manager.hpp"
 #include "gpio.h"
+#include "log.hpp"
 #include "queue_manager.hpp"
 #include "tim.h"
 #include "utility.hpp"
@@ -52,12 +53,16 @@ namespace segway {
 
         void process_wheel_data(WheelEventPayload const& payload) noexcept
         {
+            LOG(TAG, "process_wheel_data");
+
             process_left_wheel_data(payload);
             process_right_wheel_data(payload);
         }
 
         void process_queue_events() noexcept
         {
+            LOG(TAG, "process_queue_events");
+
             auto event = WheelEvent{};
             auto queue = get_queue(QueueType::WHEEL);
 
@@ -76,30 +81,39 @@ namespace segway {
 
         void process_left_pwm_pulse() noexcept
         {
+            LOG(TAG, "process_left_pwm_pulse");
+
             auto& driver = get_wheel_driver(WheelType::LEFT);
             driver.update_step_count();
         };
 
         void process_right_pwm_pulse() noexcept
         {
+            LOG(TAG, "process_right_pwm_pulse");
+
             auto& driver = get_wheel_driver(WheelType::RIGHT);
             driver.update_step_count();
         };
 
         void process_left_step_timer() noexcept
         {
+            LOG(TAG, "process_left_step_timer");
+
             gpio_toggle_pin(GPIO::PA8);
         };
 
         void process_right_step_timer() noexcept
         {
+            LOG(TAG, "process_right_step_timer");
+
             gpio_toggle_pin(GPIO::PA6);
         };
 
         void process_event_group_bits() noexcept
         {
-            auto event_group = get_event_group(EventGroupType::WHEEL);
+            LOG(TAG, "process_event_group_bits");
 
+            auto event_group = get_event_group(EventGroupType::WHEEL);
             auto event_bits = xEventGroupWaitBits(event_group, WheelEventBit::ALL, pdTRUE, pdFALSE, pdMS_TO_TICKS(10));
 
             if ((event_bits & WheelEventBit::LEFT_PWM_PULSE) == WheelEventBit::LEFT_PWM_PULSE) {
@@ -118,10 +132,13 @@ namespace segway {
                 process_right_step_timer();
             }
         };
+
     }; // namespace
 
     void wheel_manager_init() noexcept
     {
+        LOG(TAG, "wheel_manager_init");
+
         constexpr auto MS1_1 = std::to_underlying(GPIO::PA11);
         constexpr auto MS2_1 = std::to_underlying(GPIO::PA10);
         constexpr auto MS3_1 = std::to_underlying(GPIO::PA9);
@@ -219,5 +236,9 @@ namespace segway {
     {
         process_queue_events();
         process_event_group_bits();
+
+        // auto bytes_left = sizeof(StackType_t) * uxTaskGetStackHighWaterMark(nullptr);
+        // LOG(TAG, "Bytes left: %d", bytes_left);
     }
+
 }; // namespace segway

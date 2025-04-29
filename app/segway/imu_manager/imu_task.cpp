@@ -19,6 +19,8 @@ namespace segway {
         {
             LOG(TAG, "imu_task start");
 
+            //   imu_manager_init();
+
             while (1) {
                 imu_manager_process();
                 vTaskDelay(pdMS_TO_TICKS(10));

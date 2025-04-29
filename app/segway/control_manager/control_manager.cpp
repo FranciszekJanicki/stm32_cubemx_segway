@@ -1,4 +1,5 @@
 #include "control_manager.hpp"
+#include "log.hpp"
 #include "pid.hpp"
 #include "queue_manager.hpp"
 #include <array>
@@ -32,6 +33,8 @@ namespace segway {
 
         void process_imu_data(ControlEventPayload const& payload) noexcept
         {
+            LOG(TAG, "process_imu_data");
+
             auto tilt = payload.imu_data.roll;
             auto error_tilt = PID_Y_REF - tilt;
             auto control_speed = ctx.regulator(error_tilt, payload.imu_data.dt);
@@ -47,6 +50,8 @@ namespace segway {
 
         void process_queue_events() noexcept
         {
+            LOG(TAG, "process_queue_events");
+
             auto event = ControlEvent{};
             auto queue = get_queue(QueueType::CONTROL);
 
@@ -67,6 +72,8 @@ namespace segway {
 
     void control_manager_init() noexcept
     {
+        LOG(TAG, "control_manager_init");
+
         ctx.regulator.kP = PID_KP;
         ctx.regulator.kI = PID_KI;
         ctx.regulator.kD = PID_KD;
@@ -78,4 +85,5 @@ namespace segway {
     {
         process_queue_events();
     }
+
 }; // namespace segway

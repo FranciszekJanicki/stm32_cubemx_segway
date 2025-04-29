@@ -20,12 +20,18 @@ namespace step_driver {
 
     void StepDriver::initialize(this StepDriver& self) noexcept
     {
-        self.driver.initialize();
+        if (!self.is_initialized) {
+            self.driver.initialize();
+            self.is_initialized = true;
+        }
     }
 
     void StepDriver::deinitialize(this StepDriver& self) noexcept
     {
-        self.driver.deinitialize();
+        if (!self.is_initialized) {
+            self.driver.deinitialize();
+            self.is_initialized = true;
+        }
     }
 
     void StepDriver::start(this StepDriver& self) noexcept
@@ -128,11 +134,6 @@ namespace step_driver {
     {
         auto const position = self.get_position(dt);
 
-        if (!self.is_initialized) {
-            self.prev_position = position;
-            self.is_initialized = true;
-        }
-
         return utility::differentiate(position, std::exchange(self.prev_position, position), dt);
     }
 
@@ -152,5 +153,4 @@ namespace step_driver {
     {
         return (std::abs(control_speed) < MIN_SPEED || std::abs(control_speed) > MAX_SPEED) && !self.is_stopped;
     }
-
 }; // namespace step_driver

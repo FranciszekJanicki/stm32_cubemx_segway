@@ -3,11 +3,12 @@
 #include "cmsis_os.h"
 #include "gpio.h"
 #include "i2c.h"
+#include "log.hpp"
 #include "main_task.hpp"
 #include "task.h"
 #include "tim.h"
+#include "usart.h"
 #include "usb_device.h"
-#include "usbd_cdc_if.h"
 
 int main()
 {
@@ -19,7 +20,10 @@ int main()
     MX_TIM1_Init();
     MX_TIM2_Init();
     MX_TIM3_Init();
-    MX_USB_DEVICE_Init();
+    MX_USART2_UART_Init();
+    // MX_USB_DEVICE_Init();
+
+    HAL_Delay(500);
 
     osKernelInitialize();
     segway::main_task_init();

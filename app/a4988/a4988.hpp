@@ -35,6 +35,7 @@ namespace a4988 {
         Interface interface = {};
 
         bool has_pulses_started = {};
+        bool is_initialized = {};
 
     private:
         void pulse_init(this A4988 const& self) noexcept;

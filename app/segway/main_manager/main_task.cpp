@@ -22,6 +22,8 @@ namespace segway {
 
         void main_task(void*) noexcept
         {
+            log_init();
+
             LOG(TAG, "main_task start");
 
             control_queue_init();

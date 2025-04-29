@@ -27,12 +27,12 @@ flash_uart:
 flash_usb:
 	STM32_Programmer_CLI -c port=/dev/ttyACM0 -d ${BUILD_DIR}/app/main/main.elf -rst
 
-.PHONY: serial_uart
-serial_uart:
+.PHONY: monitor_uart
+monitor_uart:
 	minicom -D /dev/ttyUSB0 -b 115200
 
-.PHONY: serial_usb
-serial_usb:
+.PHONY: monitor_usb
+monitor_usb:
 	minicom -D /dev/ttyACM0 -b 115200
 
 .PHONY: clang_format
@@ -73,4 +73,4 @@ remove_utility:
 
 .PHONY: all
 all:
-	make build && make flash_uart && make serial_usb
+	make build && make flash_uart && make monitor_uart

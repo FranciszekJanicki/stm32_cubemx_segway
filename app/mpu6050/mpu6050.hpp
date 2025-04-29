@@ -210,7 +210,7 @@ namespace mpu6050 {
 
         std::uint8_t get_device_id() const noexcept;
 
-        bool initialized = false;
+        bool initialized = {};
 
         Interface interface = {};
         Scale scale = {};

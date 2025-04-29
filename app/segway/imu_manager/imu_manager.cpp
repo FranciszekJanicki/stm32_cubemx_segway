@@ -4,7 +4,7 @@
 #include "log.hpp"
 #include "mpu6050_dmp.hpp"
 #include "queue_manager.hpp"
-#include <variant>
+#include "tim.h"
 
 namespace segway {
 
@@ -25,47 +25,57 @@ namespace segway {
             } config;
         } ctx;
 
+        void start_sampling_timer() noexcept
+        {
+            HAL_TIM_Base_Start_IT(&htim2);
+        }
+
+        void stop_sampling_timer() noexcept
+        {
+            HAL_TIM_Base_Stop_IT(&htim2);
+        }
+
         void process_data_ready() noexcept
         {
-            auto const& [r, p, y] = ctx.imu.get_roll_pitch_yaw().value();
-            LOG(TAG, "r: %f, p: %f, y: %f", r, p, y);
+            LOG(TAG, "process_sampling_timer");
+
+            auto rpy = ctx.imu.get_roll_pitch_yaw().value();
 
             auto handle = get_queue(QueueType::CONTROL);
             auto event = ControlEvent{.type = ControlEventType::IMU_DATA};
-            event.payload.imu_data = {.roll = r, .pitch = p, .yaw = y, .dt = ctx.config.sampling_time};
+            event.payload.imu_data = {.roll = rpy.x, .pitch = rpy.y, .yaw = rpy.z, .dt = ctx.config.sampling_time};
 
-            xQueueSend(handle, &event, pdMS_TO_TICKS(10));
-        }
+            if (!xQueueSend(handle, &event, pdMS_TO_TICKS(10))) {
+                LOG(TAG, "Failed sending to queue!");
+            }
 
-        void process_i2c_error() noexcept
-        {
-            LOG(TAG, "I2C ERROR!!!");
-        }
-
-        void process_rx_complete() noexcept
-        {
-            LOG(TAG, "RX COMPLETE");
-        }
-
-        void process_tx_complete() noexcept
-        {
-            LOG(TAG, "TX COMPLETE");
+            start_sampling_timer();
         }
 
         void process_sampling_timer() noexcept
         {
-            auto const& [r, p, y] = ctx.imu.get_roll_pitch_yaw().value();
-            LOG(TAG, "r: %f, p: %f, y: %f", r, p, y);
+            process_data_ready();
+        }
 
-            auto handle = get_queue(QueueType::CONTROL);
-            auto event = ControlEvent{.type = ControlEventType::IMU_DATA};
-            event.payload.imu_data = {.roll = r, .pitch = p, .yaw = y, .dt = ctx.config.sampling_time};
+        void process_i2c_error() noexcept
+        {
+            LOG(TAG, "process_i2c_error");
+        }
 
-            xQueueSend(handle, &event, pdMS_TO_TICKS(10));
+        void process_rx_complete() noexcept
+        {
+            LOG(TAG, "process_rx_complete");
+        }
+
+        void process_tx_complete() noexcept
+        {
+            LOG(TAG, "process_tx_complete");
         }
 
         void process_event_group_bits() noexcept
         {
+            LOG(TAG, "process_event_group_bits");
+
             auto event_group = get_event_group(EventGroupType::IMU);
             auto event_bits = xEventGroupWaitBits(event_group, IMUEventBit::ALL, pdTRUE, pdFALSE, pdMS_TO_TICKS(10));
 
@@ -94,6 +104,8 @@ namespace segway {
 
     void imu_manager_init() noexcept
     {
+        LOG(TAG, "imu_manager_init");
+
         auto mpu6050_interface =
             mpu6050::Interface{.user = &hi2c1,
                                .write_bytes =
@@ -117,14 +129,26 @@ namespace segway {
         auto mpu6050 = mpu6050::MPU6050{.interface = std::move(mpu6050_interface)};
 
         auto mpu6050_dmp = mpu6050::MPU6050_DMP{.mpu6050 = std::move(mpu6050)};
-        mpu6050_dmp.initialize(mpu6050_config);
+        //   mpu6050_dmp.initialize(mpu6050_config);
 
         ctx.imu = std::move(mpu6050_dmp);
+
+        start_sampling_timer();
     }
 
     void imu_manager_process() noexcept
     {
         process_event_group_bits();
+
+        // auto* buf = static_cast<char*>(std::calloc(uxTaskGetNumberOfTasks() * 40UL, 1UL));
+        // if (buf) {
+        //     vTaskList(buf);
+        //     LOG(TAG, buf);
+        //     std::free(buf);
+        // }
+
+        // auto bytes_left = sizeof(StackType_t) * uxTaskGetStackHighWaterMark(nullptr);
+        // LOG(TAG, "Bytes left: %d", bytes_left);
     }
 
 }; // namespace segway
