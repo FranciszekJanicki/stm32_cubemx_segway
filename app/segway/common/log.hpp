@@ -51,7 +51,7 @@ namespace segway {
                 buf_len = len;
             }
 
-            if (buf) {
+            if (buf) { 
                 std::memset(buf, '\0', buf_len);
                 std::strncpy(buf, tag, buf_len);
                 std::strncat(buf, ": ", buf_len);

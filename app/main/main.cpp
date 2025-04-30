@@ -1,14 +1,17 @@
 #include "main.h"
 #include "FreeRTOS.h"
-#include "cmsis_os.h"
+#include "FreeRTOSConfig.h"
 #include "gpio.h"
 #include "i2c.h"
 #include "log.hpp"
 #include "main_task.hpp"
+#include "portable.h"
 #include "task.h"
 #include "tim.h"
 #include "usart.h"
 #include "usb_device.h"
+#include "wwdg.h"
+#include <array>
 
 int main()
 {
@@ -20,13 +23,10 @@ int main()
     MX_TIM1_Init();
     MX_TIM2_Init();
     MX_TIM3_Init();
-    HAL_InitTick(5);
     MX_USART2_UART_Init();
-    // MX_USB_DEVICE_Init();
+    MX_WWDG_Init();
+    MX_USB_DEVICE_Init();
 
-    HAL_Delay(500);
-
-    osKernelInitialize();
     segway::main_task_init();
-    osKernelStart();
+    vTaskStartScheduler();
 }
