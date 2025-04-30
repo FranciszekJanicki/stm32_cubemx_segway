@@ -19,7 +19,7 @@ namespace segway {
         {
             LOG(TAG, "wheel_task start");
 
-            //  wheel_manager_init();
+            wheel_manager_init();
 
             while (1) {
                 wheel_manager_process();

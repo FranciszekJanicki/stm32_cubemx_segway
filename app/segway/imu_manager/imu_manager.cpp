@@ -5,6 +5,7 @@
 #include "mpu6050_dmp.hpp"
 #include "queue_manager.hpp"
 #include "tim.h"
+#include <cassert>
 
 namespace segway {
 
@@ -43,7 +44,10 @@ namespace segway {
 
             auto handle = get_queue(QueueType::CONTROL);
             auto event = ControlEvent{.type = ControlEventType::IMU_DATA};
-            event.payload.imu_data = {.roll = rpy.x, .pitch = rpy.y, .yaw = rpy.z, .dt = ctx.config.sampling_time};
+            event.payload.imu_data = {.roll = rpy.x,
+                                      .pitch = rpy.y,
+                                      .yaw = rpy.z,
+                                      .dt = ctx.config.sampling_time};
 
             if (!xQueueSend(handle, &event, pdMS_TO_TICKS(10))) {
                 LOG(TAG, "Failed sending to queue!");
@@ -77,7 +81,11 @@ namespace segway {
             LOG(TAG, "process_event_group_bits");
 
             auto event_group = get_event_group(EventGroupType::IMU);
-            auto event_bits = xEventGroupWaitBits(event_group, IMUEventBit::ALL, pdTRUE, pdFALSE, pdMS_TO_TICKS(10));
+            auto event_bits = xEventGroupWaitBits(event_group,
+                                                  IMUEventBit::ALL,
+                                                  pdTRUE,
+                                                  pdFALSE,
+                                                  pdMS_TO_TICKS(10));
 
             if ((event_bits & IMUEventBit::DATA_READY) == IMUEventBit::DATA_READY) {
                 process_data_ready();
@@ -106,19 +114,19 @@ namespace segway {
     {
         LOG(TAG, "imu_manager_init");
 
-        auto mpu6050_interface =
-            mpu6050::Interface{.user = &hi2c1,
-                               .write_bytes =
-                                   [](void* user, std::uint8_t address, std::uint8_t* data, std::size_t size) {
-                                       auto handle = static_cast<I2C_HandleTypeDef*>(user);
-                                       HAL_I2C_Mem_Write(handle, 104, address, I2C_MEMADD_SIZE_8BIT, data, size, 100);
-                                   },
-                               .read_bytes =
-                                   [](void* user, std::uint8_t address, std::uint8_t* data, std::size_t size) {
-                                       auto handle = static_cast<I2C_HandleTypeDef*>(user);
-                                       HAL_I2C_Mem_Read(handle, 104, address, I2C_MEMADD_SIZE_8BIT, data, size, 100);
-                                   },
-                               .delay_ms = [](void* user, std::uint32_t ms) { HAL_Delay(ms); }};
+        auto mpu6050_interface = mpu6050::Interface{
+            .user = &hi2c1,
+            .write_bytes =
+                [](void* user, std::uint8_t address, std::uint8_t* data, std::size_t size) {
+                    auto handle = static_cast<I2C_HandleTypeDef*>(user);
+                    assert(HAL_OK == HAL_I2C_Mem_Write(handle, 104, address, 1, data, size, 100));
+                },
+            .read_bytes =
+                [](void* user, std::uint8_t address, std::uint8_t* data, std::size_t size) {
+                    auto handle = static_cast<I2C_HandleTypeDef*>(user);
+                    assert(HAL_OK == HAL_I2C_Mem_Read(handle, 104, address, 1, data, size, 100));
+                },
+            .delay_ms = [](void* user, std::uint32_t ms) { HAL_Delay(ms); }};
 
         auto mpu6050_config = mpu6050::Config{.sampling_rate = 200UL,
                                               .gyro_range = mpu6050::GyroRange::GYRO_FS_250,
@@ -139,16 +147,6 @@ namespace segway {
     void imu_manager_process() noexcept
     {
         process_event_group_bits();
-
-        // auto* buf = static_cast<char*>(std::calloc(uxTaskGetNumberOfTasks() * 40UL, 1UL));
-        // if (buf) {
-        //     vTaskList(buf);
-        //     LOG(TAG, buf);
-        //     std::free(buf);
-        // }
-
-        // auto bytes_left = sizeof(StackType_t) * uxTaskGetStackHighWaterMark(nullptr);
-        // LOG(TAG, "Bytes left: %d", bytes_left);
     }
 
 }; // namespace segway

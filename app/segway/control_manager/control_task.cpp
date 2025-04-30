@@ -19,7 +19,7 @@ namespace segway {
         {
             LOG(TAG, "control_task start");
 
-            //  control_manager_init();
+            control_manager_init();
 
             while (1) {
                 control_manager_process();

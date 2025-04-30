@@ -58,7 +58,9 @@ namespace segway {
                 std::snprintf(buf + tag_len, buf_len - tag_len, fmt, args...);
 
                 if (std::strlen(buf) < 2UL ||
-                    std::strncmp(buf + std::strlen(buf) - std::strlen("\n\r"), "\n\r", std::strlen("\n\r")) != 0) {
+                    std::strncmp(buf + std::strlen(buf) - std::strlen("\n\r"),
+                                 "\n\r",
+                                 std::strlen("\n\r")) != 0) {
                     std::strncat(buf, "\n\r", buf_len);
                 }
 

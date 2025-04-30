@@ -10,6 +10,7 @@
 #include "wheel_queue.hpp"
 #include "wheel_task.hpp"
 #include <array>
+#include <cassert>
 
 namespace segway {
 
