@@ -338,7 +338,7 @@ namespace mpu6050 {
         this->set_memory_bank(bank);
         this->set_memory_start_address(address);
 
-        for (std::int32_t i = 0; i < read_size;) {
+        for (std::uint32_t i = 0; i < read_size;) {
             std::uint8_t chunk_size = DMP_MEMORY_CHUNK_SIZE;
 
             if (i + chunk_size > read_size) {
@@ -370,7 +370,7 @@ namespace mpu6050 {
         this->set_memory_bank(bank);
         this->set_memory_start_address(address);
 
-        for (std::int32_t i = 0; i < write_size;) {
+        for (std::uint32_t i = 0; i < write_size;) {
             std::uint8_t chunk_size = DMP_MEMORY_CHUNK_SIZE;
 
             if (i + chunk_size > write_size) {
@@ -397,7 +397,7 @@ namespace mpu6050 {
     void MPU6050_DMP::write_dmp_configuration_set(std::uint8_t* write_data,
                                                   std::size_t const write_size) const noexcept
     {
-        for (std::int32_t i = 0; i < write_size;) {
+        for (std::uint32_t i = 0; i < write_size;) {
             std::uint8_t bank = write_data[i++];
             std::uint8_t offset = write_data[i++];
             std::uint8_t length = write_data[i++];

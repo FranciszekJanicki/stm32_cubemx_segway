@@ -17,7 +17,7 @@ namespace {
 
 extern "C" void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef* hi2c)
 {
-    LOG(TAG, "%s", __func__);
+    LOG(TAG, "%s", "HAL_I2C_MemTxCpltCallback");
 
     auto task_woken = pdFALSE;
 
@@ -32,7 +32,7 @@ extern "C" void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef* hi2c)
 
 extern "C" void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef* hi2c)
 {
-    LOG(TAG, "%s", __func__);
+    LOG(TAG, "%s", "HAL_I2C_MemRxCpltCallback");
 
     auto task_woken = pdFALSE;
 
@@ -47,7 +47,7 @@ extern "C" void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef* hi2c)
 
 extern "C" void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
 {
-    LOG(TAG, "%s", __func__);
+    LOG(TAG, "%s", "HAL_TIM_PWM_PulseFinishedCallback");
 
     auto task_woken = pdFALSE;
 
@@ -66,7 +66,7 @@ extern "C" void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
 
 extern "C" void HAL_I2C_ErrorCallback(I2C_HandleTypeDef* hi2c)
 {
-    LOG(TAG, "%s", __func__);
+    LOG(TAG, "%s", "HAL_I2C_ErrorCallback");
 
     auto task_woken = pdFALSE;
 
@@ -81,7 +81,7 @@ extern "C" void HAL_I2C_ErrorCallback(I2C_HandleTypeDef* hi2c)
 
 extern "C" void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
-    LOG(TAG, "%s", __func__);
+    LOG(TAG, "%s", "HAL_TIM_PeriodElapsedCallback");
 
     auto task_woken = pdFALSE;
 
@@ -106,11 +106,11 @@ extern "C" void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    LOG(TAG, "%s", __func__);
+    LOG(TAG, "%s", "HAL_GPIO_EXTI_Callback");
 
     auto task_woken = pdFALSE;
 
-    if (GPIO_Pin == ICM20948_INT_Pin) {
+    if (GPIO_Pin == (1 << 6)) {
         xEventGroupSetBitsFromISR(get_event_group(EventGroupType::IMU),
                                   IMUEventBit::DATA_READY,
                                   &task_woken);

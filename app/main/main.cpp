@@ -8,7 +8,6 @@
 #include "tim.h"
 #include "usart.h"
 #include "usb_device.h"
-#include "wwdg.h"
 
 int main()
 {
@@ -21,7 +20,6 @@ int main()
     MX_TIM2_Init();
     MX_TIM3_Init();
     MX_USART2_UART_Init();
-    //  MX_WWDG_Init();
     //  MX_USB_DEVICE_Init();
 
     segway::main_task_init();
