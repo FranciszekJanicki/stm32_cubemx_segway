@@ -9,7 +9,7 @@ enable_language(C ASM)
 target_compile_definitions(stm32cubemx INTERFACE 
 	USE_HAL_DRIVER 
 	STM32F401xC 
-	STM32_THREAD_SAFE_STRATEGY=5
+	STM32_THREAD_SAFE_STRATEGY=4
     $<$<CONFIG:Debug>:DEBUG>
 )
 

@@ -7,9 +7,11 @@ namespace step_driver {
 
     using namespace a4988;
 
-    Microstep speed_to_microstep(std::float64_t const speed, std::float64_t const step_change) noexcept;
+    Microstep speed_to_microstep(std::float64_t const speed,
+                                 std::float64_t const step_change) noexcept;
     Direction speed_to_direction(std::float64_t const speed) noexcept;
-    std::uint32_t speed_to_frequency(std::float64_t const speed, std::float64_t const step_change) noexcept;
+    std::uint32_t speed_to_frequency(std::float64_t const speed,
+                                     std::float64_t const step_change) noexcept;
 
     struct StepDriver {
     public:
@@ -21,8 +23,12 @@ namespace step_driver {
 
         void update_step_count(this StepDriver& self) noexcept;
 
-        void set_position(this StepDriver& self, std::float64_t const position, std::float64_t const dt) noexcept;
-        void set_speed(this StepDriver& self, std::float64_t const speed, std::float64_t const dt) noexcept;
+        void set_position(this StepDriver& self,
+                          std::float64_t const position,
+                          std::float64_t const dt) noexcept;
+        void set_speed(this StepDriver& self,
+                       std::float64_t const speed,
+                       std::float64_t const dt) noexcept;
         void set_acceleration(this StepDriver& self,
                               std::float64_t const acceleration,
                               std::float64_t const dt) noexcept;

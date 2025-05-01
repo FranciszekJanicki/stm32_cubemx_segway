@@ -19,7 +19,6 @@ target_link_libraries(main_manager PRIVATE
 )
 
 target_compile_options(main_manager PUBLIC
-    $<$<CONFIG:Debug>:-g -O0>
     -std=c++23
     -Wall
     -Wextra

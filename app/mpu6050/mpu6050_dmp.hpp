@@ -80,7 +80,8 @@ namespace mpu6050 {
                                 std::size_t const write_size,
                                 std::uint8_t bank,
                                 std::uint8_t address) const noexcept;
-        void write_dmp_configuration_set(std::uint8_t* write_data, std::size_t const write_size) const noexcept;
+        void write_dmp_configuration_set(std::uint8_t* write_data,
+                                         std::size_t const write_size) const noexcept;
 
         void set_dmp_config1(std::uint8_t const config) const noexcept;
         void set_dmp_config2(std::uint8_t const config) const noexcept;

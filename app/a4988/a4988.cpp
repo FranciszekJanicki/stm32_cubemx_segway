@@ -203,7 +203,9 @@ namespace a4988 {
         }
     }
 
-    void A4988::gpio_write_pin(this A4988 const& self, std::int16_t const pin, bool const state) noexcept
+    void A4988::gpio_write_pin(this A4988 const& self,
+                               std::int32_t const pin,
+                               bool const state) noexcept
     {
         if (self.interface.gpio_write_pin) {
             self.interface.gpio_write_pin(self.interface.gpio_user, pin, state);

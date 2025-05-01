@@ -9,7 +9,7 @@ target_link_libraries(common INTERFACE
 )
 
 target_include_directories(common INTERFACE 
-    ${STM32CUBEMX_DIR}
+    ${CMAKE_DIR}/stm32cubemx
 )
 
 target_compile_options(common INTERFACE

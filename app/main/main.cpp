@@ -2,6 +2,7 @@
 #include "FreeRTOS.h"
 #include "gpio.h"
 #include "i2c.h"
+#include "log.hpp"
 #include "main_task.hpp"
 #include "task.h"
 #include "tim.h"
@@ -20,9 +21,12 @@ int main()
     MX_TIM2_Init();
     MX_TIM3_Init();
     MX_USART2_UART_Init();
-    MX_WWDG_Init();
-    MX_USB_DEVICE_Init();
+    //  MX_WWDG_Init();
+    //  MX_USB_DEVICE_Init();
 
-    segway::main_task_init();
-    vTaskStartScheduler();
+    while (1)
+        HAL_UART_Transmit(&huart2, (uint8_t*)"dupa\n\r", strlen("dupa\n\r"), 100);
+
+    // segway::main_task_init();
+    // vTaskStartScheduler();
 }

@@ -35,7 +35,8 @@ namespace segway {
         self.driver.update_step_count();
     }
 
-    std::float64_t WheelDriver::get_wheel_position(this WheelDriver& self, std::float64_t const dt) noexcept
+    std::float64_t WheelDriver::get_wheel_position(this WheelDriver& self,
+                                                   std::float64_t const dt) noexcept
     {
         return self.driver.get_position(dt) * self.wheel_radius;
     }
@@ -48,7 +49,8 @@ namespace segway {
         self.driver.set_position(wheel_position / self.wheel_radius, dt);
     }
 
-    std::float64_t WheelDriver::get_wheel_speed(this WheelDriver& self, std::float64_t const dt) noexcept
+    std::float64_t WheelDriver::get_wheel_speed(this WheelDriver& self,
+                                                std::float64_t const dt) noexcept
     {
         return self.driver.get_speed(dt) * self.wheel_radius;
     }

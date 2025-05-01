@@ -14,12 +14,7 @@ target_link_libraries(main PUBLIC
     main_manager
 )
 
-target_compile_definitions(main PUBLIC 
-    $<$<CONFIG:Release>:NDEBUG=1>
-)
-
 target_compile_options(main PUBLIC
-    $<$<CONFIG:Debug>:-g -O0>
     -std=c++23
     -Wall
     -Wextra

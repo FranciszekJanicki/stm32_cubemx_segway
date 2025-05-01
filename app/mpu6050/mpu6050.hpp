@@ -43,7 +43,9 @@ namespace mpu6050 {
                                std::uint8_t const position,
                                std::uint8_t const size) const noexcept;
 
-        void write_bit(std::uint8_t const reg_address, bool const bit, std::uint8_t const position) const noexcept;
+        void write_bit(std::uint8_t const reg_address,
+                       bool const bit,
+                       std::uint8_t const position) const noexcept;
 
         void write_bits(std::uint8_t const reg_address,
                         std::uint8_t const bit,
@@ -96,7 +98,8 @@ namespace mpu6050 {
         void set_slave_word_byte_swap(std::uint8_t const num, bool const enabled) const noexcept;
         void set_slave_write_mode(std::uint8_t const num, bool const mode) const noexcept;
         void set_slave_word_group_offset(std::uint8_t const num, bool const enabled) const noexcept;
-        void set_slave_data_length(std::uint8_t const num, std::uint8_t const length) const noexcept;
+        void set_slave_data_length(std::uint8_t const num,
+                                   std::uint8_t const length) const noexcept;
 
         void set_slave4_address(std::uint8_t const address) const noexcept;
         void set_slave4_register(std::uint8_t const reg) const noexcept;
@@ -177,7 +180,8 @@ namespace mpu6050 {
 
         void set_motion_detection_control(std::uint8_t const control) const noexcept;
         void set_accel_power_on_delay(Delay const delay) const noexcept;
-        void set_free_fall_detection_counter_decrement(DetectDecrement const decrement) const noexcept;
+        void set_free_fall_detection_counter_decrement(
+            DetectDecrement const decrement) const noexcept;
         void set_motion_detection_counter_decrement(DetectDecrement const decrement) const noexcept;
 
         void set_fifo_enabled(bool const enabled) const noexcept;
@@ -203,7 +207,8 @@ namespace mpu6050 {
 
         std::uint16_t get_fifo_count() const noexcept;
         std::uint8_t get_fifo_byte() const noexcept;
-        void get_current_fifo_packet(std::uint8_t* packet_data, std::size_t const packet_size) const noexcept;
+        void get_current_fifo_packet(std::uint8_t* packet_data,
+                                     std::size_t const packet_size) const noexcept;
         void get_fifo_bytes(std::uint8_t* read_data, std::size_t const read_size) const noexcept;
         void set_fifo_byte(std::uint8_t const write_data) const noexcept;
         void set_fifo_bytes(std::uint8_t* write_data, std::size_t const write_size) const noexcept;
