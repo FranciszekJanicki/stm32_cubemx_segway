@@ -17,8 +17,6 @@ namespace segway {
         constexpr auto WHEEL_FAULT_THRESH_HIGH = 1000.0F64;
         constexpr auto WHEEL_FAULT_THRESH_LOW = 800.0F64;
 
-        using namespace stm32_utility;
-
         struct Context {
             std::array<Wheel, 2UL> wheels;
 
@@ -100,14 +98,14 @@ namespace segway {
         {
             LOG(TAG, "process_left_step_timer");
 
-            gpio_toggle_pin(GPIO::PA8);
+            HAL_GPIO_TogglePin(GPIOA, 1 << 8);
         };
 
         void process_right_step_timer() noexcept
         {
             LOG(TAG, "process_right_step_timer");
 
-            gpio_toggle_pin(GPIO::PA6);
+            HAL_GPIO_TogglePin(GPIOA, 1 << 6);
         };
 
         void process_event_group_bits() noexcept
@@ -144,21 +142,21 @@ namespace segway {
     {
         LOG(TAG, "wheel_manager_init");
 
-        constexpr auto MS1_1 = std::to_underlying(GPIO::PA11);
-        constexpr auto MS2_1 = std::to_underlying(GPIO::PA10);
-        constexpr auto MS3_1 = std::to_underlying(GPIO::PA9);
-        constexpr auto DIR_1 = std::to_underlying(GPIO::PB15);
-        constexpr auto EN_1 = std::to_underlying(GPIO::NC);
-        constexpr auto SLEEP_1 = std::to_underlying(GPIO::NC);
-        constexpr auto RESET_1 = std::to_underlying(GPIO::NC);
+        constexpr auto MS1_1 = 1 << 11;
+        constexpr auto MS2_1 = 1 << 10;
+        constexpr auto MS3_1 = 1 << 9;
+        constexpr auto DIR_1 = 1 << 15;
+        constexpr auto EN_1 = -1;
+        constexpr auto SLEEP_1 = -1;
+        constexpr auto RESET_1 = -1;
 
-        constexpr auto MS1_2 = std::to_underlying(GPIO::PA3);
-        constexpr auto MS2_2 = std::to_underlying(GPIO::PA4);
-        constexpr auto MS3_2 = std::to_underlying(GPIO::PA5);
-        constexpr auto DIR_2 = std::to_underlying(GPIO::PA7);
-        constexpr auto EN_2 = std::to_underlying(GPIO::NC);
-        constexpr auto SLEEP_2 = std::to_underlying(GPIO::NC);
-        constexpr auto RESET_2 = std::to_underlying(GPIO::NC);
+        constexpr auto MS1_2 = 1 << 3;
+        constexpr auto MS2_2 = 1 << 4;
+        constexpr auto MS3_2 = 1 << 5;
+        constexpr auto DIR_2 = 1 << 7;
+        constexpr auto EN_2 = -1;
+        constexpr auto SLEEP_2 = -1;
+        constexpr auto RESET_2 = -1;
 
         constexpr auto STEPS_PER_360 = 200U;
         constexpr auto WHEEL_DIST = 10.0F64;
@@ -179,8 +177,12 @@ namespace segway {
                                             .pin_dir = DIR_2,
                                             .pin_enable = EN_2};
 
-        auto a4988_gpio_write_pin = [](void* user, std::int16_t pin, bool state) {
-            gpio_write_pin(static_cast<GPIO>(pin), static_cast<GPIOState>(state));
+        auto a4988_gpio_write_pin = [](void* user, std::int32_t pin, bool state) {
+            auto port = static_cast<GPIO_TypeDef*>(user);
+            if (pin != -1)
+                HAL_GPIO_WritePin(port,
+                                  static_cast<std::uint16_t>(pin),
+                                  static_cast<GPIO_PinState>(state));
         };
 
         auto a4988_pulse_start = [](void* user) {
@@ -208,13 +210,13 @@ namespace segway {
             }
         };
 
-        auto a4988_1_interface = a4988::Interface{.gpio_user = nullptr,
+        auto a4988_1_interface = a4988::Interface{.gpio_user = GPIOA,
                                                   .gpio_write_pin = a4988_gpio_write_pin,
                                                   .pulse_user = &htim1,
                                                   .pulse_start = a4988_pulse_start,
                                                   .pulse_stop = a4988_pulse_stop,
                                                   .pulse_set_freq = a4988_pulse_set_freq};
-        auto a4988_2_interface = a4988::Interface{.gpio_user = nullptr,
+        auto a4988_2_interface = a4988::Interface{.gpio_user = GPIOA,
                                                   .gpio_write_pin = a4988_gpio_write_pin,
                                                   .pulse_user = &htim3,
                                                   .pulse_start = a4988_pulse_start,

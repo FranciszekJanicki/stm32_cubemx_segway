@@ -1,13 +1,10 @@
 #ifndef A4988_CONFIG_HPP
 #define A4988_CONFIG_HPP
 
-#include "gpio.hpp"
-#include "pwm_device.hpp"
+#include <cstdint>
 #include <stdfloat>
 
 namespace a4988 {
-
-    using namespace stm32_utility;
 
     enum struct Microstep : std::uint8_t {
         FULL,
@@ -42,22 +39,22 @@ namespace a4988 {
     }
 
     struct Config {
-        std::int16_t pin_ms1 = -1;
-        std::int16_t pin_ms2 = -1;
-        std::int16_t pin_ms3 = -1;
-        std::int16_t pin_reset = -1;
-        std::int16_t pin_sleep = -1;
-        std::int16_t pin_dir = -1;
-        std::int16_t pin_enable = -1;
+        std::int32_t pin_ms1;
+        std::int32_t pin_ms2;
+        std::int32_t pin_ms3;
+        std::int32_t pin_reset;
+        std::int32_t pin_sleep;
+        std::int32_t pin_dir;
+        std::int32_t pin_enable;
     };
 
     struct Interface {
-        void* gpio_user = nullptr;
+        void* gpio_user;
         void (*gpio_init)(void*);
         void (*gpio_deinit)(void*);
-        void (*gpio_write_pin)(void*, std::int16_t, bool);
+        void (*gpio_write_pin)(void*, std::int32_t, bool);
 
-        void* pulse_user = nullptr;
+        void* pulse_user;
         void (*pulse_init)(void*);
         void (*pulse_deinit)(void*);
         void (*pulse_start)(void*);

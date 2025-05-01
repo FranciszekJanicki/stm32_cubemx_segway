@@ -1,17 +1,13 @@
 #include "main.h"
 #include "FreeRTOS.h"
-#include "FreeRTOSConfig.h"
 #include "gpio.h"
 #include "i2c.h"
-#include "log.hpp"
 #include "main_task.hpp"
-#include "portable.h"
 #include "task.h"
 #include "tim.h"
 #include "usart.h"
 #include "usb_device.h"
 #include "wwdg.h"
-#include <array>
 
 int main()
 {

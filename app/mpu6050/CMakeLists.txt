@@ -7,14 +7,10 @@ target_sources(mpu6050 PRIVATE
 )
 
 target_include_directories(mpu6050 PUBLIC 
-    ${CMAKE_SOURCE_DIR}/cmake/stm32cubemx
-    ${CMAKE_SOURCE_DIR}/app/stm32_utility
-    ${CMAKE_SOURCE_DIR}/app/utility
+    ${APP_DIR}/utility
 )
 
 target_link_libraries(mpu6050 PRIVATE
-    stm32cubemx
-    stm32_utility
     utility
 )
 

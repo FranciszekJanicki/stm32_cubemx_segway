@@ -7,10 +7,10 @@ target_sources(control_manager PRIVATE
 )
 
 target_include_directories(control_manager PUBLIC
-    ${CMAKE_SOURCE_DIR}/app/segway/common
-    ${CMAKE_SOURCE_DIR}/app/segway/task_manager
-    ${CMAKE_SOURCE_DIR}/app/segway/queue_manager
-    ${CMAKE_SOURCE_DIR}/app/utility
+    ${SEGWAY_DIR}/common
+    ${SEGWAY_DIR}/task_manager
+    ${SEGWAY_DIR}/queue_manager
+    ${APP_DIR}/utility
 )
 
 target_link_libraries(control_manager PRIVATE

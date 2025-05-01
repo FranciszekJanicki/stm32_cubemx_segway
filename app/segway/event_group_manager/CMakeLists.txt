@@ -5,7 +5,7 @@ target_sources(event_group_manager PRIVATE
 )
 
 target_include_directories(event_group_manager PUBLIC 
-    ${CMAKE_SOURCE_DIR}/cmake/stm32cubemx
+    ${STM32CUBEMX_DIR}
 )
 
 target_link_libraries(event_group_manager PRIVATE

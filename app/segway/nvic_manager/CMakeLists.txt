@@ -5,9 +5,9 @@ target_sources(nvic_manager PRIVATE
 )
 
 target_include_directories(nvic_manager PUBLIC 
-    ${CMAKE_SOURCE_DIR}/cmake/stm32cubemx
-    ${CMAKE_SOURCE_DIR}/app/segway/event_group_manager
-    ${CMAKE_SOURCE_DIR}/app/segway/common
+    ${STM32CUBEMX_DIR}
+    ${SEGWAY_DIR}/event_group_manager
+    ${SEGWAY_DIR}/common
 )
 
 target_link_libraries(nvic_manager PRIVATE

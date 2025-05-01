@@ -70,12 +70,15 @@ namespace mpu6050 {
 
     bool MPU6050_DMP::get_otp_bank_valid() const noexcept
     {
-        return this->mpu6050.read_bit(std::to_underlying(RA::XG_OFFS_TC), std::to_underlying(TC::OTP_BNK_VLD_BIT));
+        return this->mpu6050.read_bit(std::to_underlying(RA::XG_OFFS_TC),
+                                      std::to_underlying(TC::OTP_BNK_VLD_BIT));
     }
 
     void MPU6050_DMP::set_otp_bank_valid(bool const valid) const noexcept
     {
-        this->mpu6050.write_bit(std::to_underlying(RA::XG_OFFS_TC), valid, std::to_underlying(TC::OTP_BNK_VLD_BIT));
+        this->mpu6050.write_bit(std::to_underlying(RA::XG_OFFS_TC),
+                                valid,
+                                std::to_underlying(TC::OTP_BNK_VLD_BIT));
     }
 
     void MPU6050_DMP::set_x_gyro_offset_tc(std::uint8_t const offset) const noexcept
@@ -175,41 +178,42 @@ namespace mpu6050 {
         this->mpu6050.get_fifo_bytes(dmp_packet.data(), dmp_packet.size());
         return dmp_packet;
     }
-#include "log.hpp"
+
     std::optional<Quat3D<std::int16_t>> MPU6050_DMP::get_quaternion_raw() const noexcept
     {
-        auto before = HAL_GetTick();
         auto packet = this->get_dmp_packet();
-        auto after = HAL_GetTick();
 
-        stm32_utility::LOG("MPU", "Time: %d", after - before);
-
-        return this->initialized ? std::optional<Quat3D<std::int16_t>>{std::in_place,
-                                                                       static_cast<std::int16_t>(packet[0] << 8) |
-                                                                           static_cast<std::int16_t>(packet[1]),
-                                                                       static_cast<std::int16_t>(packet[4] << 8) |
-                                                                           static_cast<std::int16_t>(packet[5]),
-                                                                       static_cast<std::int16_t>(packet[8] << 8) |
-                                                                           static_cast<std::int16_t>(packet[9]),
-                                                                       static_cast<std::int16_t>(packet[12] << 8) |
-                                                                           static_cast<std::int16_t>(packet[13])}
-                                 : std::optional<Quat3D<std::int16_t>>{std::nullopt};
+        return this->initialized
+                   ? std::optional<Quat3D<std::int16_t>>{std::in_place,
+                                                         static_cast<std::int16_t>(packet[0] << 8) |
+                                                             static_cast<std::int16_t>(packet[1]),
+                                                         static_cast<std::int16_t>(packet[4] << 8) |
+                                                             static_cast<std::int16_t>(packet[5]),
+                                                         static_cast<std::int16_t>(packet[8] << 8) |
+                                                             static_cast<std::int16_t>(packet[9]),
+                                                         static_cast<std::int16_t>(packet[12]
+                                                                                   << 8) |
+                                                             static_cast<std::int16_t>(packet[13])}
+                   : std::optional<Quat3D<std::int16_t>>{std::nullopt};
     }
 
     std::optional<Quat3D<std::float64_t>> MPU6050_DMP::get_quaternion_scaled() const noexcept
     {
-        return this->get_quaternion_raw().transform(
-            [this](Quat3D<std::int16_t> const& raw) { return static_cast<Quat3D<std::float64_t>>(raw) * QUAT_SCALE; });
+        return this->get_quaternion_raw().transform([this](Quat3D<std::int16_t> const& raw) {
+            return static_cast<Quat3D<std::float64_t>>(raw) * QUAT_SCALE;
+        });
     }
 
     std::optional<std::float64_t> MPU6050_DMP::get_roll() const noexcept
     {
-        return this->get_quaternion_scaled().transform(&utility::quaternion_to_roll<std::float64_t>);
+        return this->get_quaternion_scaled().transform(
+            &utility::quaternion_to_roll<std::float64_t>);
     }
 
     std::optional<std::float64_t> MPU6050_DMP::get_pitch() const noexcept
     {
-        return this->get_quaternion_scaled().transform(&utility::quaternion_to_pitch<std::float64_t>);
+        return this->get_quaternion_scaled().transform(
+            &utility::quaternion_to_pitch<std::float64_t>);
     }
 
     std::optional<std::float64_t> MPU6050_DMP::get_yaw() const noexcept
@@ -219,7 +223,8 @@ namespace mpu6050 {
 
     std::optional<Vec3D<std::float64_t>> MPU6050_DMP::get_roll_pitch_yaw() const noexcept
     {
-        return this->get_quaternion_scaled().transform(&utility::quaternion_to_roll_pitch_yaw<std::float64_t>);
+        return this->get_quaternion_scaled().transform(
+            &utility::quaternion_to_roll_pitch_yaw<std::float64_t>);
     }
 
     void MPU6050_DMP::set_int_pll_ready_enabled(bool const enabled) const noexcept
@@ -280,17 +285,22 @@ namespace mpu6050 {
 
     bool MPU6050_DMP::get_int_dmp_status() const noexcept
     {
-        return this->mpu6050.read_bit(std::to_underlying(RA::INT_STATUS), std::to_underlying(INT_STATUS::DMP_INT_BIT));
+        return this->mpu6050.read_bit(std::to_underlying(RA::INT_STATUS),
+                                      std::to_underlying(INT_STATUS::DMP_INT_BIT));
     }
 
     void MPU6050_DMP::set_dmp_enabled(bool const enabled) const noexcept
     {
-        this->mpu6050.write_bit(std::to_underlying(RA::USER_CTRL), enabled, std::to_underlying(USER_CTRL::DMP_EN_BIT));
+        this->mpu6050.write_bit(std::to_underlying(RA::USER_CTRL),
+                                enabled,
+                                std::to_underlying(USER_CTRL::DMP_EN_BIT));
     }
 
     void MPU6050_DMP::reset_dmp() const noexcept
     {
-        this->mpu6050.write_bit(std::to_underlying(RA::USER_CTRL), true, std::to_underlying(USER_CTRL::DMP_RESET_BIT));
+        this->mpu6050.write_bit(std::to_underlying(RA::USER_CTRL),
+                                true,
+                                std::to_underlying(USER_CTRL::DMP_RESET_BIT));
     }
 
     void MPU6050_DMP::set_memory_bank(std::uint8_t const bank,
@@ -384,7 +394,8 @@ namespace mpu6050 {
         }
     }
 
-    void MPU6050_DMP::write_dmp_configuration_set(std::uint8_t* write_data, std::size_t const write_size) const noexcept
+    void MPU6050_DMP::write_dmp_configuration_set(std::uint8_t* write_data,
+                                                  std::size_t const write_size) const noexcept
     {
         for (std::int32_t i = 0; i < write_size;) {
             std::uint8_t bank = write_data[i++];

@@ -5,8 +5,8 @@ target_sources(main PRIVATE
 )
 
 target_include_directories(main PRIVATE 
-    ${CMAKE_SOURCE_DIR}/cmake/stm32cubemx
-    ${CMAKE_SOURCE_DIR}/app/segway/main_manager
+    ${CMAKE_DIR}/stm32cubemx
+    ${SEGWAY_DIR}/main_manager
 )
 
 target_link_libraries(main PUBLIC
@@ -19,6 +19,7 @@ target_compile_definitions(main PUBLIC
 )
 
 target_compile_options(main PUBLIC
+    $<$<CONFIG:Debug>:-g -O0>
     -std=c++23
     -Wall
     -Wextra

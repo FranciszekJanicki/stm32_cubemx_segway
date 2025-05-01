@@ -7,11 +7,11 @@ target_sources(imu_manager PRIVATE
 )
 
 target_include_directories(imu_manager PUBLIC
-    ${CMAKE_SOURCE_DIR}/app/segway/common
-    ${CMAKE_SOURCE_DIR}/app/segway/task_manager
-    ${CMAKE_SOURCE_DIR}/app/segway/event_group_manager
-    ${CMAKE_SOURCE_DIR}/app/mpu6050
-    ${CMAKE_SOURCE_DIR}/app/segway/queue_manager
+    ${SEGWAY_DIR}/common
+    ${SEGWAY_DIR}/task_manager
+    ${SEGWAY_DIR}/event_group_manager
+    ${APP_DIR}/mpu6050
+    ${SEGWAY_DIR}/queue_manager
 )
 
 target_link_libraries(imu_manager PRIVATE

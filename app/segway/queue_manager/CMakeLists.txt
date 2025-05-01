@@ -5,7 +5,7 @@ target_sources(queue_manager PRIVATE
 )
 
 target_include_directories(queue_manager PUBLIC 
-    ${CMAKE_SOURCE_DIR}/cmake/stm32cubemx
+    ${STM32CUBEMX_DIR}
 )
 
 target_link_libraries(queue_manager PRIVATE

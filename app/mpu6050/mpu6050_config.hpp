@@ -1,15 +1,13 @@
 #ifndef MPU6050_CONFIG_HPP
 #define MPU6050_CONFIG_HPP
 
-#include "i2c_device.hpp"
 #include "mpu6050_registers.hpp"
 #include "quaternion3d.hpp"
 #include "vector3d.hpp"
 #include <cstdint>
+#include <stdfloat>
 
 namespace mpu6050 {
-
-    using I2CDevice = stm32_utility::I2CDevice;
 
     template <typename T>
     using Vec3D = utility::Vector3D<T>;
@@ -137,20 +135,20 @@ namespace mpu6050 {
     };
 
     struct Config {
-        std::uint32_t sampling_rate = {};
-        GyroRange gyro_range = {};
-        AccelRange accel_range = {};
-        DLPF dlpf_setting = {};
-        DHPF dhpf_setting = {};
+        std::uint32_t sampling_rate;
+        GyroRange gyro_range;
+        AccelRange accel_range;
+        DLPF dlpf_setting;
+        DHPF dhpf_setting;
     };
 
     struct Scale {
-        std::float64_t gyro_scale = {};
-        std::float64_t accel_scale = {};
+        std::float64_t gyro_scale;
+        std::float64_t accel_scale;
     };
 
     struct Interface {
-        void* user = nullptr;
+        void* user;
         void (*write_bytes)(void*, std::uint8_t, std::uint8_t*, std::size_t);
         void (*read_bytes)(void*, std::uint8_t, std::uint8_t*, std::size_t);
         void (*delay_ms)(void*, std::uint32_t);

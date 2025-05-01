@@ -5,10 +5,10 @@ target_sources(main_manager PRIVATE
 )
 
 target_include_directories(main_manager PUBLIC 
-    ${CMAKE_SOURCE_DIR}/app/segway/control_manager
-    ${CMAKE_SOURCE_DIR}/app/segway/imu_manager
-    ${CMAKE_SOURCE_DIR}/app/segway/wheel_manager
-    ${CMAKE_SOURCE_DIR}/app/segway/common
+    ${SEGWAY_DIR}/control_manager
+    ${SEGWAY_DIR}/imu_manager
+    ${SEGWAY_DIR}/wheel_manager
+    ${SEGWAY_DIR}/common
 )
 
 target_link_libraries(main_manager PRIVATE
@@ -19,6 +19,7 @@ target_link_libraries(main_manager PRIVATE
 )
 
 target_compile_options(main_manager PUBLIC
+    $<$<CONFIG:Debug>:-g -O0>
     -std=c++23
     -Wall
     -Wextra

@@ -64,8 +64,6 @@ extern "C" void HAL_I2C_ErrorCallback(I2C_HandleTypeDef* hi2c)
     portYIELD_FROM_ISR(task_woken);
 }
 
-#include "log.hpp"
-
 extern "C" void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
     auto task_woken = pdFALSE;
@@ -85,8 +83,6 @@ extern "C" void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
     } else if (htim->Instance == TIM4) {
         HAL_IncTick();
     }
-
-    LOG("NVIC", "DUPA");
 
     portYIELD_FROM_ISR(task_woken);
 }

@@ -9,13 +9,13 @@ target_sources(wheel_manager PRIVATE
 )
 
 target_include_directories(wheel_manager PUBLIC 
-    ${CMAKE_SOURCE_DIR}/app/segway/common
-    ${CMAKE_SOURCE_DIR}/app/segway/task_manager
-    ${CMAKE_SOURCE_DIR}/app/segway/queue_manager
-    ${CMAKE_SOURCE_DIR}/app/segway/event_group_manager
-    ${CMAKE_SOURCE_DIR}/app/step_driver
-    ${CMAKE_SOURCE_DIR}/app/a4988
-    ${CMAKE_SOURCE_DIR}/app/utility
+    ${SEGWAY_DIR}/common
+    ${SEGWAY_DIR}/task_manager
+    ${SEGWAY_DIR}/queue_manager
+    ${SEGWAY_DIR}/event_group_manager
+    ${APP_DIR}/step_driver
+    ${APP_DIR}/a4988
+    ${APP_DIR}/utility
 )
 
 target_link_libraries(wheel_manager PRIVATE
