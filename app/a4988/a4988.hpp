@@ -47,7 +47,7 @@ namespace a4988 {
         void gpio_init(this A4988 const& self) noexcept;
         void gpio_deinit(this A4988 const& self) noexcept;
         void gpio_write_pin(this A4988 const& self,
-                            std::int32_t const pin,
+                            std::uint16_t const pin,
                             bool const state) noexcept;
     };
 

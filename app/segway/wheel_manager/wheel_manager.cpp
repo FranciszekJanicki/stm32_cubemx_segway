@@ -146,17 +146,17 @@ namespace segway {
         constexpr auto MS2_1 = 1 << 10;
         constexpr auto MS3_1 = 1 << 9;
         constexpr auto DIR_1 = 1 << 15;
-        constexpr auto EN_1 = -1;
-        constexpr auto SLEEP_1 = -1;
-        constexpr auto RESET_1 = -1;
+        constexpr auto EN_1 = 1 << 0;
+        constexpr auto SLEEP_1 = 1 << 0;
+        constexpr auto RESET_1 = 1 << 0;
 
         constexpr auto MS1_2 = 1 << 3;
         constexpr auto MS2_2 = 1 << 4;
         constexpr auto MS3_2 = 1 << 5;
         constexpr auto DIR_2 = 1 << 7;
-        constexpr auto EN_2 = -1;
-        constexpr auto SLEEP_2 = -1;
-        constexpr auto RESET_2 = -1;
+        constexpr auto EN_2 = 1 << 0;
+        constexpr auto SLEEP_2 = 1 << 0;
+        constexpr auto RESET_2 = 1 << 0;
 
         constexpr auto STEPS_PER_360 = 200U;
         constexpr auto WHEEL_DIST = 10.0F64;
@@ -177,12 +177,9 @@ namespace segway {
                                             .pin_dir = DIR_2,
                                             .pin_enable = EN_2};
 
-        auto a4988_gpio_write_pin = [](void* user, std::int32_t pin, bool state) {
+        auto a4988_gpio_write_pin = [](void* user, std::uint16_t pin, bool state) {
             auto port = static_cast<GPIO_TypeDef*>(user);
-            if (pin != -1)
-                HAL_GPIO_WritePin(port,
-                                  static_cast<std::uint16_t>(pin),
-                                  static_cast<GPIO_PinState>(state));
+            HAL_GPIO_WritePin(port, pin, static_cast<GPIO_PinState>(state));
         };
 
         auto a4988_pulse_start = [](void* user) {
@@ -256,5 +253,4 @@ namespace segway {
         process_queue_events();
         process_event_group_bits();
     }
-
 }; // namespace segway

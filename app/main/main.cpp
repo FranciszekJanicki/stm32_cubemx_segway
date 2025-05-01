@@ -24,9 +24,6 @@ int main()
     //  MX_WWDG_Init();
     //  MX_USB_DEVICE_Init();
 
-    while (1)
-        HAL_UART_Transmit(&huart2, (uint8_t*)"dupa\n\r", strlen("dupa\n\r"), 100);
-
-    // segway::main_task_init();
-    // vTaskStartScheduler();
+    segway::main_task_init();
+    vTaskStartScheduler();
 }

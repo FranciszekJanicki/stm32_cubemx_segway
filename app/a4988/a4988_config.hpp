@@ -39,20 +39,20 @@ namespace a4988 {
     }
 
     struct Config {
-        std::int32_t pin_ms1;
-        std::int32_t pin_ms2;
-        std::int32_t pin_ms3;
-        std::int32_t pin_reset;
-        std::int32_t pin_sleep;
-        std::int32_t pin_dir;
-        std::int32_t pin_enable;
+        std::uint16_t pin_ms1;
+        std::uint16_t pin_ms2;
+        std::uint16_t pin_ms3;
+        std::uint16_t pin_reset;
+        std::uint16_t pin_sleep;
+        std::uint16_t pin_dir;
+        std::uint16_t pin_enable;
     };
 
     struct Interface {
         void* gpio_user;
         void (*gpio_init)(void*);
         void (*gpio_deinit)(void*);
-        void (*gpio_write_pin)(void*, std::int32_t, bool);
+        void (*gpio_write_pin)(void*, std::uint16_t, bool);
 
         void* pulse_user;
         void (*pulse_init)(void*);
