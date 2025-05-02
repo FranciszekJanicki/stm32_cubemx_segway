@@ -18,11 +18,11 @@ namespace segway {
 
             while (1) {
                 if (xQueueReceive(get_log_queue(), &event, pdMS_TO_TICKS(10))) {
-                    auto msg = reinterpret_cast<std::uint8_t*>(event.data());
-                    auto msg_len = std::strlen(event.data());
+                    auto msg = reinterpret_cast<std::uint8_t*>(event.buffer);
+                    auto msg_len = std::strlen(event.buffer);
 
                     HAL_UART_Transmit(&huart2, msg, msg_len, 100);
-                    CDC_Transmit_FS(msg, msg_len);
+                    // CDC_Transmit_FS(msg, msg_len);
                 }
             }
         }
@@ -65,8 +65,8 @@ namespace segway {
 
     void log_manager_init() noexcept
     {
-        log_task_init();
         log_queue_init();
+        log_task_init();
     }
 
 }; // namespace segway

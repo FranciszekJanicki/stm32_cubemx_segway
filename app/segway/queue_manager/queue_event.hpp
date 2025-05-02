@@ -45,7 +45,9 @@ namespace segway {
         WheelEventPayload payload;
     };
 
-    using LogEvent = std::array<char, 100UL>;
+    struct LogEvent {
+        char buffer[100UL];
+    };
 
 }; // namespace segway
 

@@ -49,7 +49,7 @@ namespace segway {
                                       .yaw = rpy.z,
                                       .dt = ctx.config.sampling_time};
 
-            if (!xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10))) {
+            if (!xQueueSend(get_control_queue(), &event, pdMS_TO_TICKS(10))) {
                 LOG(TAG, "Failed sending to queue!");
             }
 

@@ -139,7 +139,7 @@ int main()
     MX_TIM2_Init();
     MX_TIM3_Init();
     MX_USART2_UART_Init();
-    MX_USB_DEVICE_Init();
+    //  MX_USB_DEVICE_Init();
 
     segway::log_manager_init();
     segway::control_manager_init();
