@@ -34,8 +34,8 @@ namespace segway {
 
     union WheelEventPayload {
         struct {
-            std::float64_t left_wheel_speed;
-            std::float64_t right_wheel_speed;
+            std::float64_t left_speed;
+            std::float64_t right_speed;
             std::float64_t dt;
         } wheel_data;
     };

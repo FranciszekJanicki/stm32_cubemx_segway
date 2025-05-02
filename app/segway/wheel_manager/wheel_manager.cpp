@@ -39,16 +39,56 @@ namespace segway {
             return it->driver;
         }
 
+        void start_left_pwm_timer() noexcept
+        {
+            HAL_TIM_PWM_Start_IT(&htim1, TIM_CHANNEL_1);
+        }
+
+        void stop_left_pwm_timer() noexcept
+        {
+            HAL_TIM_PWM_Stop_IT(&htim1, TIM_CHANNEL_1);
+        }
+
+        void start_right_pwm_timer() noexcept
+        {
+            HAL_TIM_PWM_Start_IT(&htim3, TIM_CHANNEL_1);
+        }
+
+        void stop_right_pwm_timer() noexcept
+        {
+            HAL_TIM_PWM_Stop_IT(&htim3, TIM_CHANNEL_1);
+        }
+
+        void start_left_step_timer() noexcept
+        {
+            HAL_TIM_Base_Start_IT(&htim1);
+        }
+
+        void stop_left_step_timer() noexcept
+        {
+            HAL_TIM_Base_Stop_IT(&htim1);
+        }
+
+        void start_right_step_timer() noexcept
+        {
+            HAL_TIM_Base_Stop_IT(&htim3);
+        }
+
+        void stop_right_step_timer() noexcept
+        {
+            HAL_TIM_Base_Stop_IT(&htim3);
+        }
+
         void process_left_wheel_data(WheelEventPayload const& payload) noexcept
         {
             auto& driver = get_wheel_driver(WheelType::LEFT);
-            driver.set_wheel_speed(payload.wheel_data.left_wheel_speed, payload.wheel_data.dt);
+            driver.set_wheel_speed(payload.wheel_data.left_speed, payload.wheel_data.dt);
         }
 
         void process_right_wheel_data(WheelEventPayload const& payload) noexcept
         {
             auto& driver = get_wheel_driver(WheelType::RIGHT);
-            driver.set_wheel_speed(payload.wheel_data.right_wheel_speed, payload.wheel_data.dt);
+            driver.set_wheel_speed(payload.wheel_data.right_speed, payload.wheel_data.dt);
         }
 
         void process_wheel_data(WheelEventPayload const& payload) noexcept
@@ -84,6 +124,8 @@ namespace segway {
 
             auto& driver = get_wheel_driver(WheelType::LEFT);
             driver.update_step_count();
+
+            start_left_pwm_timer();
         };
 
         void process_right_pwm_pulse() noexcept
@@ -92,6 +134,8 @@ namespace segway {
 
             auto& driver = get_wheel_driver(WheelType::RIGHT);
             driver.update_step_count();
+
+            start_right_pwm_timer();
         };
 
         void process_left_step_timer() noexcept
@@ -99,6 +143,8 @@ namespace segway {
             LOG(TAG, "process_left_step_timer");
 
             HAL_GPIO_TogglePin(GPIOA, 1 << 8);
+
+            start_left_step_timer();
         };
 
         void process_right_step_timer() noexcept
@@ -106,6 +152,9 @@ namespace segway {
             LOG(TAG, "process_right_step_timer");
 
             HAL_GPIO_TogglePin(GPIOA, 1 << 6);
+            start_right_step_timer();
+
+            start_right_step_timer();
         };
 
         void process_wheel_event_group_bits() noexcept

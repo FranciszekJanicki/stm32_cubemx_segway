@@ -43,11 +43,11 @@ namespace segway {
             auto speed = ctx.regulator(error_tilt, payload.imu_data.dt);
 
             auto event = WheelEvent{.type = WheelEventType::WHEEL_DATA};
-            event.payload.wheel_data = {.left_wheel_speed = speed,
-                                        .right_wheel_speed = -speed,
+            event.payload.wheel_data = {.left_speed = speed,
+                                        .right_speed = -speed,
                                         .dt = payload.imu_data.dt};
 
-            if (!xQueueSend(get_control_queue(), &event, pdMS_TO_TICKS(1))) {
+            if (!xQueueSend(get_wheel_queue(), &event, pdMS_TO_TICKS(1))) {
                 LOG(TAG, "Failed sending to queue!");
             }
         }

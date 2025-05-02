@@ -22,7 +22,6 @@ namespace mpu6050 {
         this->set_z_accel_offset(1788);
 
         this->mpu6050.device_wake_up();
-        this->mpu6050.delay_ms(200);
         this->mpu6050.set_sleep_enabled(false);
         this->set_memory_bank(0x10, true, true);
         this->set_memory_start_address(0x06);

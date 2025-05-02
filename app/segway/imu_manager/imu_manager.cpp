@@ -36,10 +36,10 @@ namespace segway {
 
         void process_data_ready() noexcept
         {
-            LOG(TAG, "process_sampling_timer");
+            LOG(TAG, "process_data_ready");
 
             auto rpy = ctx.imu.get_roll_pitch_yaw().value();
-            auto const& [r, p, y] = rpy;
+            auto [r, p, y] = rpy;
 
             LOG(TAG, "r: %f, p: %f, y: %f", r, p, y);
 
@@ -122,7 +122,7 @@ namespace segway {
         inline void imu_task_init() noexcept
         {
             constexpr auto IMU_TASK_PRIORITY = 1UL;
-            constexpr auto IMU_TASK_STACK_DEPTH = 1024UL;
+            constexpr auto IMU_TASK_STACK_DEPTH = 2 * 1024UL;
             constexpr auto IMU_TASK_NAME = "imu_task";
             constexpr auto IMU_TASK_ARG = nullptr;
 
@@ -160,6 +160,8 @@ namespace segway {
     {
         LOG(TAG, "imu_manager_init");
 
+        vTaskDelay(pdMS_TO_TICKS(100));
+
         constexpr auto FAULT_THRESH_LOW = 160.0F64;
         constexpr auto FAULT_THRESH_HIGH = 180.0F64;
         constexpr auto SAMPLING_TIME = 0.01F64;
@@ -173,14 +175,18 @@ namespace segway {
             .write_bytes =
                 [](void* user, std::uint8_t address, std::uint8_t* data, std::size_t size) {
                     auto handle = static_cast<I2C_HandleTypeDef*>(user);
-                    assert(HAL_OK ==
-                           HAL_I2C_Mem_Write(handle, 0x69 << 1, address, 1, data, size, 100));
+                    if (HAL_I2C_GetState(&hi2c1) == HAL_I2C_STATE_READY) {
+                        assert(HAL_OK ==
+                               HAL_I2C_Mem_Write(handle, 0x68 << 1, address, 1, data, size, 100));
+                    }
                 },
             .read_bytes =
                 [](void* user, std::uint8_t address, std::uint8_t* data, std::size_t size) {
                     auto handle = static_cast<I2C_HandleTypeDef*>(user);
-                    assert(HAL_OK ==
-                           HAL_I2C_Mem_Read(handle, 0x69 << 1, address, 1, data, size, 100));
+                    if (HAL_I2C_GetState(&hi2c1) == HAL_I2C_STATE_READY) {
+                        assert(HAL_OK ==
+                               HAL_I2C_Mem_Read(handle, 0x68 << 1, address, 1, data, size, 100));
+                    }
                 },
             .delay_ms = [](void* user, std::uint32_t ms) { HAL_Delay(ms); }};
 
