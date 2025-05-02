@@ -64,10 +64,9 @@ namespace segway {
             LOG(TAG, "process_wheel_queue_events");
 
             auto event = WheelEvent{};
-            auto wheel_queue = get_wheel_queue();
 
-            while (uxQueueMessagesWaiting(wheel_queue)) {
-                if (xQueueReceive(wheel_queue, &event, pdMS_TO_TICKS(10))) {
+            while (uxQueueMessagesWaiting(get_wheel_queue())) {
+                if (xQueueReceive(get_wheel_queue(), &event, pdMS_TO_TICKS(10))) {
                     switch (event.type) {
                         case WheelEventType::WHEEL_DATA: {
                             process_wheel_data(event.payload);
@@ -115,8 +114,7 @@ namespace segway {
         {
             LOG(TAG, "process_event_group_bits");
 
-            auto event_group = get_event_group(EventGroupType::WHEEL);
-            auto event_bits = xEventGroupWaitBits(event_group,
+            auto event_bits = xEventGroupWaitBits(get_wheel_event_group(),
                                                   WheelEventBit::ALL,
                                                   pdTRUE,
                                                   pdFALSE,
@@ -159,7 +157,7 @@ namespace segway {
             constexpr auto WHEEL_TASK_NAME = "wheel_task";
             constexpr auto WHEEL_TASK_ARG = nullptr;
 
-            static auto static_wheel_task = StaticTask_t{};
+            static auto wheel_static_task = StaticTask_t{};
             static auto wheel_task_stack = std::array<StackType_t, WHEEL_TASK_STACK_DEPTH>{};
 
             set_wheel_task(xTaskCreateStatic(&wheel_task,
@@ -168,7 +166,7 @@ namespace segway {
                                              WHEEL_TASK_ARG,
                                              WHEEL_TASK_PRIORITY,
                                              wheel_task_stack.data(),
-                                             &static_wheel_task));
+                                             &wheel_static_task));
         }
 
         inline void wheel_queue_init() noexcept
@@ -177,20 +175,20 @@ namespace segway {
             constexpr auto WHEEL_QUEUE_ITEMS = 10UL;
             constexpr auto WHEEL_QUEUE_STORAGE_SIZE = WHEEL_QUEUE_ITEM_SIZE * WHEEL_QUEUE_ITEMS;
 
-            static auto static_wheel_queue = StaticQueue_t{};
+            static auto wheel_static_queue = StaticQueue_t{};
             static auto wheel_queue_storage = std::array<std::uint8_t, WHEEL_QUEUE_STORAGE_SIZE>{};
 
             set_wheel_queue(xQueueCreateStatic(WHEEL_QUEUE_ITEMS,
                                                WHEEL_QUEUE_ITEM_SIZE,
                                                wheel_queue_storage.data(),
-                                               &static_wheel_queue));
+                                               &wheel_static_queue));
         }
 
         inline void wheel_event_group_init() noexcept
         {
-            static auto static_wheel_event_group = StaticEventGroup_t{};
+            static auto wheel_static_event_group = StaticEventGroup_t{};
 
-            set_wheel_event_group(xEventGroupCreateStatic(&static_wheel_event_group));
+            set_wheel_event_group(xEventGroupCreateStatic(&wheel_static_event_group));
         }
 
     }; // namespace

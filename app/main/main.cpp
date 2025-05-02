@@ -141,16 +141,10 @@ int main()
     MX_USART2_UART_Init();
     MX_USB_DEVICE_Init();
 
-    HAL_Delay(100);
-
     segway::log_manager_init();
     segway::control_manager_init();
     segway::imu_manager_init();
     segway::wheel_manager_init();
-
-    segway::LOG("MAIN", "HELLO WORLD");
-
-    HAL_Delay(100);
 
     vTaskStartScheduler();
 }

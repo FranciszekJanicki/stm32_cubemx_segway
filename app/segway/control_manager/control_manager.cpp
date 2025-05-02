@@ -42,13 +42,12 @@ namespace segway {
             auto error_tilt = PID_Y_REF - tilt;
             auto speed = ctx.regulator(error_tilt, payload.imu_data.dt);
 
-            auto control_queue = get_control_queue();
             auto event = WheelEvent{.type = WheelEventType::WHEEL_DATA};
             event.payload.wheel_data = {.left_wheel_speed = speed,
                                         .right_wheel_speed = -speed,
                                         .dt = payload.imu_data.dt};
 
-            xQueueSend(control_queue, &event, pdMS_TO_TICKS(10));
+            xQueueSend(get_control_queue(), &event, pdMS_TO_TICKS(10));
         }
 
         void process_control_queue_events() noexcept
@@ -56,10 +55,9 @@ namespace segway {
             LOG(TAG, "process_control_queue_events");
 
             auto event = ControlEvent{};
-            auto control_queue = get_control_queue();
 
-            while (uxQueueMessagesWaiting(control_queue)) {
-                if (xQueueReceive(control_queue, &event, pdMS_TO_TICKS(10))) {
+            while (uxQueueMessagesWaiting(get_control_queue())) {
+                if (xQueueReceive(get_control_queue(), &event, pdMS_TO_TICKS(10))) {
                     switch (event.type) {
                         case ControlEventType::IMU_DATA:
                             process_imu_data(event.payload);
@@ -90,7 +88,7 @@ namespace segway {
             constexpr auto CONTROL_TASK_NAME = "control_task";
             constexpr auto CONTROL_TASK_ARG = nullptr;
 
-            static auto static_control_task = StaticTask_t{};
+            static auto control_static_task = StaticTask_t{};
             static auto control_task_stack = std::array<StackType_t, CONTROL_TASK_STACK_DEPTH>{};
 
             set_control_task(xTaskCreateStatic(&control_task,
@@ -99,7 +97,7 @@ namespace segway {
                                                CONTROL_TASK_ARG,
                                                CONTROL_TASK_PRIORITY,
                                                control_task_stack.data(),
-                                               &static_control_task));
+                                               &control_static_task));
         }
 
         inline void control_queue_init() noexcept
@@ -109,14 +107,14 @@ namespace segway {
             constexpr auto CONTROL_QUEUE_STORAGE_SIZE =
                 CONTROL_QUEUE_ITEM_SIZE * CONTROL_QUEUE_ITEMS;
 
-            static auto static_control_queue = StaticQueue_t{};
+            static auto control_static_queue = StaticQueue_t{};
             static auto control_queue_storage =
                 std::array<std::uint8_t, CONTROL_QUEUE_STORAGE_SIZE>{};
 
             set_control_queue(xQueueCreateStatic(CONTROL_QUEUE_ITEMS,
                                                  CONTROL_QUEUE_ITEM_SIZE,
                                                  control_queue_storage.data(),
-                                                 &static_control_queue));
+                                                 &control_static_queue));
         }
 
     }; // namespace

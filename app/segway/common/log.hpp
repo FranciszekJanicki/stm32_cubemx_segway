@@ -21,7 +21,8 @@ namespace segway {
 
         auto tag_len = std::strlen(tag) + std::strlen(": ");
         auto args_len = std::snprintf(nullptr, buf_len - tag_len, fmt, args...);
-        auto endline_len = std::strlen("\n\r");
+        auto endline = std::strstr(fmt, "\n\r") ? "" : "\n\r";
+        auto endline_len = std::strlen(endline);
         auto len = tag_len + args_len + endline_len;
 
         // if (len > buf_len) {
@@ -33,14 +34,9 @@ namespace segway {
         if (buf) {
             std::memset(buf, '\0', buf_len);
             std::strncpy(buf, tag, buf_len);
-            std::strncat(buf, ": ", buf_len);
+            std::strncat(buf, ": ", buf_len - tag_len);
             std::snprintf(buf + tag_len, buf_len - tag_len, fmt, args...);
-
-            if (std::strlen(buf) < 2UL || std::strncmp(buf + std::strlen(buf) - std::strlen("\n\r"),
-                                                       "\n\r",
-                                                       std::strlen("\n\r")) != 0) {
-                std::strncat(buf, "\n\r", buf_len);
-            }
+            std::strncat(buf, endline, buf_len - tag_len - args_len);
 
             xQueueSend(get_log_queue(), buf, portMAX_DELAY);
 

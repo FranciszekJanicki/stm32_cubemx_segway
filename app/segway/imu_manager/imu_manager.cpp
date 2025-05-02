@@ -43,14 +43,13 @@ namespace segway {
 
             auto rpy = ctx.imu.get_roll_pitch_yaw().value();
 
-            auto handle = get_queue(QueueType::CONTROL);
             auto event = ControlEvent{.type = ControlEventType::IMU_DATA};
             event.payload.imu_data = {.roll = rpy.x,
                                       .pitch = rpy.y,
                                       .yaw = rpy.z,
                                       .dt = ctx.config.sampling_time};
 
-            if (!xQueueSend(handle, &event, pdMS_TO_TICKS(10))) {
+            if (!xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10))) {
                 LOG(TAG, "Failed sending to queue!");
             }
 
@@ -81,8 +80,7 @@ namespace segway {
         {
             LOG(TAG, "process_imu_event_group_bits");
 
-            auto imu_event_group = get_imu_event_group();
-            auto event_bits = xEventGroupWaitBits(imu_event_group,
+            auto event_bits = xEventGroupWaitBits(get_imu_event_group(),
                                                   IMUEventBit::ALL,
                                                   pdTRUE,
                                                   pdFALSE,
@@ -128,7 +126,7 @@ namespace segway {
             constexpr auto IMU_TASK_NAME = "imu_task";
             constexpr auto IMU_TASK_ARG = nullptr;
 
-            static auto static_imu_task = StaticTask_t{};
+            static auto imu_static_task = StaticTask_t{};
             static auto imu_task_stack = std::array<StackType_t, IMU_TASK_STACK_DEPTH>{};
 
             set_imu_task(xTaskCreateStatic(&imu_task,
@@ -137,14 +135,14 @@ namespace segway {
                                            IMU_TASK_ARG,
                                            IMU_TASK_PRIORITY,
                                            imu_task_stack.data(),
-                                           &static_imu_task));
+                                           &imu_static_task));
         }
 
         inline void imu_event_group_init() noexcept
         {
-            static auto static_imu_event_group = StaticEventGroup_t{};
+            static auto imu_static_event_group = StaticEventGroup_t{};
 
-            set_imu_event_group(xEventGroupCreateStatic(&static_imu_event_group));
+            set_imu_event_group(xEventGroupCreateStatic(&imu_static_event_group));
         }
 
     }; // namespace
