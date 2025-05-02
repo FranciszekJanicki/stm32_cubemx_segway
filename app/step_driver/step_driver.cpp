@@ -167,4 +167,5 @@ namespace step_driver {
         return (std::abs(control_speed) < MIN_SPEED || std::abs(control_speed) > MAX_SPEED) &&
                !self.is_stopped;
     }
+
 }; // namespace step_driver

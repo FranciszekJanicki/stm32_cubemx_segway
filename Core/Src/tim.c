@@ -21,7 +21,7 @@
 #include "tim.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "FreeRTOSConfig.h"
 /* USER CODE END 0 */
 
 TIM_HandleTypeDef htim1;
@@ -145,6 +145,7 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* tim_baseHandle)
         __HAL_RCC_TIM1_CLK_ENABLE();
 
         /* TIM1 interrupt Init */
+
         HAL_NVIC_SetPriority(TIM1_BRK_TIM9_IRQn, 5, 0);
         HAL_NVIC_EnableIRQ(TIM1_BRK_TIM9_IRQn);
         HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 5, 0);

@@ -4,6 +4,7 @@
 #include "log.hpp"
 #include "mpu6050_dmp.hpp"
 #include "queue_manager.hpp"
+#include "task_manager.hpp"
 #include "tim.h"
 #include <cassert>
 
@@ -13,15 +14,15 @@ namespace segway {
 
         constexpr auto TAG = "imu_manager";
 
-        constexpr auto IMU_FAULT_THRESH_LOW = 160.0F64;
-        constexpr auto IMU_FAULT_THRESH_HIGH = 180.0F64;
+        constexpr auto FAULT_THRESH_LOW = 160.0F64;
+        constexpr auto FAULT_THRESH_HIGH = 180.0F64;
 
         struct Context {
             mpu6050::MPU6050_DMP imu;
 
             struct Config {
-                std::float64_t imu_fault_thresh_low;
-                std::float64_t imu_fault_thresh_high;
+                std::float64_t fault_thresh_low;
+                std::float64_t fault_thresh_high;
                 std::float64_t sampling_time;
             } config;
         } ctx;
@@ -76,12 +77,12 @@ namespace segway {
             LOG(TAG, "process_tx_complete");
         }
 
-        void process_event_group_bits() noexcept
+        void process_imu_event_group_bits() noexcept
         {
-            LOG(TAG, "process_event_group_bits");
+            LOG(TAG, "process_imu_event_group_bits");
 
-            auto event_group = get_event_group(EventGroupType::IMU);
-            auto event_bits = xEventGroupWaitBits(event_group,
+            auto imu_event_group = get_imu_event_group();
+            auto event_bits = xEventGroupWaitBits(imu_event_group,
                                                   IMUEventBit::ALL,
                                                   pdTRUE,
                                                   pdFALSE,
@@ -108,11 +109,49 @@ namespace segway {
             }
         }
 
+        void imu_task(void*) noexcept
+        {
+            LOG(TAG, "imu_task start");
+
+            while (1) {
+                process_imu_event_group_bits();
+                vTaskDelay(pdMS_TO_TICKS(10));
+            }
+
+            LOG(TAG, "imu_task end");
+        }
+
+        inline void imu_task_init() noexcept
+        {
+            constexpr auto IMU_TASK_PRIORITY = 1UL;
+            constexpr auto IMU_TASK_STACK_DEPTH = 1024UL;
+            constexpr auto IMU_TASK_NAME = "imu_task";
+            constexpr auto IMU_TASK_ARG = nullptr;
+
+            static auto static_imu_task = StaticTask_t{};
+            static auto imu_task_stack = std::array<StackType_t, IMU_TASK_STACK_DEPTH>{};
+
+            set_imu_task(xTaskCreateStatic(&imu_task,
+                                           IMU_TASK_NAME,
+                                           imu_task_stack.size(),
+                                           IMU_TASK_ARG,
+                                           IMU_TASK_PRIORITY,
+                                           imu_task_stack.data(),
+                                           &static_imu_task));
+        }
+
+        inline void imu_event_group_init() noexcept
+        {
+            static auto static_imu_event_group = StaticEventGroup_t{};
+
+            set_imu_event_group(xEventGroupCreateStatic(&static_imu_event_group));
+        }
+
     }; // namespace
 
     void imu_manager_init() noexcept
     {
-        LOG(TAG, "imu_manager_init");
+        LOG(TAG, "manager_init");
 
         auto mpu6050_interface = mpu6050::Interface{
             .user = &hi2c1,
@@ -142,11 +181,9 @@ namespace segway {
         ctx.imu = std::move(mpu6050_dmp);
 
         start_sampling_timer();
-    }
 
-    void imu_manager_process() noexcept
-    {
-        process_event_group_bits();
+        imu_event_group_init();
+        imu_task_init();
     }
 
 }; // namespace segway

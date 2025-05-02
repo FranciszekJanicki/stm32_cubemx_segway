@@ -1,6 +1,7 @@
 #ifndef SEGWAY_QUEUE_EVENT_HPP
 #define SEGWAY_QUEUE_EVENT_HPP
 
+#include <array>
 #include <cstdint>
 #include <stdfloat>
 
@@ -43,6 +44,8 @@ namespace segway {
         WheelEventType type;
         WheelEventPayload payload;
     };
+
+    using LogEvent = std::array<char, 100UL>;
 
 }; // namespace segway
 

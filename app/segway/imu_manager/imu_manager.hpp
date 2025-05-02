@@ -4,7 +4,6 @@
 namespace segway {
 
     void imu_manager_init() noexcept;
-    void imu_manager_process() noexcept;
 
 }; // namespace segway
 

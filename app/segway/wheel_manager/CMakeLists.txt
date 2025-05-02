@@ -1,10 +1,7 @@
 add_library(wheel_manager STATIC)
 
 target_sources(wheel_manager PRIVATE 
-    "wheel_task.cpp"
     "wheel_manager.cpp"
-    "wheel_queue.cpp"
-    "wheel_event_group.cpp"
     "wheel.cpp"
 )
 
@@ -16,6 +13,7 @@ target_include_directories(wheel_manager PUBLIC
     ${APP_DIR}/step_driver
     ${APP_DIR}/a4988
     ${APP_DIR}/utility
+    ${STM32CUBEMX_DIR}
 )
 
 target_link_libraries(wheel_manager PRIVATE
@@ -26,6 +24,7 @@ target_link_libraries(wheel_manager PRIVATE
     step_driver
     a4988
     utility
+    stm32cubemx
 )
 
 target_compile_options(wheel_manager PUBLIC

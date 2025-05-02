@@ -6,12 +6,18 @@ target_sources(main PRIVATE
 
 target_include_directories(main PRIVATE 
     ${CMAKE_DIR}/stm32cubemx
-    ${SEGWAY_DIR}/main_manager
+   ${SEGWAY_DIR}/control_manager
+   ${SEGWAY_DIR}/imu_manager
+   ${SEGWAY_DIR}/wheel_manager
+   ${SEGWAY_DIR}/log_manager
 )
 
 target_link_libraries(main PUBLIC
     stm32cubemx
-    main_manager
+    control_manager
+    imu_manager
+    wheel_manager
+    log_manager
 )
 
 target_compile_options(main PUBLIC

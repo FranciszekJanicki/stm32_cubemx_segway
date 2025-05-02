@@ -1,9 +1,12 @@
 #include "control_manager.hpp"
+#include "FreeRTOS.h"
 #include "log.hpp"
 #include "pid.hpp"
+#include "queue.h"
 #include "queue_manager.hpp"
+#include "task.h"
+#include "task_manager.hpp"
 #include <array>
-#include <variant>
 
 namespace segway {
 
@@ -37,26 +40,26 @@ namespace segway {
 
             auto tilt = payload.imu_data.roll;
             auto error_tilt = PID_Y_REF - tilt;
-            auto control_speed = ctx.regulator(error_tilt, payload.imu_data.dt);
+            auto speed = ctx.regulator(error_tilt, payload.imu_data.dt);
 
-            auto queue = get_queue(QueueType::CONTROL);
+            auto control_queue = get_control_queue();
             auto event = WheelEvent{.type = WheelEventType::WHEEL_DATA};
-            event.payload.wheel_data = {.left_wheel_speed = control_speed,
-                                        .right_wheel_speed = -control_speed,
+            event.payload.wheel_data = {.left_wheel_speed = speed,
+                                        .right_wheel_speed = -speed,
                                         .dt = payload.imu_data.dt};
 
-            xQueueSend(queue, &event, pdMS_TO_TICKS(10));
+            xQueueSend(control_queue, &event, pdMS_TO_TICKS(10));
         }
 
-        void process_queue_events() noexcept
+        void process_control_queue_events() noexcept
         {
-            LOG(TAG, "process_queue_events");
+            LOG(TAG, "process_control_queue_events");
 
             auto event = ControlEvent{};
-            auto queue = get_queue(QueueType::CONTROL);
+            auto control_queue = get_control_queue();
 
-            while (uxQueueMessagesWaiting(queue)) {
-                if (xQueueReceive(queue, &event, pdMS_TO_TICKS(10))) {
+            while (uxQueueMessagesWaiting(control_queue)) {
+                if (xQueueReceive(control_queue, &event, pdMS_TO_TICKS(10))) {
                     switch (event.type) {
                         case ControlEventType::IMU_DATA:
                             process_imu_data(event.payload);
@@ -68,22 +71,68 @@ namespace segway {
             }
         }
 
+        void control_task(void*) noexcept
+        {
+            LOG(TAG, "control_task start");
+
+            while (1) {
+                process_control_queue_events();
+                vTaskDelay(pdMS_TO_TICKS(10));
+            }
+
+            LOG(TAG, "control_task end");
+        }
+
+        inline void control_task_init() noexcept
+        {
+            constexpr auto CONTROL_TASK_PRIORITY = 1UL;
+            constexpr auto CONTROL_TASK_STACK_DEPTH = 1024UL;
+            constexpr auto CONTROL_TASK_NAME = "control_task";
+            constexpr auto CONTROL_TASK_ARG = nullptr;
+
+            static auto static_control_task = StaticTask_t{};
+            static auto control_task_stack = std::array<StackType_t, CONTROL_TASK_STACK_DEPTH>{};
+
+            set_control_task(xTaskCreateStatic(&control_task,
+                                               CONTROL_TASK_NAME,
+                                               control_task_stack.size(),
+                                               CONTROL_TASK_ARG,
+                                               CONTROL_TASK_PRIORITY,
+                                               control_task_stack.data(),
+                                               &static_control_task));
+        }
+
+        inline void control_queue_init() noexcept
+        {
+            constexpr auto CONTROL_QUEUE_ITEM_SIZE = sizeof(ControlEvent);
+            constexpr auto CONTROL_QUEUE_ITEMS = 10UL;
+            constexpr auto CONTROL_QUEUE_STORAGE_SIZE =
+                CONTROL_QUEUE_ITEM_SIZE * CONTROL_QUEUE_ITEMS;
+
+            static auto static_control_queue = StaticQueue_t{};
+            static auto control_queue_storage =
+                std::array<std::uint8_t, CONTROL_QUEUE_STORAGE_SIZE>{};
+
+            set_control_queue(xQueueCreateStatic(CONTROL_QUEUE_ITEMS,
+                                                 CONTROL_QUEUE_ITEM_SIZE,
+                                                 control_queue_storage.data(),
+                                                 &static_control_queue));
+        }
+
     }; // namespace
 
     void control_manager_init() noexcept
     {
-        LOG(TAG, "control_manager_init");
+        LOG(TAG, "manager_init");
 
         ctx.regulator.kP = PID_KP;
         ctx.regulator.kI = PID_KI;
         ctx.regulator.kD = PID_KD;
         ctx.regulator.kC = PID_KC;
         ctx.regulator.sat = PID_SAT;
-    }
 
-    void control_manager_process() noexcept
-    {
-        process_queue_events();
+        control_queue_init();
+        control_task_init();
     }
 
 }; // namespace segway

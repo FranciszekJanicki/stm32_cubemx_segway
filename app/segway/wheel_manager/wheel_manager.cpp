@@ -1,8 +1,13 @@
 #include "wheel_manager.hpp"
+#include "FreeRTOS.h"
 #include "event_group_manager.hpp"
+#include "event_groups.h"
 #include "gpio.h"
 #include "log.hpp"
+#include "queue.h"
 #include "queue_manager.hpp"
+#include "task.h"
+#include "task_manager.hpp"
 #include "tim.h"
 #include "utility.hpp"
 #include "wheel.hpp"
@@ -14,25 +19,21 @@ namespace segway {
 
         constexpr auto TAG = "wheel_manager";
 
-        constexpr auto WHEEL_FAULT_THRESH_HIGH = 1000.0F64;
-        constexpr auto WHEEL_FAULT_THRESH_LOW = 800.0F64;
-
         struct Context {
             std::array<Wheel, 2UL> wheels;
 
             struct Config {
-                std::float64_t wheel_fault_thresh_low;
-                std::float64_t wheel_fault_thresh_high;
+                std::float64_t fault_thresh_low;
+                std::float64_t fault_thresh_high;
                 std::float64_t wheel_distance;
             } config;
         } ctx;
 
-        WheelDriver& get_wheel_driver(WheelType const wheel_type) noexcept
+        WheelDriver& get_wheel_driver(WheelType const type) noexcept
         {
-            auto* it =
-                std::find_if(ctx.wheels.begin(),
-                             ctx.wheels.end(),
-                             [wheel_type](Wheel const& wheel) { return wheel.type == wheel_type; });
+            auto* it = std::find_if(ctx.wheels.begin(),
+                                    ctx.wheels.end(),
+                                    [type](Wheel const& wheel) { return wheel.type == type; });
 
             assert(it != ctx.wheels.end());
             return it->driver;
@@ -58,21 +59,23 @@ namespace segway {
             process_right_wheel_data(payload);
         }
 
-        void process_queue_events() noexcept
+        void process_wheel_queue_events() noexcept
         {
-            LOG(TAG, "process_queue_events");
+            LOG(TAG, "process_wheel_queue_events");
 
             auto event = WheelEvent{};
-            auto queue = get_queue(QueueType::WHEEL);
+            auto wheel_queue = get_wheel_queue();
 
-            while (uxQueueMessagesWaiting(queue)) {
-                if (xQueueReceive(queue, &event, pdMS_TO_TICKS(10))) {
+            while (uxQueueMessagesWaiting(wheel_queue)) {
+                if (xQueueReceive(wheel_queue, &event, pdMS_TO_TICKS(10))) {
                     switch (event.type) {
-                        case WheelEventType::WHEEL_DATA:
+                        case WheelEventType::WHEEL_DATA: {
                             process_wheel_data(event.payload);
                             break;
-                        default:
+                        }
+                        default: {
                             break;
+                        }
                     }
                 }
             }
@@ -108,7 +111,7 @@ namespace segway {
             HAL_GPIO_TogglePin(GPIOA, 1 << 6);
         };
 
-        void process_event_group_bits() noexcept
+        void process_wheel_event_group_bits() noexcept
         {
             LOG(TAG, "process_event_group_bits");
 
@@ -136,11 +139,65 @@ namespace segway {
             }
         };
 
+        void wheel_task(void*) noexcept
+        {
+            LOG(TAG, "wheel_task start");
+
+            while (1) {
+                process_wheel_queue_events();
+                process_wheel_event_group_bits();
+                vTaskDelay(pdMS_TO_TICKS(10));
+            }
+
+            LOG(TAG, "wheel_task end");
+        }
+
+        inline void wheel_task_init() noexcept
+        {
+            constexpr auto WHEEL_TASK_PRIORITY = 1UL;
+            constexpr auto WHEEL_TASK_STACK_DEPTH = 1024UL;
+            constexpr auto WHEEL_TASK_NAME = "wheel_task";
+            constexpr auto WHEEL_TASK_ARG = nullptr;
+
+            static auto static_wheel_task = StaticTask_t{};
+            static auto wheel_task_stack = std::array<StackType_t, WHEEL_TASK_STACK_DEPTH>{};
+
+            set_wheel_task(xTaskCreateStatic(&wheel_task,
+                                             WHEEL_TASK_NAME,
+                                             wheel_task_stack.size(),
+                                             WHEEL_TASK_ARG,
+                                             WHEEL_TASK_PRIORITY,
+                                             wheel_task_stack.data(),
+                                             &static_wheel_task));
+        }
+
+        inline void wheel_queue_init() noexcept
+        {
+            constexpr auto WHEEL_QUEUE_ITEM_SIZE = sizeof(WheelEvent);
+            constexpr auto WHEEL_QUEUE_ITEMS = 10UL;
+            constexpr auto WHEEL_QUEUE_STORAGE_SIZE = WHEEL_QUEUE_ITEM_SIZE * WHEEL_QUEUE_ITEMS;
+
+            static auto static_wheel_queue = StaticQueue_t{};
+            static auto wheel_queue_storage = std::array<std::uint8_t, WHEEL_QUEUE_STORAGE_SIZE>{};
+
+            set_wheel_queue(xQueueCreateStatic(WHEEL_QUEUE_ITEMS,
+                                               WHEEL_QUEUE_ITEM_SIZE,
+                                               wheel_queue_storage.data(),
+                                               &static_wheel_queue));
+        }
+
+        inline void wheel_event_group_init() noexcept
+        {
+            static auto static_wheel_event_group = StaticEventGroup_t{};
+
+            set_wheel_event_group(xEventGroupCreateStatic(&static_wheel_event_group));
+        }
+
     }; // namespace
 
     void wheel_manager_init() noexcept
     {
-        LOG(TAG, "wheel_manager_init");
+        LOG(TAG, "manager_init");
 
         constexpr auto MS1_1 = 1 << 11;
         constexpr auto MS2_1 = 1 << 10;
@@ -161,6 +218,9 @@ namespace segway {
         constexpr auto STEPS_PER_360 = 200U;
         constexpr auto WHEEL_DIST = 10.0F64;
         constexpr auto WHEEL_RADIUS = 1.0F64;
+
+        constexpr auto FAULT_THRESH_HIGH = 1000.0F64;
+        constexpr auto FAULT_THRESH_LOW = 800.0F64;
 
         auto a4988_1_config = a4988::Config{.pin_ms1 = MS1_1,
                                             .pin_ms2 = MS2_1,
@@ -246,11 +306,10 @@ namespace segway {
         for (auto& [type, driver] : ctx.wheels) {
             driver.initialize();
         }
+
+        wheel_queue_init();
+        wheel_event_group_init();
+        wheel_task_init();
     }
 
-    void wheel_manager_process() noexcept
-    {
-        process_queue_events();
-        process_event_group_bits();
-    }
 }; // namespace segway

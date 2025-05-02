@@ -1,8 +1,6 @@
 add_library(imu_manager STATIC)
 
-target_sources(imu_manager PRIVATE 
-    "imu_task.cpp"
-    "imu_event_group.cpp"
+target_sources(imu_manager PRIVATE
     "imu_manager.cpp"
 )
 
@@ -12,6 +10,9 @@ target_include_directories(imu_manager PUBLIC
     ${SEGWAY_DIR}/event_group_manager
     ${APP_DIR}/mpu6050
     ${SEGWAY_DIR}/queue_manager
+    ${SEGWAY_DIR}/nvic_manager
+    ${SEGWAY_DIR}/task_manager
+    ${STM32CUBEMX_DIR}
 )
 
 target_link_libraries(imu_manager PRIVATE
@@ -20,6 +21,9 @@ target_link_libraries(imu_manager PRIVATE
     event_group_manager
     mpu6050
     queue_manager
+    nvic_manager
+    task_manager
+    stm32cubemx
 )
 
 target_compile_options(imu_manager PUBLIC

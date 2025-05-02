@@ -4,7 +4,6 @@
 namespace segway {
 
     void control_manager_init() noexcept;
-    void control_manager_process() noexcept;
 
 }; // namespace segway
 
