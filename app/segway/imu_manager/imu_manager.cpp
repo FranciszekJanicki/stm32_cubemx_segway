@@ -14,9 +14,6 @@ namespace segway {
 
         constexpr auto TAG = "imu_manager";
 
-        constexpr auto FAULT_THRESH_LOW = 160.0F64;
-        constexpr auto FAULT_THRESH_HIGH = 180.0F64;
-
         struct Context {
             mpu6050::MPU6050_DMP imu;
 
@@ -42,11 +39,14 @@ namespace segway {
             LOG(TAG, "process_sampling_timer");
 
             auto rpy = ctx.imu.get_roll_pitch_yaw().value();
+            auto const& [r, p, y] = rpy;
+
+            LOG(TAG, "r: %f, p: %f, y: %f", r, p, y);
 
             auto event = ControlEvent{.type = ControlEventType::IMU_DATA};
-            event.payload.imu_data = {.roll = rpy.x,
-                                      .pitch = rpy.y,
-                                      .yaw = rpy.z,
+            event.payload.imu_data = {.roll = r,
+                                      .pitch = r,
+                                      .yaw = y,
                                       .dt = ctx.config.sampling_time};
 
             if (!xQueueSend(get_control_queue(), &event, pdMS_TO_TICKS(10))) {
@@ -113,7 +113,7 @@ namespace segway {
 
             while (1) {
                 process_imu_event_group_bits();
-                vTaskDelay(pdMS_TO_TICKS(10));
+                vTaskDelay(pdMS_TO_TICKS(1));
             }
 
             LOG(TAG, "imu_task end");
@@ -145,23 +145,42 @@ namespace segway {
             set_imu_event_group(xEventGroupCreateStatic(&imu_static_event_group));
         }
 
+        void i2c_bus_scan() noexcept
+        {
+            for (auto i = 0; i < (1 << 7); ++i) {
+                if (HAL_I2C_IsDeviceReady(&hi2c1, i << 1, 10, 100) == HAL_OK) {
+                    LOG(TAG, "Address: %d", i);
+                }
+            }
+        }
+
     }; // namespace
 
     void imu_manager_init() noexcept
     {
-        LOG(TAG, "manager_init");
+        LOG(TAG, "imu_manager_init");
+
+        constexpr auto FAULT_THRESH_LOW = 160.0F64;
+        constexpr auto FAULT_THRESH_HIGH = 180.0F64;
+        constexpr auto SAMPLING_TIME = 0.01F64;
+
+        ctx.config.fault_thresh_high = FAULT_THRESH_HIGH;
+        ctx.config.fault_thresh_low = FAULT_THRESH_LOW;
+        ctx.config.sampling_time = SAMPLING_TIME;
 
         auto mpu6050_interface = mpu6050::Interface{
             .user = &hi2c1,
             .write_bytes =
                 [](void* user, std::uint8_t address, std::uint8_t* data, std::size_t size) {
                     auto handle = static_cast<I2C_HandleTypeDef*>(user);
-                    assert(HAL_OK == HAL_I2C_Mem_Write(handle, 104, address, 1, data, size, 100));
+                    assert(HAL_OK ==
+                           HAL_I2C_Mem_Write(handle, 0x69 << 1, address, 1, data, size, 100));
                 },
             .read_bytes =
                 [](void* user, std::uint8_t address, std::uint8_t* data, std::size_t size) {
                     auto handle = static_cast<I2C_HandleTypeDef*>(user);
-                    assert(HAL_OK == HAL_I2C_Mem_Read(handle, 104, address, 1, data, size, 100));
+                    assert(HAL_OK ==
+                           HAL_I2C_Mem_Read(handle, 0x69 << 1, address, 1, data, size, 100));
                 },
             .delay_ms = [](void* user, std::uint32_t ms) { HAL_Delay(ms); }};
 
@@ -174,14 +193,14 @@ namespace segway {
         auto mpu6050 = mpu6050::MPU6050{.interface = std::move(mpu6050_interface)};
 
         auto mpu6050_dmp = mpu6050::MPU6050_DMP{.mpu6050 = std::move(mpu6050)};
-        //   mpu6050_dmp.initialize(mpu6050_config);
+        mpu6050_dmp.initialize(mpu6050_config);
 
         ctx.imu = std::move(mpu6050_dmp);
 
-        start_sampling_timer();
-
         imu_event_group_init();
         imu_task_init();
+
+        start_sampling_timer();
     }
 
 }; // namespace segway

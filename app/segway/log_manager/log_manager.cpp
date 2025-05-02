@@ -17,12 +17,14 @@ namespace segway {
             auto event = LogEvent{};
 
             while (1) {
-                if (xQueueReceive(get_log_queue(), &event, pdMS_TO_TICKS(10))) {
-                    auto msg = reinterpret_cast<std::uint8_t*>(event.buffer);
-                    auto msg_len = std::strlen(event.buffer);
+                while (uxQueueMessagesWaiting(get_log_queue())) {
+                    if (xQueueReceive(get_log_queue(), &event, pdMS_TO_TICKS(10))) {
+                        auto msg = reinterpret_cast<std::uint8_t*>(event.buffer);
+                        auto msg_len = std::strlen(event.buffer);
 
-                    HAL_UART_Transmit(&huart2, msg, msg_len, 100);
-                    // CDC_Transmit_FS(msg, msg_len);
+                        HAL_UART_Transmit(&huart2, msg, msg_len, 100);
+                        // CDC_Transmit_FS(msg, msg_len);
+                    }
                 }
             }
         }

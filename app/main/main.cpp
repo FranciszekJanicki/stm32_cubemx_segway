@@ -1,6 +1,7 @@
 #include "main.h"
 #include "FreeRTOS.h"
 #include "control_manager.hpp"
+#include "event_group_manager.hpp"
 #include "gpio.h"
 #include "i2c.h"
 #include "imu_manager.hpp"
@@ -12,121 +13,114 @@
 #include "usb_device.h"
 #include "wheel_manager.hpp"
 
-#include "event_group_manager.hpp"
-
-constexpr auto TAG = "NVIC";
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef* hi2c)
-// {
-//     std::puts("HAL_I2C_MemTxCpltCallback");
+void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef* hi2c)
+{
+    auto task_woken = pdFALSE;
 
-//     auto task_woken = pdFALSE;
+    if (hi2c->Instance == I2C1) {
+        xEventGroupSetBitsFromISR(segway::get_imu_event_group(),
+                                  segway::IMUEventBit::TX_COMPLETE,
+                                  &task_woken);
+    }
 
-//     if (hi2c->Instance == I2C1) {
-//         xEventGroupSetBitsFromISR(segway::get_imu_event_group(),
-//                                   segway::IMUEventBit::TX_COMPLETE,
-//                                   &task_woken);
-//     }
+    portYIELD_FROM_ISR(task_woken);
+}
 
-//     portYIELD_FROM_ISR(task_woken);
-// }
+void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef* hi2c)
+{
+    auto task_woken = pdFALSE;
 
-// void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef* hi2c)
-// {
-//     std::puts("HAL_I2C_MemRxCpltCallback");
+    if (hi2c->Instance == I2C1) {
+        xEventGroupSetBitsFromISR(segway::get_imu_event_group(),
+                                  segway::IMUEventBit::RX_COMPLETE,
+                                  &task_woken);
+    }
 
-//     auto task_woken = pdFALSE;
+    portYIELD_FROM_ISR(task_woken);
+}
 
-//     if (hi2c->Instance == I2C1) {
-//         xEventGroupSetBitsFromISR(segway::get_imu_event_group(),
-//                                   segway::IMUEventBit::RX_COMPLETE,
-//                                   &task_woken);
-//     }
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
+{
+    auto task_woken = pdFALSE;
 
-//     portYIELD_FROM_ISR(task_woken);
-// }
+    if (htim->Instance == TIM1) {
+        xEventGroupSetBitsFromISR(segway::get_wheel_event_group(),
+                                  segway::WheelEventBit::LEFT_PWM_PULSE,
+                                  &task_woken);
+    } else if (htim->Instance == TIM3) {
+        xEventGroupSetBitsFromISR(segway::get_wheel_event_group(),
+                                  segway::WheelEventBit::RIGHT_PWM_PULSE,
+                                  &task_woken);
+    }
 
-// void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
-// {
-//     std::puts("HAL_TIM_PWM_PulseFinishedCallback");
+    portYIELD_FROM_ISR(task_woken);
+}
 
-//     auto task_woken = pdFALSE;
+void HAL_I2C_ErrorCallback(I2C_HandleTypeDef* hi2c)
+{
+    auto task_woken = pdFALSE;
 
-//     if (htim->Instance == TIM1) {
-//         xEventGroupSetBitsFromISR(segway::get_wheel_event_group(),
-//                                   segway::WheelEventBit::LEFT_PWM_PULSE,
-//                                   &task_woken);
-//     } else if (htim->Instance == TIM3) {
-//         xEventGroupSetBitsFromISR(segway::get_wheel_event_group(),
-//                                   segway::WheelEventBit::RIGHT_PWM_PULSE,
-//                                   &task_woken);
-//     }
+    if (hi2c->Instance == I2C1) {
+        xEventGroupSetBitsFromISR(segway::get_imu_event_group(),
+                                  segway::IMUEventBit::I2C_ERROR,
+                                  &task_woken);
+    }
 
-//     portYIELD_FROM_ISR(task_woken);
-// }
+    portYIELD_FROM_ISR(task_woken);
+}
 
-// void HAL_I2C_ErrorCallback(I2C_HandleTypeDef* hi2c)
-// {
-//     std::puts("HAL_I2C_ErrorCallback");
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
+{
+    auto task_woken = pdFALSE;
 
-//     auto task_woken = pdFALSE;
+    if (htim->Instance == TIM1) {
+        xEventGroupSetBitsFromISR(segway::get_wheel_event_group(),
+                                  segway::WheelEventBit::LEFT_STEP_TIMER,
+                                  &task_woken);
+    } else if (htim->Instance == TIM2) {
+        xEventGroupSetBitsFromISR(segway::get_imu_event_group(),
+                                  segway::IMUEventBit::SAMPLING_TIMER,
+                                  &task_woken);
+    } else if (htim->Instance == TIM3) {
+        xEventGroupSetBitsFromISR(segway::get_wheel_event_group(),
+                                  segway::WheelEventBit::RIGHT_STEP_TIMER,
+                                  &task_woken);
+    } else if (htim->Instance == TIM4) {
+        HAL_IncTick();
+    }
 
-//     if (hi2c->Instance == I2C1) {
-//         xEventGroupSetBitsFromISR(segway::get_imu_event_group(),
-//                                   segway::IMUEventBit::I2C_ERROR,
-//                                   &task_woken);
-//     }
+    portYIELD_FROM_ISR(task_woken);
+}
 
-//     portYIELD_FROM_ISR(task_woken);
-// }
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    auto task_woken = pdFALSE;
 
-// void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
-// {
-//     std::puts("HAL_TIM_PeriodElapsedCallback");
+    if (GPIO_Pin == (1 << 6)) {
+        xEventGroupSetBitsFromISR(segway::get_imu_event_group(),
+                                  segway::IMUEventBit::DATA_READY,
+                                  &task_woken);
+    }
 
-//     auto task_woken = pdFALSE;
-
-//     if (htim->Instance == TIM1) {
-//         xEventGroupSetBitsFromISR(segway::get_wheel_event_group(),
-//                                   segway::WheelEventBit::LEFT_STEP_TIMER,
-//                                   &task_woken);
-//     } else if (htim->Instance == TIM2) {
-//         xEventGroupSetBitsFromISR(segway::get_imu_event_group(),
-//                                   segway::IMUEventBit::SAMPLING_TIMER,
-//                                   &task_woken);
-//     } else if (htim->Instance == TIM3) {
-//         xEventGroupSetBitsFromISR(segway::get_wheel_event_group(),
-//                                   segway::WheelEventBit::RIGHT_STEP_TIMER,
-//                                   &task_woken);
-//     } else if (htim->Instance == TIM4) {
-//         HAL_IncTick();
-//     }
-
-//     portYIELD_FROM_ISR(task_woken);
-// }
-
-// void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-// {
-//     std::puts("HAL_GPIO_EXTI_Callback");
-
-//     auto task_woken = pdFALSE;
-
-//     if (GPIO_Pin == (1 << 6)) {
-//         xEventGroupSetBitsFromISR(segway::get_imu_event_group(),
-//                                   segway::IMUEventBit::DATA_READY,
-//                                   &task_woken);
-//     }
-
-//     portYIELD_FROM_ISR(task_woken);
-// }
+    portYIELD_FROM_ISR(task_woken);
+}
 
 #ifdef __cplusplus
 };
 #endif
+
+void i2c_bus_scan() noexcept
+{
+    for (auto i = 0; i < (1 << 7); ++i) {
+        if (HAL_I2C_IsDeviceReady(&hi2c1, i << 1, 10, 100) == HAL_OK) {
+            printf("Address: %d\n\r", i);
+        }
+    }
+}
 
 int main()
 {
@@ -140,6 +134,10 @@ int main()
     MX_TIM3_Init();
     MX_USART2_UART_Init();
     //  MX_USB_DEVICE_Init();
+
+    i2c_bus_scan();
+
+    HAL_Delay(100);
 
     segway::log_manager_init();
     segway::control_manager_init();

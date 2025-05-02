@@ -15,10 +15,11 @@ namespace segway {
 
     void set_queue(QueueType const type, QueueHandle_t const handle) noexcept
     {
-        auto const index = std::to_underlying(type);
+        assert(handle);
 
+        auto const index = std::to_underlying(type);
         assert(index < QUEUE_NUM);
-        assert(queues[index] == nullptr);
+        assert(!queues[index]);
 
         queues[index] = handle;
     }
@@ -28,7 +29,7 @@ namespace segway {
         auto const index = std::to_underlying(type);
 
         assert(index < QUEUE_NUM);
-        assert(queues[index] != nullptr);
+        assert(queues[index]);
 
         return queues[index];
     }

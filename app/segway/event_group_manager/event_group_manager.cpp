@@ -15,10 +15,11 @@ namespace segway {
 
     void set_event_group(EventGroupType const type, EventGroupHandle_t const handle) noexcept
     {
-        auto const index = std::to_underlying(type);
+        assert(handle);
 
+        auto const index = std::to_underlying(type);
         assert(index < EVENT_GROUP_NUM);
-        assert(event_groups[index] == nullptr);
+        assert(!event_groups[index]);
 
         event_groups[index] = handle;
     }
@@ -28,7 +29,7 @@ namespace segway {
         auto const index = std::to_underlying(type);
 
         assert(index < EVENT_GROUP_NUM);
-        assert(event_groups[index] != nullptr);
+        assert(event_groups[index]);
 
         return event_groups[index];
     }

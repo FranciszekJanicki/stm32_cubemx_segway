@@ -47,7 +47,9 @@ namespace segway {
                                         .right_wheel_speed = -speed,
                                         .dt = payload.imu_data.dt};
 
-            xQueueSend(get_control_queue(), &event, pdMS_TO_TICKS(10));
+            if (!xQueueSend(get_control_queue(), &event, pdMS_TO_TICKS(1))) {
+                LOG(TAG, "Failed sending to queue!");
+            }
         }
 
         void process_control_queue_events() noexcept
@@ -56,15 +58,13 @@ namespace segway {
 
             auto event = ControlEvent{};
 
-            while (uxQueueMessagesWaiting(get_control_queue())) {
-                if (xQueueReceive(get_control_queue(), &event, pdMS_TO_TICKS(10))) {
-                    switch (event.type) {
-                        case ControlEventType::IMU_DATA:
-                            process_imu_data(event.payload);
-                            break;
-                        default:
-                            break;
-                    }
+            if (xQueueReceive(get_control_queue(), &event, pdMS_TO_TICKS(10))) {
+                switch (event.type) {
+                    case ControlEventType::IMU_DATA:
+                        process_imu_data(event.payload);
+                        break;
+                    default:
+                        break;
                 }
             }
         }
@@ -75,7 +75,7 @@ namespace segway {
 
             while (1) {
                 process_control_queue_events();
-                vTaskDelay(pdMS_TO_TICKS(10));
+                vTaskDelay(pdMS_TO_TICKS(1));
             }
 
             LOG(TAG, "control_task end");
@@ -103,7 +103,7 @@ namespace segway {
         inline void control_queue_init() noexcept
         {
             constexpr auto CONTROL_QUEUE_ITEM_SIZE = sizeof(ControlEvent);
-            constexpr auto CONTROL_QUEUE_ITEMS = 10UL;
+            constexpr auto CONTROL_QUEUE_ITEMS = 100UL;
             constexpr auto CONTROL_QUEUE_STORAGE_SIZE =
                 CONTROL_QUEUE_ITEM_SIZE * CONTROL_QUEUE_ITEMS;
 
@@ -132,5 +132,4 @@ namespace segway {
         control_queue_init();
         control_task_init();
     }
-
 }; // namespace segway

@@ -4,12 +4,14 @@ target_sources(common INTERFACE
     "log.hpp"
 )
 
-target_link_libraries(common INTERFACE
-    stm32cubemx
-)
-
 target_include_directories(common INTERFACE 
     ${CMAKE_DIR}/stm32cubemx
+    ${SEGWAY_DIR}/queue_manager
+)
+
+target_link_libraries(common INTERFACE
+    stm32cubemx
+    queue_manager
 )
 
 target_compile_options(common INTERFACE

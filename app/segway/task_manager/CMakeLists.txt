@@ -6,10 +6,12 @@ target_sources(task_manager PRIVATE
 
 target_include_directories(task_manager PUBLIC 
     ${STM32CUBEMX_DIR}
+    ${SEGWAY_DIR}/common
 )
 
 target_link_libraries(task_manager PRIVATE
     stm32cubemx
+    common
 )
 
 target_compile_options(task_manager PUBLIC

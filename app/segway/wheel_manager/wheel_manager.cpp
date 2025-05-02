@@ -68,13 +68,11 @@ namespace segway {
             while (uxQueueMessagesWaiting(get_wheel_queue())) {
                 if (xQueueReceive(get_wheel_queue(), &event, pdMS_TO_TICKS(10))) {
                     switch (event.type) {
-                        case WheelEventType::WHEEL_DATA: {
+                        case WheelEventType::WHEEL_DATA:
                             process_wheel_data(event.payload);
                             break;
-                        }
-                        default: {
+                        default:
                             break;
-                        }
                     }
                 }
             }
@@ -144,7 +142,7 @@ namespace segway {
             while (1) {
                 process_wheel_queue_events();
                 process_wheel_event_group_bits();
-                vTaskDelay(pdMS_TO_TICKS(10));
+                vTaskDelay(pdMS_TO_TICKS(1));
             }
 
             LOG(TAG, "wheel_task end");

@@ -1,4 +1,5 @@
 #include "task_manager.hpp"
+#include "log.hpp"
 #include <array>
 #include <cassert>
 #include <utility>
@@ -13,12 +14,20 @@ namespace segway {
 
     }; // namespace
 
+    extern "C" void vApplicationStackOverflowHook(TaskHandle_t xTask, char* pcTaskName)
+    {
+        LOG("RTOS", "Stack overflow in task %s", pcTaskName);
+        while (1)
+            ; // Stop here for debugging
+    }
+
     void set_task(TaskType const type, TaskHandle_t const handle) noexcept
     {
-        auto const index = std::to_underlying(type);
+        assert(handle);
 
+        auto const index = std::to_underlying(type);
         assert(index < TASK_NUM);
-        assert(tasks[index] == nullptr);
+        assert(!tasks[index]);
 
         tasks[index] = handle;
     }
@@ -28,7 +37,7 @@ namespace segway {
         auto const index = std::to_underlying(type);
 
         assert(index < TASK_NUM);
-        assert(tasks[index] != nullptr);
+        assert(tasks[index]);
 
         return tasks[index];
     }

@@ -13,7 +13,7 @@ namespace segway {
 
     inline void LOG(char const* tag, char const* fmt, auto const... args) noexcept
     {
-        LogEvent event{};
+        auto event = LogEvent{};
 
         auto* buf = event.buffer;
         auto buf_len = sizeof(event.buffer);
