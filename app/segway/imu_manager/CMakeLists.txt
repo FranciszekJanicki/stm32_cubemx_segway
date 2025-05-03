@@ -12,6 +12,7 @@ target_include_directories(imu_manager PUBLIC
     ${SEGWAY_DIR}/queue_manager
     ${SEGWAY_DIR}/nvic_manager
     ${SEGWAY_DIR}/task_manager
+    ${APP_DIR}/utility
     ${STM32CUBEMX_DIR}
 )
 
@@ -24,6 +25,7 @@ target_link_libraries(imu_manager PRIVATE
     nvic_manager
     task_manager
     stm32cubemx
+    utility
 )
 
 target_compile_options(imu_manager PUBLIC

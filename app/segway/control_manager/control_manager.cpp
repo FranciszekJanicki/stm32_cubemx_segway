@@ -117,7 +117,7 @@ namespace segway {
             while (1) {
                 process_control_queue_events();
                 process_control_event_group_bits();
-                vTaskDelay(pdMS_TO_TICKS(1));
+                vTaskDelay(pdMS_TO_TICKS(10));
             }
 
             LOG(TAG, "control_task end");

@@ -119,7 +119,7 @@ namespace segway {
 
             LOG(TAG, "process_left_step_timer");
 
-            get_wheel_driver(WheelType::LEFT).update_step_count();
+            // get_wheel_driver(WheelType::LEFT).update_step_count();
 
             HAL_GPIO_TogglePin(GPIOA, 1 << 6);
             HAL_TIM_Base_Start_IT(&htim1);
@@ -133,7 +133,7 @@ namespace segway {
 
             LOG(TAG, "process_right_step_timer");
 
-            get_wheel_driver(WheelType::RIGHT).update_step_count();
+            //  get_wheel_driver(WheelType::RIGHT).update_step_count();
 
             HAL_GPIO_TogglePin(GPIOA, 1 << 8);
             HAL_TIM_Base_Start_IT(&htim3);
@@ -165,7 +165,7 @@ namespace segway {
             while (1) {
                 process_wheel_queue_events();
                 process_wheel_event_group_bits();
-                vTaskDelay(pdMS_TO_TICKS(1));
+                vTaskDelay(pdMS_TO_TICKS(10));
             }
 
             LOG(TAG, "wheel_task end");

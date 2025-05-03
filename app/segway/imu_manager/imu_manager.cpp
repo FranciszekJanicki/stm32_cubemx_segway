@@ -6,6 +6,7 @@
 #include "queue_manager.hpp"
 #include "task_manager.hpp"
 #include "tim.h"
+#include "utility.hpp"
 #include <cassert>
 
 namespace segway {
@@ -81,9 +82,9 @@ namespace segway {
             auto rpy = ctx.imu.get_roll_pitch_yaw().value();
 
             auto event = ControlEvent{.type = ControlEventType::IMU_DATA};
-            event.payload.imu_data = {.roll = rpy.x,
-                                      .pitch = rpy.y,
-                                      .yaw = rpy.z,
+            event.payload.imu_data = {.roll = utility::radians_to_degrees(rpy.x),
+                                      .pitch = utility::radians_to_degrees(rpy.y),
+                                      .yaw = utility::radians_to_degrees(rpy.z),
                                       .dt = ctx.config.sampling_time};
 
             if (!xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10))) {
@@ -154,7 +155,7 @@ namespace segway {
             while (1) {
                 process_imu_event_group_bits();
                 process_imu_queue_events();
-                vTaskDelay(pdMS_TO_TICKS(1));
+                vTaskDelay(pdMS_TO_TICKS(10));
             }
 
             LOG(TAG, "imu_task end");
