@@ -7,11 +7,14 @@
 #include "imu_manager.hpp"
 #include "log.hpp"
 #include "log_manager.hpp"
+#include "main_manager.hpp"
 #include "task.h"
 #include "tim.h"
 #include "usart.h"
 #include "usb_device.h"
 #include "wheel_manager.hpp"
+
+using namespace segway;
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,8 +25,8 @@ void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef* hi2c)
     auto task_woken = pdFALSE;
 
     if (hi2c->Instance == I2C1) {
-        xEventGroupSetBitsFromISR(segway::get_imu_event_group(),
-                                  segway::IMUEventBit::TX_COMPLETE,
+        xEventGroupSetBitsFromISR(get_event_group(EventGroupType::IMU),
+                                  IMUEventBit::TX_COMPLETE,
                                   &task_woken);
     }
 
@@ -35,25 +38,8 @@ void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef* hi2c)
     auto task_woken = pdFALSE;
 
     if (hi2c->Instance == I2C1) {
-        xEventGroupSetBitsFromISR(segway::get_imu_event_group(),
-                                  segway::IMUEventBit::RX_COMPLETE,
-                                  &task_woken);
-    }
-
-    portYIELD_FROM_ISR(task_woken);
-}
-
-void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
-{
-    auto task_woken = pdFALSE;
-
-    if (htim->Instance == TIM1) {
-        xEventGroupSetBitsFromISR(segway::get_wheel_event_group(),
-                                  segway::WheelEventBit::LEFT_PWM_PULSE,
-                                  &task_woken);
-    } else if (htim->Instance == TIM3) {
-        xEventGroupSetBitsFromISR(segway::get_wheel_event_group(),
-                                  segway::WheelEventBit::RIGHT_PWM_PULSE,
+        xEventGroupSetBitsFromISR(get_event_group(EventGroupType::IMU),
+                                  IMUEventBit::RX_COMPLETE,
                                   &task_woken);
     }
 
@@ -65,8 +51,8 @@ void HAL_I2C_ErrorCallback(I2C_HandleTypeDef* hi2c)
     auto task_woken = pdFALSE;
 
     if (hi2c->Instance == I2C1) {
-        xEventGroupSetBitsFromISR(segway::get_imu_event_group(),
-                                  segway::IMUEventBit::I2C_ERROR,
+        xEventGroupSetBitsFromISR(get_event_group(EventGroupType::IMU),
+                                  IMUEventBit::I2C_ERROR,
                                   &task_woken);
     }
 
@@ -78,16 +64,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
     auto task_woken = pdFALSE;
 
     if (htim->Instance == TIM1) {
-        xEventGroupSetBitsFromISR(segway::get_wheel_event_group(),
-                                  segway::WheelEventBit::LEFT_STEP_TIMER,
+        xEventGroupSetBitsFromISR(get_event_group(EventGroupType::WHEEL),
+                                  WheelEventBit::LEFT_STEP_TIMER,
                                   &task_woken);
     } else if (htim->Instance == TIM2) {
-        xEventGroupSetBitsFromISR(segway::get_imu_event_group(),
-                                  segway::IMUEventBit::SAMPLING_TIMER,
+        xEventGroupSetBitsFromISR(get_event_group(EventGroupType::IMU),
+                                  IMUEventBit::DATA_READY,
                                   &task_woken);
     } else if (htim->Instance == TIM3) {
-        xEventGroupSetBitsFromISR(segway::get_wheel_event_group(),
-                                  segway::WheelEventBit::RIGHT_STEP_TIMER,
+        xEventGroupSetBitsFromISR(get_event_group(EventGroupType::WHEEL),
+                                  WheelEventBit::RIGHT_STEP_TIMER,
                                   &task_woken);
     } else if (htim->Instance == TIM4) {
         HAL_IncTick();
@@ -101,8 +87,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     auto task_woken = pdFALSE;
 
     if (GPIO_Pin == (1 << 6)) {
-        xEventGroupSetBitsFromISR(segway::get_imu_event_group(),
-                                  segway::IMUEventBit::DATA_READY,
+        xEventGroupSetBitsFromISR(get_event_group(EventGroupType::IMU),
+                                  IMUEventBit::DATA_READY,
                                   &task_woken);
     }
 
@@ -137,10 +123,11 @@ int main()
 
     i2c_bus_scan();
 
-    segway::log_manager_init();
-    segway::control_manager_init();
-    segway::wheel_manager_init();
-    segway::imu_manager_init();
+    main_manager_init();
+    log_manager_init();
+    control_manager_init();
+    wheel_manager_init();
+    imu_manager_init();
 
     vTaskStartScheduler();
 }

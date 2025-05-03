@@ -26,7 +26,6 @@ namespace segway {
         ControlEventPayload payload;
     };
 
-    // 1:
     enum struct WheelEventType : std::uint8_t {
         WHEEL_DATA,
         NONE,

@@ -10,6 +10,7 @@ target_include_directories(main PRIVATE
    ${SEGWAY_DIR}/imu_manager
    ${SEGWAY_DIR}/wheel_manager
    ${SEGWAY_DIR}/log_manager
+   ${SEGWAY_DIR}/main_manager
 )
 
 target_link_libraries(main PUBLIC
@@ -17,6 +18,7 @@ target_link_libraries(main PUBLIC
     control_manager
     imu_manager
     wheel_manager
+    main_manager
     log_manager
 )
 

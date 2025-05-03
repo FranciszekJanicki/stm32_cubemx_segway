@@ -10,6 +10,7 @@ target_include_directories(control_manager PUBLIC
     ${SEGWAY_DIR}/queue_manager
     ${APP_DIR}/utility
     ${STM32CUBEMX_DIR}
+    ${SEGWAY_DIR}/event_group_manager
 )
 
 target_link_libraries(control_manager PRIVATE
@@ -18,6 +19,7 @@ target_link_libraries(control_manager PRIVATE
     queue_manager
     utility
     stm32cubemx
+    event_group_manager
 )
 
 target_compile_options(control_manager PUBLIC

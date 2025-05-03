@@ -17,8 +17,8 @@ namespace segway {
             auto event = LogEvent{};
 
             while (1) {
-                while (uxQueueMessagesWaiting(get_log_queue())) {
-                    if (xQueueReceive(get_log_queue(), &event, pdMS_TO_TICKS(10))) {
+                while (uxQueueMessagesWaiting(get_queue(QueueType::LOG))) {
+                    if (xQueueReceive(get_queue(QueueType::LOG), &event, pdMS_TO_TICKS(10))) {
                         auto msg = reinterpret_cast<std::uint8_t*>(event.buffer);
                         auto msg_len = std::strlen(event.buffer);
 
@@ -38,10 +38,11 @@ namespace segway {
             static auto log_static_queue = StaticQueue_t{};
             static auto log_queue_storage = std::array<std::uint8_t, LOG_QUEUE_STORAGE_SIZE>{};
 
-            set_log_queue(xQueueCreateStatic(LOG_QUEUE_ITEMS,
-                                             LOG_QUEUE_ITEM_SIZE,
-                                             log_queue_storage.data(),
-                                             &log_static_queue));
+            set_queue(QueueType::LOG,
+                      xQueueCreateStatic(LOG_QUEUE_ITEMS,
+                                         LOG_QUEUE_ITEM_SIZE,
+                                         log_queue_storage.data(),
+                                         &log_static_queue));
         }
 
         inline void log_task_init() noexcept

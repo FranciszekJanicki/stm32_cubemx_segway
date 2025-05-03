@@ -22,20 +22,39 @@ namespace segway {
                 std::float64_t fault_thresh_high;
                 std::float64_t sampling_time;
             } config;
+
+            bool is_running;
         } ctx;
 
-        void start_sampling_timer() noexcept
+        void process_start() noexcept
         {
-            HAL_TIM_Base_Start_IT(&htim2);
+            if (!ctx.is_running) {
+                ctx.is_running = true;
+
+                xEventGroupSetBits(get_event_group(EventGroupType::CONTROL),
+                                   ControlEventBit::START);
+
+                HAL_TIM_Base_Start_IT(&htim2);
+            }
         }
 
-        void stop_sampling_timer() noexcept
+        void process_stop() noexcept
         {
-            HAL_TIM_Base_Stop_IT(&htim2);
+            if (ctx.is_running) {
+                ctx.is_running = false;
+
+                xEventGroupSetBits(get_event_group(EventGroupType::CONTROL), ControlEventBit::STOP);
+
+                HAL_TIM_Base_Stop_IT(&htim2);
+            }
         }
 
         void process_data_ready() noexcept
         {
+            if (!ctx.is_running) {
+                return;
+            }
+
             LOG(TAG, "process_data_ready");
 
             auto rpy = ctx.imu.get_roll_pitch_yaw().value();
@@ -49,28 +68,35 @@ namespace segway {
                                       .yaw = y,
                                       .dt = ctx.config.sampling_time};
 
-            if (!xQueueSend(get_control_queue(), &event, pdMS_TO_TICKS(10))) {
+            if (!xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10))) {
                 LOG(TAG, "Failed sending to queue!");
             }
         }
 
-        void process_sampling_timer() noexcept
-        {
-            process_data_ready();
-        }
-
         void process_i2c_error() noexcept
         {
+            if (!ctx.is_running) {
+                return;
+            }
+
             LOG(TAG, "process_i2c_error");
         }
 
         void process_rx_complete() noexcept
         {
+            if (!ctx.is_running) {
+                return;
+            }
+
             LOG(TAG, "process_rx_complete");
         }
 
         void process_tx_complete() noexcept
         {
+            if (!ctx.is_running) {
+                return;
+            }
+
             LOG(TAG, "process_tx_complete");
         }
 
@@ -78,11 +104,19 @@ namespace segway {
         {
             LOG(TAG, "process_imu_event_group_bits");
 
-            auto event_bits = xEventGroupWaitBits(get_imu_event_group(),
+            auto event_bits = xEventGroupWaitBits(get_event_group(EventGroupType::IMU),
                                                   IMUEventBit::ALL,
                                                   pdTRUE,
                                                   pdFALSE,
                                                   pdMS_TO_TICKS(10));
+
+            if ((event_bits & IMUEventBit::START) == IMUEventBit::START) {
+                process_start();
+            }
+
+            if ((event_bits & IMUEventBit::STOP) == IMUEventBit::STOP) {
+                process_stop();
+            }
 
             if ((event_bits & IMUEventBit::DATA_READY) == IMUEventBit::DATA_READY) {
                 process_data_ready();
@@ -98,10 +132,6 @@ namespace segway {
 
             if ((event_bits & IMUEventBit::TX_COMPLETE) == IMUEventBit::TX_COMPLETE) {
                 process_tx_complete();
-            }
-
-            if ((event_bits & IMUEventBit::SAMPLING_TIMER) == IMUEventBit::SAMPLING_TIMER) {
-                process_sampling_timer();
             }
         }
 
@@ -127,20 +157,21 @@ namespace segway {
             static auto imu_static_task = StaticTask_t{};
             static auto imu_task_stack = std::array<StackType_t, IMU_TASK_STACK_DEPTH>{};
 
-            set_imu_task(xTaskCreateStatic(&imu_task,
-                                           IMU_TASK_NAME,
-                                           imu_task_stack.size(),
-                                           IMU_TASK_ARG,
-                                           IMU_TASK_PRIORITY,
-                                           imu_task_stack.data(),
-                                           &imu_static_task));
+            set_task(TaskType::IMU,
+                     xTaskCreateStatic(&imu_task,
+                                       IMU_TASK_NAME,
+                                       imu_task_stack.size(),
+                                       IMU_TASK_ARG,
+                                       IMU_TASK_PRIORITY,
+                                       imu_task_stack.data(),
+                                       &imu_static_task));
         }
 
         inline void imu_event_group_init() noexcept
         {
             static auto imu_static_event_group = StaticEventGroup_t{};
 
-            set_imu_event_group(xEventGroupCreateStatic(&imu_static_event_group));
+            set_event_group(EventGroupType::IMU, xEventGroupCreateStatic(&imu_static_event_group));
         }
 
         inline void imu_config_init() noexcept
@@ -152,6 +183,8 @@ namespace segway {
             ctx.config.fault_thresh_high = FAULT_THRESH_HIGH;
             ctx.config.fault_thresh_low = FAULT_THRESH_LOW;
             ctx.config.sampling_time = SAMPLING_TIME;
+
+            ctx.is_running = false;
         }
 
         inline void imu_periph_init() noexcept
@@ -170,7 +203,7 @@ namespace segway {
                         assert(HAL_OK ==
                                HAL_I2C_Mem_Read(handle, 0x68 << 1, address, 1, data, size, 100));
                     },
-                .delay_ms = [](void* user, std::uint32_t ms) { HAL_Delay(ms); }};
+                .delay_ms = [](void* user, std::uint32_t ms) { vTaskDelay(pdMS_TO_TICKS(ms)); }};
 
             auto mpu6050_config = mpu6050::Config{.sampling_rate = 200UL,
                                                   .gyro_range = mpu6050::GyroRange::GYRO_FS_250,
@@ -194,8 +227,6 @@ namespace segway {
         imu_periph_init();
         imu_event_group_init();
         imu_task_init();
-
-        start_sampling_timer();
     }
 
 }; // namespace segway

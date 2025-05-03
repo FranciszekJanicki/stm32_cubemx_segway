@@ -38,7 +38,7 @@ namespace segway {
             std::snprintf(buf + tag_len, buf_len - tag_len, fmt, args...);
             std::strncat(buf, endline, buf_len - std::strlen(buf));
 
-            xQueueSend(get_log_queue(), &event, portMAX_DELAY);
+            xQueueSend(get_queue(QueueType::LOG), &event, portMAX_DELAY);
 
             if (alloc_buf) {
                 std::free(buf);
