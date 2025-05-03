@@ -92,5 +92,4 @@ devcontainer-stm32-cubemx-MPU6050.bin
 CMakeFiles
 CMakeCache.txt
 
-app/
 app/utility

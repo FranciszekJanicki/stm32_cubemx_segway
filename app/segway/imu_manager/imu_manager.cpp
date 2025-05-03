@@ -82,10 +82,16 @@ namespace segway {
             auto rpy = ctx.imu.get_roll_pitch_yaw().value();
 
             auto event = ControlEvent{.type = ControlEventType::IMU_DATA};
-            event.payload.imu_data = {.roll = utility::radians_to_degrees(rpy.x),
-                                      .pitch = utility::radians_to_degrees(rpy.y),
-                                      .yaw = utility::radians_to_degrees(rpy.z),
-                                      .dt = ctx.config.sampling_time};
+            event.payload.imu_data.roll = utility::radians_to_degrees(rpy.x);
+            event.payload.imu_data.pitch = utility::radians_to_degrees(rpy.y);
+            event.payload.imu_data.yaw = utility::radians_to_degrees(rpy.z);
+            event.payload.imu_data.dt = ctx.config.sampling_time;
+
+            LOG(TAG,
+                "r: %f, p: %f, y: %f",
+                event.payload.imu_data.roll,
+                event.payload.imu_data.pitch,
+                event.payload.imu_data.yaw);
 
             if (!xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10))) {
                 LOG(TAG, "Failed sending to queue!");
