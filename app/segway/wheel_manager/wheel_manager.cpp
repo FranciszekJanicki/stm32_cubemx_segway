@@ -43,24 +43,28 @@ namespace segway {
             return it->driver;
         }
 
-        void process_left_wheel_data(WheelEventPayload const& payload) noexcept
+        void process_start() noexcept
         {
-            if (!ctx.is_running) {
-                return;
-            }
+            LOG(TAG, "process_start");
 
-            auto& driver = get_wheel_driver(WheelType::LEFT);
-            driver.set_wheel_speed(payload.wheel_data.left_speed, payload.wheel_data.dt);
+            if (!ctx.is_running) {
+                ctx.is_running = true;
+
+                // HAL_TIM_Base_Start_IT(&htim1);
+                // HAL_TIM_Base_Start_IT(&htim3);
+            }
         }
 
-        void process_right_wheel_data(WheelEventPayload const& payload) noexcept
+        void process_stop() noexcept
         {
-            if (!ctx.is_running) {
-                return;
-            }
+            LOG(TAG, "process_stop");
 
-            auto& driver = get_wheel_driver(WheelType::RIGHT);
-            driver.set_wheel_speed(payload.wheel_data.right_speed, payload.wheel_data.dt);
+            if (ctx.is_running) {
+                ctx.is_running = false;
+
+                // HAL_TIM_Base_Stop_IT(&htim1);
+                // HAL_TIM_Base_Stop_IT(&htim3);
+            }
         }
 
         void process_wheel_data(WheelEventPayload const& payload) noexcept
@@ -71,8 +75,17 @@ namespace segway {
 
             LOG(TAG, "process_wheel_data");
 
-            process_left_wheel_data(payload);
-            process_right_wheel_data(payload);
+            LOG(TAG,
+                "L wheel speed: %f, R wheel speed: %f, dt: %f",
+                payload.wheel_data.left_speed,
+                payload.wheel_data.right_speed,
+                payload.wheel_data.dt);
+
+            get_wheel_driver(WheelType::LEFT)
+                .set_wheel_speed(payload.wheel_data.left_speed, payload.wheel_data.dt);
+
+            get_wheel_driver(WheelType::RIGHT)
+                .set_wheel_speed(payload.wheel_data.right_speed, payload.wheel_data.dt);
         }
 
         void process_wheel_queue_events() noexcept
@@ -81,34 +94,20 @@ namespace segway {
 
             auto event = WheelEvent{};
 
-            while (uxQueueMessagesWaiting(get_queue(QueueType::WHEEL))) {
-                if (xQueueReceive(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10))) {
-                    switch (event.type) {
-                        case WheelEventType::WHEEL_DATA:
-                            process_wheel_data(event.payload);
-                            break;
-                        default:
-                            break;
-                    }
+            if (xQueueReceive(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10))) {
+                switch (event.type) {
+                    case WheelEventType::START:
+                        process_start();
+                        break;
+                    case WheelEventType::STOP:
+                        process_stop();
+                        break;
+                    case WheelEventType::WHEEL_DATA:
+                        process_wheel_data(event.payload);
+                        break;
+                    default:
+                        break;
                 }
-            }
-        }
-
-        void process_start() noexcept
-        {
-            if (!ctx.is_running) {
-                ctx.is_running = true;
-                HAL_TIM_Base_Start_IT(&htim1);
-                HAL_TIM_Base_Start_IT(&htim3);
-            }
-        }
-
-        void process_stop() noexcept
-        {
-            if (ctx.is_running) {
-                ctx.is_running = false;
-                HAL_TIM_Base_Stop_IT(&htim1);
-                HAL_TIM_Base_Stop_IT(&htim3);
             }
         }
 
@@ -149,14 +148,6 @@ namespace segway {
                                                   pdTRUE,
                                                   pdFALSE,
                                                   pdMS_TO_TICKS(10));
-
-            if ((event_bits & WheelEventBit::START) == WheelEventBit::START) {
-                process_start();
-            }
-
-            if ((event_bits & WheelEventBit::STOP) == WheelEventBit::STOP) {
-                process_stop();
-            }
 
             if ((event_bits & WheelEventBit::LEFT_STEP_TIMER) == WheelEventBit::LEFT_STEP_TIMER) {
                 process_left_step_timer();
@@ -203,7 +194,7 @@ namespace segway {
         inline void wheel_queue_init() noexcept
         {
             constexpr auto WHEEL_QUEUE_ITEM_SIZE = sizeof(WheelEvent);
-            constexpr auto WHEEL_QUEUE_ITEMS = 10UL;
+            constexpr auto WHEEL_QUEUE_ITEMS = 100UL;
             constexpr auto WHEEL_QUEUE_STORAGE_SIZE = WHEEL_QUEUE_ITEM_SIZE * WHEEL_QUEUE_ITEMS;
 
             static auto wheel_static_queue = StaticQueue_t{};
@@ -346,11 +337,6 @@ namespace segway {
 
     void wheel_manager_init() noexcept
     {
-        if (ctx.is_running) {
-            LOG(TAG, "Running!");
-            return;
-        }
-
         wheel_periph_init();
         wheel_config_init();
         wheel_queue_init();

@@ -29,6 +29,30 @@ namespace segway {
             bool is_running;
         } ctx;
 
+        void process_start() noexcept
+        {
+            LOG(TAG, "process_start");
+
+            if (!ctx.is_running) {
+                ctx.is_running = true;
+
+                auto event = WheelEvent{.type = WheelEventType::START};
+                xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10));
+            }
+        }
+
+        void process_stop() noexcept
+        {
+            LOG(TAG, "process_stop");
+
+            if (ctx.is_running) {
+                ctx.is_running = false;
+
+                auto event = WheelEvent{.type = WheelEventType::STOP};
+                xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10));
+            }
+        }
+
         void process_imu_data(ControlEventPayload const& payload) noexcept
         {
             if (!ctx.is_running) {
@@ -36,6 +60,13 @@ namespace segway {
             }
 
             LOG(TAG, "process_imu_data");
+
+            LOG(TAG,
+                "roll: %f, pitch: %f, yaw: %f, dt: %f",
+                payload.imu_data.roll,
+                payload.imu_data.pitch,
+                payload.imu_data.yaw,
+                payload.imu_data.dt);
 
             auto tilt = payload.imu_data.roll;
             auto error_tilt = ctx.config.tilt_ref - tilt;
@@ -59,6 +90,12 @@ namespace segway {
 
             if (xQueueReceive(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10))) {
                 switch (event.type) {
+                    case ControlEventType::START:
+                        process_start();
+                        break;
+                    case ControlEventType::STOP:
+                        process_stop();
+                        break;
                     case ControlEventType::IMU_DATA:
                         process_imu_data(event.payload);
                         break;
@@ -68,41 +105,9 @@ namespace segway {
             }
         }
 
-        void process_start() noexcept
-        {
-            if (!ctx.is_running) {
-                ctx.is_running = true;
-
-                xEventGroupSetBits(get_event_group(EventGroupType::WHEEL), WheelEventBit::START);
-            }
-        }
-
-        void process_stop() noexcept
-        {
-            if (ctx.is_running) {
-                ctx.is_running = false;
-
-                xEventGroupSetBits(get_event_group(EventGroupType::WHEEL), WheelEventBit::STOP);
-            }
-        }
-
         void process_control_event_group_bits() noexcept
         {
             LOG(TAG, "process_control_event_group_bits");
-
-            auto event_bits = xEventGroupWaitBits(get_event_group(EventGroupType::CONTROL),
-                                                  ControlEventBit::ALL,
-                                                  pdTRUE,
-                                                  pdFALSE,
-                                                  pdMS_TO_TICKS(10));
-
-            if ((event_bits & ControlEventBit::START) == ControlEventBit::START) {
-                process_start();
-            }
-
-            if ((event_bits & ControlEventBit::STOP) == ControlEventBit::STOP) {
-                process_stop();
-            }
         }
 
         void control_task(void*) noexcept
@@ -111,6 +116,7 @@ namespace segway {
 
             while (1) {
                 process_control_queue_events();
+                process_control_event_group_bits();
                 vTaskDelay(pdMS_TO_TICKS(1));
             }
 
@@ -155,14 +161,6 @@ namespace segway {
                                          &control_static_queue));
         }
 
-        inline void control_event_group_init() noexcept
-        {
-            static auto control_static_event_group = StaticEventGroup_t{};
-
-            set_event_group(EventGroupType::CONTROL,
-                            xEventGroupCreateStatic(&control_static_event_group));
-        }
-
         inline void control_regulator_init() noexcept
         {
             constexpr auto PID_KP = 15.0F64;
@@ -197,7 +195,6 @@ namespace segway {
     {
         control_config_init();
         control_regulator_init();
-        control_event_group_init();
         control_queue_init();
         control_task_init();
     }

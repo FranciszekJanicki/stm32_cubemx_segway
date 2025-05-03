@@ -28,11 +28,13 @@ namespace segway {
 
         void process_start() noexcept
         {
+            LOG(TAG, "process_start");
+
             if (!ctx.is_running) {
                 ctx.is_running = true;
 
-                xEventGroupSetBits(get_event_group(EventGroupType::CONTROL),
-                                   ControlEventBit::START);
+                auto event = ControlEvent{.type = ControlEventType::START};
+                xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10));
 
                 HAL_TIM_Base_Start_IT(&htim2);
             }
@@ -40,12 +42,31 @@ namespace segway {
 
         void process_stop() noexcept
         {
+            LOG(TAG, "process_stop");
+
             if (ctx.is_running) {
                 ctx.is_running = false;
 
-                xEventGroupSetBits(get_event_group(EventGroupType::CONTROL), ControlEventBit::STOP);
+                auto event = ControlEvent{.type = ControlEventType::STOP};
+                xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10));
 
                 HAL_TIM_Base_Stop_IT(&htim2);
+            }
+        }
+
+        void process_imu_queue_events() noexcept
+        {
+            auto event = IMUEvent{};
+
+            if (xQueueReceive(get_queue(QueueType::IMU), &event, pdMS_TO_TICKS(10))) {
+                switch (event.type) {
+                    case IMUEventType::START:
+                        process_start();
+                        break;
+                    case IMUEventType::STOP:
+                        process_stop();
+                        break;
+                }
             }
         }
 
@@ -58,19 +79,18 @@ namespace segway {
             LOG(TAG, "process_data_ready");
 
             auto rpy = ctx.imu.get_roll_pitch_yaw().value();
-            auto [r, p, y] = rpy;
-
-            LOG(TAG, "r: %f, p: %f, y: %f", r, p, y);
 
             auto event = ControlEvent{.type = ControlEventType::IMU_DATA};
-            event.payload.imu_data = {.roll = r,
-                                      .pitch = r,
-                                      .yaw = y,
+            event.payload.imu_data = {.roll = rpy.x,
+                                      .pitch = rpy.y,
+                                      .yaw = rpy.z,
                                       .dt = ctx.config.sampling_time};
 
             if (!xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10))) {
                 LOG(TAG, "Failed sending to queue!");
             }
+
+            HAL_TIM_Base_Start_IT(&htim2);
         }
 
         void process_i2c_error() noexcept
@@ -110,14 +130,6 @@ namespace segway {
                                                   pdFALSE,
                                                   pdMS_TO_TICKS(10));
 
-            if ((event_bits & IMUEventBit::START) == IMUEventBit::START) {
-                process_start();
-            }
-
-            if ((event_bits & IMUEventBit::STOP) == IMUEventBit::STOP) {
-                process_stop();
-            }
-
             if ((event_bits & IMUEventBit::DATA_READY) == IMUEventBit::DATA_READY) {
                 process_data_ready();
             }
@@ -141,6 +153,7 @@ namespace segway {
 
             while (1) {
                 process_imu_event_group_bits();
+                process_imu_queue_events();
                 vTaskDelay(pdMS_TO_TICKS(1));
             }
 
@@ -172,6 +185,22 @@ namespace segway {
             static auto imu_static_event_group = StaticEventGroup_t{};
 
             set_event_group(EventGroupType::IMU, xEventGroupCreateStatic(&imu_static_event_group));
+        }
+
+        inline void imu_queue_init() noexcept
+        {
+            constexpr auto IMU_QUEUE_ITEM_SIZE = sizeof(IMUEvent);
+            constexpr auto IMU_QUEUE_ITEMS = 100UL;
+            constexpr auto IMU_QUEUE_STORAGE_SIZE = IMU_QUEUE_ITEM_SIZE * IMU_QUEUE_ITEMS;
+
+            static auto imu_static_queue = StaticQueue_t{};
+            static auto imu_queue_storage = std::array<std::uint8_t, IMU_QUEUE_STORAGE_SIZE>{};
+
+            set_queue(QueueType::IMU,
+                      xQueueCreateStatic(IMU_QUEUE_ITEMS,
+                                         IMU_QUEUE_ITEM_SIZE,
+                                         imu_queue_storage.data(),
+                                         &imu_static_queue));
         }
 
         inline void imu_config_init() noexcept
@@ -225,6 +254,7 @@ namespace segway {
     {
         imu_config_init();
         imu_periph_init();
+        imu_queue_init();
         imu_event_group_init();
         imu_task_init();
     }
