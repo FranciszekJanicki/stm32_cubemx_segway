@@ -4,7 +4,7 @@ target_sources(common INTERFACE
     "log.hpp"
 )
 
-target_include_directories(common INTERFACE 
+target_include_directories(common INTERFACE
     ${CMAKE_DIR}/stm32cubemx
     ${SEGWAY_DIR}/queue_manager
 )

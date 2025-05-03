@@ -117,19 +117,22 @@ namespace segway {
                                                  &control_static_queue));
         }
 
+        inline void control_config_init() noexcept
+        {
+            ctx.regulator.kP = PID_KP;
+            ctx.regulator.kI = PID_KI;
+            ctx.regulator.kD = PID_KD;
+            ctx.regulator.kC = PID_KC;
+            ctx.regulator.sat = PID_SAT;
+        }
+
     }; // namespace
 
     void control_manager_init() noexcept
     {
-        LOG(TAG, "manager_init");
-
-        ctx.regulator.kP = PID_KP;
-        ctx.regulator.kI = PID_KI;
-        ctx.regulator.kD = PID_KD;
-        ctx.regulator.kC = PID_KC;
-        ctx.regulator.sat = PID_SAT;
-
+        control_config_init();
         control_queue_init();
         control_task_init();
     }
+
 }; // namespace segway

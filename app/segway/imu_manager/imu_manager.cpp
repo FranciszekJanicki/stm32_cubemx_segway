@@ -52,8 +52,6 @@ namespace segway {
             if (!xQueueSend(get_control_queue(), &event, pdMS_TO_TICKS(10))) {
                 LOG(TAG, "Failed sending to queue!");
             }
-
-            start_sampling_timer();
         }
 
         void process_sampling_timer() noexcept
@@ -145,64 +143,55 @@ namespace segway {
             set_imu_event_group(xEventGroupCreateStatic(&imu_static_event_group));
         }
 
-        void i2c_bus_scan() noexcept
+        inline void imu_config_init() noexcept
         {
-            for (auto i = 0; i < (1 << 7); ++i) {
-                if (HAL_I2C_IsDeviceReady(&hi2c1, i << 1, 10, 100) == HAL_OK) {
-                    LOG(TAG, "Address: %d", i);
-                }
-            }
+            constexpr auto FAULT_THRESH_LOW = 160.0F64;
+            constexpr auto FAULT_THRESH_HIGH = 180.0F64;
+            constexpr auto SAMPLING_TIME = 0.01F64;
+
+            ctx.config.fault_thresh_high = FAULT_THRESH_HIGH;
+            ctx.config.fault_thresh_low = FAULT_THRESH_LOW;
+            ctx.config.sampling_time = SAMPLING_TIME;
+        }
+
+        inline void imu_periph_init() noexcept
+        {
+            auto mpu6050_interface = mpu6050::Interface{
+                .user = &hi2c1,
+                .write_bytes =
+                    [](void* user, std::uint8_t address, std::uint8_t* data, std::size_t size) {
+                        auto handle = static_cast<I2C_HandleTypeDef*>(user);
+                        assert(HAL_OK ==
+                               HAL_I2C_Mem_Write(handle, 0x68 << 1, address, 1, data, size, 100));
+                    },
+                .read_bytes =
+                    [](void* user, std::uint8_t address, std::uint8_t* data, std::size_t size) {
+                        auto handle = static_cast<I2C_HandleTypeDef*>(user);
+                        assert(HAL_OK ==
+                               HAL_I2C_Mem_Read(handle, 0x68 << 1, address, 1, data, size, 100));
+                    },
+                .delay_ms = [](void* user, std::uint32_t ms) { HAL_Delay(ms); }};
+
+            auto mpu6050_config = mpu6050::Config{.sampling_rate = 200UL,
+                                                  .gyro_range = mpu6050::GyroRange::GYRO_FS_250,
+                                                  .accel_range = mpu6050::AccelRange::ACCEL_FS_2,
+                                                  .dlpf_setting = mpu6050::DLPF::BW_42,
+                                                  .dhpf_setting = mpu6050::DHPF::DHPF_RESET};
+
+            auto mpu6050 = mpu6050::MPU6050{.interface = std::move(mpu6050_interface)};
+
+            auto mpu6050_dmp = mpu6050::MPU6050_DMP{.mpu6050 = std::move(mpu6050)};
+            mpu6050_dmp.initialize(mpu6050_config);
+
+            ctx.imu = std::move(mpu6050_dmp);
         }
 
     }; // namespace
 
     void imu_manager_init() noexcept
     {
-        LOG(TAG, "imu_manager_init");
-
-        vTaskDelay(pdMS_TO_TICKS(100));
-
-        constexpr auto FAULT_THRESH_LOW = 160.0F64;
-        constexpr auto FAULT_THRESH_HIGH = 180.0F64;
-        constexpr auto SAMPLING_TIME = 0.01F64;
-
-        ctx.config.fault_thresh_high = FAULT_THRESH_HIGH;
-        ctx.config.fault_thresh_low = FAULT_THRESH_LOW;
-        ctx.config.sampling_time = SAMPLING_TIME;
-
-        auto mpu6050_interface = mpu6050::Interface{
-            .user = &hi2c1,
-            .write_bytes =
-                [](void* user, std::uint8_t address, std::uint8_t* data, std::size_t size) {
-                    auto handle = static_cast<I2C_HandleTypeDef*>(user);
-                    if (HAL_I2C_GetState(&hi2c1) == HAL_I2C_STATE_READY) {
-                        assert(HAL_OK ==
-                               HAL_I2C_Mem_Write(handle, 0x68 << 1, address, 1, data, size, 100));
-                    }
-                },
-            .read_bytes =
-                [](void* user, std::uint8_t address, std::uint8_t* data, std::size_t size) {
-                    auto handle = static_cast<I2C_HandleTypeDef*>(user);
-                    if (HAL_I2C_GetState(&hi2c1) == HAL_I2C_STATE_READY) {
-                        assert(HAL_OK ==
-                               HAL_I2C_Mem_Read(handle, 0x68 << 1, address, 1, data, size, 100));
-                    }
-                },
-            .delay_ms = [](void* user, std::uint32_t ms) { HAL_Delay(ms); }};
-
-        auto mpu6050_config = mpu6050::Config{.sampling_rate = 200UL,
-                                              .gyro_range = mpu6050::GyroRange::GYRO_FS_250,
-                                              .accel_range = mpu6050::AccelRange::ACCEL_FS_2,
-                                              .dlpf_setting = mpu6050::DLPF::BW_42,
-                                              .dhpf_setting = mpu6050::DHPF::DHPF_RESET};
-
-        auto mpu6050 = mpu6050::MPU6050{.interface = std::move(mpu6050_interface)};
-
-        auto mpu6050_dmp = mpu6050::MPU6050_DMP{.mpu6050 = std::move(mpu6050)};
-        mpu6050_dmp.initialize(mpu6050_config);
-
-        ctx.imu = std::move(mpu6050_dmp);
-
+        imu_config_init();
+        imu_periph_init();
         imu_event_group_init();
         imu_task_init();
 

@@ -137,12 +137,10 @@ int main()
 
     i2c_bus_scan();
 
-    HAL_Delay(100);
-
     segway::log_manager_init();
     segway::control_manager_init();
-    segway::imu_manager_init();
     segway::wheel_manager_init();
+    segway::imu_manager_init();
 
     vTaskStartScheduler();
 }
