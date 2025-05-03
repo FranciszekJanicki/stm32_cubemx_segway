@@ -193,6 +193,8 @@ namespace segway {
 
     void control_manager_init() noexcept
     {
+        std::memset(&ctx, 0, sizeof(ctx));
+
         control_config_init();
         control_regulator_init();
         control_queue_init();

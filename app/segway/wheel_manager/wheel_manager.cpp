@@ -337,6 +337,8 @@ namespace segway {
 
     void wheel_manager_init() noexcept
     {
+        std::memset(&ctx, 0, sizeof(ctx));
+
         wheel_periph_init();
         wheel_config_init();
         wheel_queue_init();

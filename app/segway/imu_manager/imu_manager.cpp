@@ -253,6 +253,8 @@ namespace segway {
 
     void imu_manager_init() noexcept
     {
+        std::memset(&ctx, 0, sizeof(ctx));
+
         imu_config_init();
         imu_periph_init();
         imu_queue_init();
