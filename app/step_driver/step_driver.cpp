@@ -3,23 +3,6 @@
 
 namespace step_driver {
 
-    Microstep speed_to_microstep(std::float64_t const speed,
-                                 std::float64_t const step_change) noexcept
-    {
-        return Microstep::FULL;
-    }
-
-    Direction speed_to_direction(std::float64_t const speed) noexcept
-    {
-        return speed > 0.0F ? Direction::FORWARD : Direction::BACKWARD;
-    }
-
-    std::uint32_t speed_to_frequency(std::float64_t const speed,
-                                     std::float64_t const step_change) noexcept
-    {
-        return static_cast<std::uint16_t>(std::abs(speed / step_change));
-    }
-
     void StepDriver::initialize(this StepDriver& self) noexcept
     {
         if (!self.is_initialized) {
@@ -90,6 +73,23 @@ namespace step_driver {
                                               dt);
 
         self.set_speed(speed, dt);
+    }
+
+    Microstep StepDriver::speed_to_microstep(std::float64_t const speed,
+                                             std::float64_t const step_change) noexcept
+    {
+        return Microstep::FULL;
+    }
+
+    Direction StepDriver::speed_to_direction(std::float64_t const speed) noexcept
+    {
+        return speed > 0.0F ? Direction::FORWARD : Direction::BACKWARD;
+    }
+
+    std::uint32_t StepDriver::speed_to_frequency(std::float64_t const speed,
+                                                 std::float64_t const step_change) noexcept
+    {
+        return static_cast<std::uint16_t>(std::abs(speed / step_change));
     }
 
     std::float64_t StepDriver::step_change(this StepDriver& self) noexcept

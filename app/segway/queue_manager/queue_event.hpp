@@ -11,6 +11,7 @@ namespace segway {
         START,
         STOP,
         IMU_DATA,
+        WHEEL_DATA,
     };
 
     union ControlEventPayload {
@@ -54,7 +55,7 @@ namespace segway {
     enum struct WheelEventType : std::uint8_t {
         START,
         STOP,
-        WHEEL_DATA,
+        CONTROL_DATA,
     };
 
     union WheelEventPayload {
@@ -68,7 +69,9 @@ namespace segway {
             std::float64_t left_speed;
             std::float64_t right_speed;
             std::float64_t dt;
-        } wheel_data;
+
+            bool should_run;
+        } control_data;
     };
 
     struct WheelEvent {

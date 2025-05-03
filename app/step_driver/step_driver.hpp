@@ -7,12 +7,6 @@ namespace step_driver {
 
     using namespace a4988;
 
-    Microstep speed_to_microstep([[maybe_unused]] std::float64_t const speed,
-                                 [[maybe_unused]] std::float64_t const step_change) noexcept;
-    Direction speed_to_direction(std::float64_t const speed) noexcept;
-    std::uint32_t speed_to_frequency(std::float64_t const speed,
-                                     std::float64_t const step_change) noexcept;
-
     struct StepDriver {
     public:
         void initialize(this StepDriver& self) noexcept;
@@ -25,20 +19,17 @@ namespace step_driver {
 
         void set_position(this StepDriver& self,
                           std::float64_t const position,
-                          [[maybe_unused]] std::float64_t const dt) noexcept;
+                          std::float64_t const dt) noexcept;
         void set_speed(this StepDriver& self,
                        std::float64_t const speed,
-                       [[maybe_unused]] std::float64_t const dt) noexcept;
+                       std::float64_t const dt) noexcept;
         void set_acceleration(this StepDriver& self,
                               std::float64_t const acceleration,
-                              [[maybe_unused]] std::float64_t const dt) noexcept;
+                              std::float64_t const dt) noexcept;
 
-        std::float64_t get_position(this StepDriver& self,
-                                    [[maybe_unused]] std::float64_t const dt) noexcept;
-        std::float64_t get_speed(this StepDriver& self,
-                                 [[maybe_unused]] std::float64_t const dt) noexcept;
-        std::float64_t get_acceleration(this StepDriver& self,
-                                        [[maybe_unused]] std::float64_t const dt) noexcept;
+        std::float64_t get_position(this StepDriver& self, std::float64_t const dt) noexcept;
+        std::float64_t get_speed(this StepDriver& self, std::float64_t const dt) noexcept;
+        std::float64_t get_acceleration(this StepDriver& self, std::float64_t const dt) noexcept;
 
         A4988 driver = {};
         std::uint16_t steps_per_360 = {};
@@ -57,6 +48,12 @@ namespace step_driver {
         bool is_initialized = {};
 
     private:
+        static Microstep speed_to_microstep(std::float64_t const speed,
+                                            std::float64_t const step_change) noexcept;
+        static Direction speed_to_direction(std::float64_t const speed) noexcept;
+        static std::uint32_t speed_to_frequency(std::float64_t const speed,
+                                                std::float64_t const step_change) noexcept;
+
         static constexpr auto MAX_SPEED = 3000.0F64;
         static constexpr auto MIN_SPEED = 0.0F64;
 

@@ -22,6 +22,7 @@ namespace segway {
         struct Context {
             struct {
                 std::array<Wheel, 2U> wheels;
+                bool has_started;
             } periph;
 
             struct Config {
@@ -67,25 +68,58 @@ namespace segway {
             }
         }
 
-        void process_wheel_data(WheelEventPayload const& payload) noexcept
+        void start_wheels() noexcept
+        {
+            for (auto& [type, driver] : ctx.periph.wheels) {
+                driver.start();
+            }
+        }
+
+        void stop_wheels() noexcept
+        {
+            for (auto& [type, driver] : ctx.periph.wheels) {
+                driver.stop();
+            }
+        }
+
+        void set_wheels_speed(std::float64_t const left_speed,
+                              std::float64_t const right_speed,
+                              std::float64_t const dt) noexcept
+        {
+            get_wheel_driver(WheelType::LEFT).set_wheel_speed(left_speed, dt);
+            get_wheel_driver(WheelType::RIGHT).set_wheel_speed(right_speed, dt);
+        }
+
+        void process_control_data(WheelEventPayload const& payload) noexcept
         {
             if (!ctx.is_running) {
                 return;
             }
 
-            LOG(TAG, "process_wheel_data");
+            LOG(TAG, "process_control_data");
+
+            // if (!ctx.periph.has_started && payload.control_data.should_run) {
+            //     LOG(TAG, "Starting wheels!");
+
+            //     ctx.periph.has_started = true;
+            //     start_wheels();
+            // } else if (ctx.periph.has_started && !payload.control_data.should_run) {
+            //     LOG(TAG, "Stopping wheels!");
+
+            //     ctx.periph.has_started = false;
+            //     stop_wheels();
+            //     return;
+            // }
 
             LOG(TAG,
                 "L wheel speed: %f, R wheel speed: %f, dt: %f",
-                payload.wheel_data.left_speed,
-                payload.wheel_data.right_speed,
-                payload.wheel_data.dt);
+                payload.control_data.left_speed,
+                payload.control_data.right_speed,
+                payload.control_data.dt);
 
-            get_wheel_driver(WheelType::LEFT)
-                .set_wheel_speed(payload.wheel_data.left_speed, payload.wheel_data.dt);
-
-            get_wheel_driver(WheelType::RIGHT)
-                .set_wheel_speed(payload.wheel_data.right_speed, payload.wheel_data.dt);
+            set_wheels_speed(payload.control_data.left_speed,
+                             payload.control_data.right_speed,
+                             payload.control_data.dt);
         }
 
         void process_wheel_queue_events() noexcept
@@ -102,8 +136,8 @@ namespace segway {
                     case WheelEventType::STOP:
                         process_stop();
                         break;
-                    case WheelEventType::WHEEL_DATA:
-                        process_wheel_data(event.payload);
+                    case WheelEventType::CONTROL_DATA:
+                        process_control_data(event.payload);
                         break;
                     default:
                         break;
