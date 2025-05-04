@@ -39,7 +39,7 @@ namespace segway {
         inline void log_queue_init() noexcept
         {
             constexpr auto LOG_QUEUE_ITEM_SIZE = sizeof(LogEvent);
-            constexpr auto LOG_QUEUE_ITEMS = 20UL;
+            constexpr auto LOG_QUEUE_ITEMS = 10UL;
             constexpr auto LOG_QUEUE_STORAGE_SIZE = LOG_QUEUE_ITEM_SIZE * LOG_QUEUE_ITEMS;
 
             static auto log_static_queue = StaticQueue_t{};

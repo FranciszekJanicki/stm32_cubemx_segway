@@ -4,6 +4,7 @@
 #include "event_groups.h"
 #include "gpio.h"
 #include "log.hpp"
+#include "message_buffer_manager.hpp"
 #include "queue.h"
 #include "queue_manager.hpp"
 #include "task.h"
@@ -99,7 +100,7 @@ namespace segway {
             LOG(TAG, "process_wheel_queue_events");
 
             auto event = WheelEvent{};
-
+#ifdef USE_QUEUES
             while (xQueueReceive(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10))) {
                 switch (event.type) {
                     case WheelEventType::CONTROL_DATA:
@@ -109,6 +110,20 @@ namespace segway {
                         break;
                 }
             }
+#else
+            while (xMessageBufferReceive(get_message_buffer(MessageBufferType::WHEEL),
+                                         &event,
+                                         sizeof(event),
+                                         pdMS_TO_TICKS(10))) {
+                switch (event.type) {
+                    case WheelEventType::CONTROL_DATA:
+                        process_control_data(event.payload);
+                        break;
+                    default:
+                        break;
+                }
+            }
+#endif
         }
 
         void process_start() noexcept
@@ -175,7 +190,7 @@ namespace segway {
                                              pdFALSE,
                                              pdMS_TO_TICKS(10));
 #else
-            xTaskNotifyWait(0x00, WheelEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
+            xTaskNotifyWait(0x0000, 0xFFFF, &event_bits, pdMS_TO_TICKS(10));
 #endif
             if ((event_bits & WheelEventBit::START) == WheelEventBit::START) {
                 process_start();
@@ -227,10 +242,30 @@ namespace segway {
                                        &wheel_static_task));
         }
 
+        inline void wheel_message_buffer_init() noexcept
+        {
+#ifndef USE_QUEUES
+            constexpr auto WHEEL_MESSAGE_BUFFER_ITEM_SIZE = sizeof(ControlEvent);
+            constexpr auto WHEEL_MESSAGE_BUFFER_ITEMS = 10UL;
+            constexpr auto WHEEL_MESSAGE_BUFFER_STORAGE_SIZE =
+                WHEEL_MESSAGE_BUFFER_ITEM_SIZE * WHEEL_MESSAGE_BUFFER_ITEMS;
+
+            static auto wheel_static_message_buffer = StaticMessageBuffer_t{};
+            static auto wheel_message_buffer_storage =
+                std::array<std::uint8_t, WHEEL_MESSAGE_BUFFER_STORAGE_SIZE>{};
+
+            set_message_buffer(MessageBufferType::WHEEL,
+                               xMessageBufferCreateStatic(wheel_message_buffer_storage.size(),
+                                                          wheel_message_buffer_storage.data(),
+                                                          &wheel_static_message_buffer));
+#endif
+        }
+
         inline void wheel_queue_init() noexcept
         {
+#ifdef USE_QUEUES
             constexpr auto WHEEL_QUEUE_ITEM_SIZE = sizeof(WheelEvent);
-            constexpr auto WHEEL_QUEUE_ITEMS = 100UL;
+            constexpr auto WHEEL_QUEUE_ITEMS = 10UL;
             constexpr auto WHEEL_QUEUE_STORAGE_SIZE = WHEEL_QUEUE_ITEM_SIZE * WHEEL_QUEUE_ITEMS;
 
             static auto wheel_static_queue = StaticQueue_t{};
@@ -241,14 +276,17 @@ namespace segway {
                                          WHEEL_QUEUE_ITEM_SIZE,
                                          wheel_queue_storage.data(),
                                          &wheel_static_queue));
+#endif
         }
 
         inline void wheel_event_group_init() noexcept
         {
+#ifdef USE_EVENT_GROUPS
             static auto wheel_static_event_group = StaticEventGroup_t{};
 
             set_event_group(EventGroupType::WHEEL,
                             xEventGroupCreateStatic(&wheel_static_event_group));
+#endif
         }
 
         inline void wheel_periph_init() noexcept
@@ -377,8 +415,10 @@ namespace segway {
 
         wheel_periph_init();
         wheel_config_init();
+        wheel_message_buffer_init();
         wheel_queue_init();
         wheel_event_group_init();
         wheel_task_init();
     }
+
 }; // namespace segway

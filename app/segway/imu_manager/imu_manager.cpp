@@ -2,6 +2,7 @@
 #include "event_group_manager.hpp"
 #include "i2c.h"
 #include "log.hpp"
+#include "message_buffer_manager.hpp"
 #include "mpu6050_dmp.hpp"
 #include "queue_manager.hpp"
 #include "task_manager.hpp"
@@ -26,11 +27,6 @@ namespace segway {
 
             bool is_running;
         } ctx;
-
-        void process_imu_queue_events() noexcept
-        {
-            LOG(TAG, "process_imu_queue_events");
-        }
 
         void process_start() noexcept
         {
@@ -83,11 +79,18 @@ namespace segway {
             event.payload.imu_data.yaw = utility::radians_to_degrees(rpy.z);
             event.payload.imu_data.dt = ctx.config.sampling_time;
 
-            auto queue = get_queue(QueueType::CONTROL);
-
-            if (!xQueueSend(queue, &event, pdMS_TO_TICKS(10))) {
+#ifdef USE_QUEUES
+            if (!xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10))) {
                 LOG(TAG, "Failed sending to queue!");
             }
+#else
+            if (xMessageBufferSend(get_message_buffer(MessageBufferType::CONTROL),
+                                   &event,
+                                   sizeof(event),
+                                   pdMS_TO_TICKS(10)) != sizeof(event)) {
+                LOG(TAG, "Failed sending to queue!");
+            }
+#endif
 
             HAL_TIM_Base_Start_IT(&htim2);
         }
@@ -131,7 +134,7 @@ namespace segway {
                                 pdFALSE,
                                 pdMS_TO_TICKS(10));
 #else
-            xTaskNotifyWait(0x00, IMUEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
+            xTaskNotifyWait(0x0000, 0xFFFF, &event_bits, pdMS_TO_TICKS(10));
 #endif
             if ((event_bits & IMUEventBit::START) == IMUEventBit::START) {
                 process_start();
@@ -164,7 +167,6 @@ namespace segway {
 
             while (1) {
                 process_imu_event_group_bits();
-                process_imu_queue_events();
                 vTaskDelay(pdMS_TO_TICKS(10));
             }
 
@@ -193,25 +195,11 @@ namespace segway {
 
         inline void imu_event_group_init() noexcept
         {
+#ifdef USE_EVENT_GROUPS
             static auto imu_static_event_group = StaticEventGroup_t{};
 
             set_event_group(EventGroupType::IMU, xEventGroupCreateStatic(&imu_static_event_group));
-        }
-
-        inline void imu_queue_init() noexcept
-        {
-            constexpr auto IMU_QUEUE_ITEM_SIZE = sizeof(IMUEvent);
-            constexpr auto IMU_QUEUE_ITEMS = 100UL;
-            constexpr auto IMU_QUEUE_STORAGE_SIZE = IMU_QUEUE_ITEM_SIZE * IMU_QUEUE_ITEMS;
-
-            static auto imu_static_queue = StaticQueue_t{};
-            static auto imu_queue_storage = std::array<std::uint8_t, IMU_QUEUE_STORAGE_SIZE>{};
-
-            set_queue(QueueType::IMU,
-                      xQueueCreateStatic(IMU_QUEUE_ITEMS,
-                                         IMU_QUEUE_ITEM_SIZE,
-                                         imu_queue_storage.data(),
-                                         &imu_static_queue));
+#endif
         }
 
         inline void imu_config_init() noexcept
@@ -267,8 +255,8 @@ namespace segway {
 
         imu_config_init();
         imu_periph_init();
-        imu_queue_init();
         imu_event_group_init();
         imu_task_init();
     }
+
 }; // namespace segway

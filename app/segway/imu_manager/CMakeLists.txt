@@ -6,7 +6,6 @@ target_sources(imu_manager PRIVATE
 
 target_include_directories(imu_manager PUBLIC
     ${SEGWAY_DIR}/common
-    ${SEGWAY_DIR}/task_manager
     ${SEGWAY_DIR}/event_group_manager
     ${APP_DIR}/mpu6050
     ${SEGWAY_DIR}/queue_manager
@@ -14,6 +13,7 @@ target_include_directories(imu_manager PUBLIC
     ${SEGWAY_DIR}/task_manager
     ${APP_DIR}/utility
     ${STM32CUBEMX_DIR}
+    ${SEGWAY_DIR}/message_buffer_manager
 )
 
 target_link_libraries(imu_manager PRIVATE
@@ -23,7 +23,6 @@ target_link_libraries(imu_manager PRIVATE
     mpu6050
     queue_manager
     nvic_manager
-    task_manager
     stm32cubemx
     utility
 )

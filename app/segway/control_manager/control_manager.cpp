@@ -2,6 +2,7 @@
 #include "FreeRTOS.h"
 #include "event_group_manager.hpp"
 #include "log.hpp"
+#include "message_buffer_manager.hpp"
 #include "pid.hpp"
 #include "queue.h"
 #include "queue_manager.hpp"
@@ -67,9 +68,18 @@ namespace segway {
                 event.payload.control_data.right_speed,
                 event.payload.control_data.dt);
 
+#ifdef USE_QUEUES
             if (!xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10))) {
                 LOG(TAG, "Failed sending to queue!");
             }
+#else
+            if (xMessageBufferSend(get_message_buffer(MessageBufferType::WHEEL),
+                                   &event,
+                                   sizeof(event),
+                                   pdMS_TO_TICKS(10)) != sizeof(event)) {
+                LOG(TAG, "Failed sending to queue!");
+            }
+#endif
         }
 
         void process_control_queue_events() noexcept
@@ -77,7 +87,7 @@ namespace segway {
             LOG(TAG, "process_control_queue_events");
 
             auto event = ControlEvent{};
-
+#ifdef USE_QUEUES
             while (xQueueReceive(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10))) {
                 switch (event.type) {
                     case ControlEventType::IMU_DATA:
@@ -87,6 +97,20 @@ namespace segway {
                         break;
                 }
             }
+#else
+            while (xMessageBufferReceive(get_message_buffer(MessageBufferType::CONTROL),
+                                         &event,
+                                         sizeof(event),
+                                         pdMS_TO_TICKS(10)) == sizeof(event)) {
+                switch (event.type) {
+                    case ControlEventType::IMU_DATA:
+                        process_imu_data(event.payload);
+                        break;
+                    default:
+                        break;
+                }
+            }
+#endif
         }
 
         void process_start() noexcept
@@ -134,7 +158,7 @@ namespace segway {
                                              pdFALSE,
                                              pdMS_TO_TICKS(10));
 #else
-            xTaskNotifyWait(0x00, ControlEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
+            xTaskNotifyWait(0x0000, 0xFFFF, &event_bits, pdMS_TO_TICKS(10));
 #endif
             if ((event_bits & ControlEventBit::START) == ControlEventBit::START) {
                 process_start();
@@ -180,28 +204,38 @@ namespace segway {
 
         inline void control_event_group_init() noexcept
         {
+#ifdef USE_EVENT_GROUPS
             static auto control_static_event_group = StaticEventGroup_t{};
 
             set_event_group(EventGroupType::CONTROL,
                             xEventGroupCreateStatic(&control_static_event_group));
+#endif
         }
 
         inline void control_message_buffer_init() noexcept
         {
+#ifndef USE_QUEUES
             constexpr auto CONTROL_MESSAGE_BUFFER_ITEM_SIZE = sizeof(ControlEvent);
-            constexpr auto CONTROL_MESSAGE_BUFFER_ITEMS = 100UL;
+            constexpr auto CONTROL_MESSAGE_BUFFER_ITEMS = 10UL;
             constexpr auto CONTROL_MESSAGE_BUFFER_STORAGE_SIZE =
                 CONTROL_MESSAGE_BUFFER_ITEM_SIZE * CONTROL_MESSAGE_BUFFER_ITEMS;
 
             static auto control_static_message_buffer = StaticMessageBuffer_t{};
             static auto control_message_buffer_storage =
                 std::array<std::uint8_t, CONTROL_MESSAGE_BUFFER_STORAGE_SIZE>{};
+
+            set_message_buffer(MessageBufferType::CONTROL,
+                               xMessageBufferCreateStatic(control_message_buffer_storage.size(),
+                                                          control_message_buffer_storage.data(),
+                                                          &control_static_message_buffer));
+#endif
         }
 
         inline void control_queue_init() noexcept
         {
+#ifdef USE_QUEUES
             constexpr auto CONTROL_QUEUE_ITEM_SIZE = sizeof(ControlEvent);
-            constexpr auto CONTROL_QUEUE_ITEMS = 100UL;
+            constexpr auto CONTROL_QUEUE_ITEMS = 10UL;
             constexpr auto CONTROL_QUEUE_STORAGE_SIZE =
                 CONTROL_QUEUE_ITEM_SIZE * CONTROL_QUEUE_ITEMS;
 
@@ -214,6 +248,7 @@ namespace segway {
                                          CONTROL_QUEUE_ITEM_SIZE,
                                          control_queue_storage.data(),
                                          &control_static_queue));
+#endif
         }
 
         inline void control_regulator_init() noexcept
@@ -253,6 +288,7 @@ namespace segway {
         control_config_init();
         control_regulator_init();
         control_queue_init();
+        control_message_buffer_init();
         control_event_group_init();
         control_task_init();
     }

@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <stdfloat>
 
+#define USE_QUEUE
+
 namespace segway {
 
     enum struct ControlEventType : std::uint8_t {

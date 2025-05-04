@@ -11,6 +11,7 @@ target_include_directories(control_manager PUBLIC
     ${APP_DIR}/utility
     ${STM32CUBEMX_DIR}
     ${SEGWAY_DIR}/event_group_manager
+    ${SEGWAY_DIR}/message_buffer_manager
 )
 
 target_link_libraries(control_manager PRIVATE
@@ -20,6 +21,7 @@ target_link_libraries(control_manager PRIVATE
     utility
     stm32cubemx
     event_group_manager
+    message_buffer_manager
 )
 
 target_compile_options(control_manager PUBLIC
