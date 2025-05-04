@@ -9,10 +9,13 @@
 #include <cstdlib>
 #include <cstring>
 
+#define DEBUG
+
 namespace segway {
 
     inline void LOG(char const* tag, char const* fmt, auto const... args) noexcept
     {
+#ifdef DEBUG
         auto event = LogEvent{};
 
         auto* buf = event.buffer;
@@ -44,6 +47,7 @@ namespace segway {
                 std::free(buf);
             }
         }
+#endif // DEBUG
     }
 
 }; // namespace segway

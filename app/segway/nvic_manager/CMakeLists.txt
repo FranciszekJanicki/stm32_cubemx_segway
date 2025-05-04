@@ -1,7 +1,7 @@
 add_library(nvic_manager STATIC)
 
 target_sources(nvic_manager PRIVATE 
-    "nvic_manager.cpp"
+    #"nvic_manager.cpp"
 )
 
 target_include_directories(nvic_manager PUBLIC 

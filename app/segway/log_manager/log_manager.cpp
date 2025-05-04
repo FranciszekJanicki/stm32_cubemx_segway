@@ -18,7 +18,7 @@ namespace segway {
 
             while (1) {
                 while (uxQueueMessagesWaiting(get_queue(QueueType::LOG))) {
-                    if (xQueueReceive(get_queue(QueueType::LOG), &event, pdMS_TO_TICKS(10))) {
+                    if (xQueueReceive(get_queue(QueueType::LOG), &event, pdMS_TO_TICKS(1))) {
                         auto msg = reinterpret_cast<std::uint8_t*>(event.buffer);
                         auto msg_len = std::strlen(event.buffer);
 
@@ -26,6 +26,8 @@ namespace segway {
                         // CDC_Transmit_FS(msg, msg_len);
                     }
                 }
+
+                vTaskDelay(pdMS_TO_TICKS(50));
             }
         }
 
@@ -68,8 +70,10 @@ namespace segway {
 
     void log_manager_init() noexcept
     {
+#ifdef DEBUG
         log_queue_init();
         log_task_init();
+#endif
     }
 
 }; // namespace segway

@@ -99,15 +99,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 };
 #endif
 
-void i2c_bus_scan() noexcept
-{
-    for (auto i = 0; i < (1 << 7); ++i) {
-        if (HAL_I2C_IsDeviceReady(&hi2c1, i << 1, 10, 100) == HAL_OK) {
-            printf("Address: %d\n\r", i);
-        }
-    }
-}
-
 int main()
 {
     HAL_Init();
@@ -121,13 +112,11 @@ int main()
     MX_USART2_UART_Init();
     //  MX_USB_DEVICE_Init();
 
-    i2c_bus_scan();
-
-    main_manager_init();
-    log_manager_init();
-    control_manager_init();
-    wheel_manager_init();
-    imu_manager_init();
+    segway::main_manager_init();
+    segway::log_manager_init();
+    segway::control_manager_init();
+    segway::wheel_manager_init();
+    segway::imu_manager_init();
 
     vTaskStartScheduler();
 }

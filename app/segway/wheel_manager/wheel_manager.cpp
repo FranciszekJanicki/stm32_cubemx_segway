@@ -19,13 +19,13 @@ namespace segway {
 
         constexpr auto TAG = "wheel_manager";
 
-        struct Context {
+        struct WheelManagerCtx {
             struct {
                 std::array<Wheel, 2U> wheels;
                 bool has_started;
             } periph;
 
-            struct Config {
+            struct {
                 std::float64_t fault_thresh_low;
                 std::float64_t fault_thresh_high;
                 std::float64_t wheel_distance;
@@ -70,6 +70,8 @@ namespace segway {
 
         void start_wheels() noexcept
         {
+            LOG(TAG, "start_wheels!");
+
             for (auto& [type, driver] : ctx.periph.wheels) {
                 driver.start();
             }
@@ -77,6 +79,8 @@ namespace segway {
 
         void stop_wheels() noexcept
         {
+            LOG(TAG, "stop_wheels!");
+
             for (auto& [type, driver] : ctx.periph.wheels) {
                 driver.stop();
             }
@@ -86,6 +90,8 @@ namespace segway {
                               std::float64_t const right_speed,
                               std::float64_t const dt) noexcept
         {
+            LOG(TAG, "L wheel speed: %f, R wheel speed: %f, dt: %f", left_speed, right_speed, dt);
+
             get_wheel_driver(WheelType::LEFT).set_wheel_speed(left_speed, dt);
             get_wheel_driver(WheelType::RIGHT).set_wheel_speed(right_speed, dt);
         }
@@ -99,23 +105,13 @@ namespace segway {
             LOG(TAG, "process_control_data");
 
             // if (!ctx.periph.has_started && payload.control_data.should_run) {
-            //     LOG(TAG, "Starting wheels!");
-
-            //     ctx.periph.has_started = true;
+            //     ctx.periph_has_started = true;
             //     start_wheels();
             // } else if (ctx.periph.has_started && !payload.control_data.should_run) {
-            //     LOG(TAG, "Stopping wheels!");
-
             //     ctx.periph.has_started = false;
             //     stop_wheels();
             //     return;
             // }
-
-            LOG(TAG,
-                "L wheel speed: %f, R wheel speed: %f, dt: %f",
-                payload.control_data.left_speed,
-                payload.control_data.right_speed,
-                payload.control_data.dt);
 
             set_wheels_speed(payload.control_data.left_speed,
                              payload.control_data.right_speed,
@@ -128,19 +124,21 @@ namespace segway {
 
             auto event = WheelEvent{};
 
-            if (xQueueReceive(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10))) {
-                switch (event.type) {
-                    case WheelEventType::START:
-                        process_start();
-                        break;
-                    case WheelEventType::STOP:
-                        process_stop();
-                        break;
-                    case WheelEventType::CONTROL_DATA:
-                        process_control_data(event.payload);
-                        break;
-                    default:
-                        break;
+            while (uxQueueMessagesWaiting(get_queue(QueueType::WHEEL))) {
+                if (xQueueReceive(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(1))) {
+                    switch (event.type) {
+                        case WheelEventType::START:
+                            process_start();
+                            break;
+                        case WheelEventType::STOP:
+                            process_stop();
+                            break;
+                        case WheelEventType::CONTROL_DATA:
+                            process_control_data(event.payload);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }
@@ -153,10 +151,10 @@ namespace segway {
 
             LOG(TAG, "process_left_step_timer");
 
-            // get_wheel_driver(WheelType::LEFT).update_step_count();
+            get_wheel_driver(WheelType::LEFT).update_step_count();
 
             HAL_GPIO_TogglePin(GPIOA, 1 << 6);
-            HAL_TIM_Base_Start_IT(&htim1);
+            //   HAL_TIM_Base_Start_IT(&htim1);
         };
 
         void process_right_step_timer() noexcept
@@ -167,10 +165,10 @@ namespace segway {
 
             LOG(TAG, "process_right_step_timer");
 
-            //  get_wheel_driver(WheelType::RIGHT).update_step_count();
+            get_wheel_driver(WheelType::RIGHT).update_step_count();
 
             HAL_GPIO_TogglePin(GPIOA, 1 << 8);
-            HAL_TIM_Base_Start_IT(&htim3);
+            // HAL_TIM_Base_Start_IT(&htim3);
         };
 
         void process_wheel_event_group_bits() noexcept
@@ -181,7 +179,7 @@ namespace segway {
                                                   WheelEventBit::ALL,
                                                   pdTRUE,
                                                   pdFALSE,
-                                                  pdMS_TO_TICKS(10));
+                                                  pdMS_TO_TICKS(1));
 
             if ((event_bits & WheelEventBit::LEFT_STEP_TIMER) == WheelEventBit::LEFT_STEP_TIMER) {
                 process_left_step_timer();
@@ -199,7 +197,7 @@ namespace segway {
             while (1) {
                 process_wheel_queue_events();
                 process_wheel_event_group_bits();
-                vTaskDelay(pdMS_TO_TICKS(10));
+                vTaskDelay(pdMS_TO_TICKS(1));
             }
 
             LOG(TAG, "wheel_task end");
@@ -303,7 +301,7 @@ namespace segway {
                     auto handle = static_cast<TIM_HandleTypeDef*>(user);
                     auto prescaler = 0UL;
                     auto period = 0UL;
-                    utility::frequency_to_prescaler_and_period(2 * freq,
+                    utility::frequency_to_prescaler_and_period(freq,
                                                                84000000,
                                                                0,
                                                                0xFFFF,

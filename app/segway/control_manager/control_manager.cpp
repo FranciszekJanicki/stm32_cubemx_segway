@@ -37,7 +37,7 @@ namespace segway {
                 ctx.is_running = true;
 
                 auto event = WheelEvent{.type = WheelEventType::START};
-                xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10));
+                xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(1));
             }
         }
 
@@ -49,7 +49,7 @@ namespace segway {
                 ctx.is_running = false;
 
                 auto event = WheelEvent{.type = WheelEventType::STOP};
-                xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10));
+                xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(1));
             }
         }
 
@@ -85,7 +85,13 @@ namespace segway {
             event.payload.control_data.should_run = true;
             // }
 
-            if (!xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10))) {
+            LOG(TAG,
+                "L speed: %f, R speed: %f, dt: %f",
+                event.payload.control_data.left_speed,
+                event.payload.control_data.right_speed,
+                event.payload.control_data.dt);
+
+            if (!xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(1))) {
                 LOG(TAG, "Failed sending to queue!");
             }
         }
@@ -96,19 +102,21 @@ namespace segway {
 
             auto event = ControlEvent{};
 
-            if (xQueueReceive(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10))) {
-                switch (event.type) {
-                    case ControlEventType::START:
-                        process_start();
-                        break;
-                    case ControlEventType::STOP:
-                        process_stop();
-                        break;
-                    case ControlEventType::IMU_DATA:
-                        process_imu_data(event.payload);
-                        break;
-                    default:
-                        break;
+            while (uxQueueMessagesWaiting(get_queue(QueueType::CONTROL))) {
+                if (xQueueReceive(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(1))) {
+                    switch (event.type) {
+                        case ControlEventType::START:
+                            process_start();
+                            break;
+                        case ControlEventType::STOP:
+                            process_stop();
+                            break;
+                        case ControlEventType::IMU_DATA:
+                            process_imu_data(event.payload);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }
@@ -125,7 +133,7 @@ namespace segway {
             while (1) {
                 process_control_queue_events();
                 process_control_event_group_bits();
-                vTaskDelay(pdMS_TO_TICKS(10));
+                vTaskDelay(pdMS_TO_TICKS(1));
             }
 
             LOG(TAG, "control_task end");
@@ -208,4 +216,5 @@ namespace segway {
         control_queue_init();
         control_task_init();
     }
+
 }; // namespace segway

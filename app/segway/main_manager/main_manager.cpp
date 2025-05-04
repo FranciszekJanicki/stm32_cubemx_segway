@@ -18,7 +18,7 @@ namespace segway {
             LOG(TAG, "main_task start");
 
             auto event = IMUEvent{.type = IMUEventType::START};
-            xQueueSend(get_queue(QueueType::IMU), &event, pdMS_TO_TICKS(10));
+            xQueueSend(get_queue(QueueType::IMU), &event, pdMS_TO_TICKS(1));
 
             LOG(TAG, "main_task end");
 

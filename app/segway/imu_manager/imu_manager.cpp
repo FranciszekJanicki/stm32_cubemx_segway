@@ -35,7 +35,7 @@ namespace segway {
                 ctx.is_running = true;
 
                 auto event = ControlEvent{.type = ControlEventType::START};
-                xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10));
+                xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(1));
 
                 HAL_TIM_Base_Start_IT(&htim2);
             }
@@ -49,7 +49,7 @@ namespace segway {
                 ctx.is_running = false;
 
                 auto event = ControlEvent{.type = ControlEventType::STOP};
-                xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10));
+                xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(1));
 
                 HAL_TIM_Base_Stop_IT(&htim2);
             }
@@ -59,14 +59,16 @@ namespace segway {
         {
             auto event = IMUEvent{};
 
-            if (xQueueReceive(get_queue(QueueType::IMU), &event, pdMS_TO_TICKS(10))) {
-                switch (event.type) {
-                    case IMUEventType::START:
-                        process_start();
-                        break;
-                    case IMUEventType::STOP:
-                        process_stop();
-                        break;
+            while (uxQueueMessagesWaiting(get_queue(QueueType::IMU))) {
+                if (xQueueReceive(get_queue(QueueType::IMU), &event, pdMS_TO_TICKS(1))) {
+                    switch (event.type) {
+                        case IMUEventType::START:
+                            process_start();
+                            break;
+                        case IMUEventType::STOP:
+                            process_stop();
+                            break;
+                    }
                 }
             }
         }
@@ -87,13 +89,9 @@ namespace segway {
             event.payload.imu_data.yaw = utility::radians_to_degrees(rpy.z);
             event.payload.imu_data.dt = ctx.config.sampling_time;
 
-            LOG(TAG,
-                "r: %f, p: %f, y: %f",
-                event.payload.imu_data.roll,
-                event.payload.imu_data.pitch,
-                event.payload.imu_data.yaw);
+            auto queue = get_queue(QueueType::CONTROL);
 
-            if (!xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10))) {
+            if (!xQueueSend(queue, &event, pdMS_TO_TICKS(1))) {
                 LOG(TAG, "Failed sending to queue!");
             }
 
@@ -135,7 +133,7 @@ namespace segway {
                                                   IMUEventBit::ALL,
                                                   pdTRUE,
                                                   pdFALSE,
-                                                  pdMS_TO_TICKS(10));
+                                                  pdMS_TO_TICKS(1));
 
             if ((event_bits & IMUEventBit::DATA_READY) == IMUEventBit::DATA_READY) {
                 process_data_ready();
@@ -161,7 +159,7 @@ namespace segway {
             while (1) {
                 process_imu_event_group_bits();
                 process_imu_queue_events();
-                vTaskDelay(pdMS_TO_TICKS(10));
+                vTaskDelay(pdMS_TO_TICKS(1));
             }
 
             LOG(TAG, "imu_task end");
