@@ -38,6 +38,7 @@ namespace segway {
 
         inline void log_queue_init() noexcept
         {
+#ifdef DEBUG
             constexpr auto LOG_QUEUE_ITEM_SIZE = sizeof(LogEvent);
             constexpr auto LOG_QUEUE_ITEMS = 10UL;
             constexpr auto LOG_QUEUE_STORAGE_SIZE = LOG_QUEUE_ITEM_SIZE * LOG_QUEUE_ITEMS;
@@ -50,10 +51,12 @@ namespace segway {
                                          LOG_QUEUE_ITEM_SIZE,
                                          log_queue_storage.data(),
                                          &log_static_queue));
+#endif
         }
 
         inline void log_task_init() noexcept
         {
+#ifdef DEBUG
             constexpr auto LOG_TASK_PRIORITY = 1UL;
             constexpr auto LOG_TASK_STACK_DEPTH = 1024UL;
             constexpr auto LOG_TASK_NAME = "log_task";
@@ -69,6 +72,7 @@ namespace segway {
                               LOG_TASK_PRIORITY,
                               log_task_stack.data(),
                               &static_log_task);
+#endif
         }
 
     }; // namespace
