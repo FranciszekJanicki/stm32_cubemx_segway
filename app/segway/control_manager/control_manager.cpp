@@ -95,9 +95,8 @@ namespace segway {
 
             if (!ctx.is_running) {
                 ctx.is_running = true;
-
 #ifdef USE_EVENT_GROUPS
-                xEventGroupSetBits(get_event_group(EventGroupType::CONTROL), WheelEventBit::START);
+                xEventGroupSetBits(get_event_group(EventGroupType::WHEEL), WheelEventBit::START);
 #else
                 xTaskNotify(get_task(TaskType::WHEEL),
                             WheelEventBit::START,
@@ -114,7 +113,7 @@ namespace segway {
                 ctx.is_running = false;
 
 #ifdef USE_EVENT_GROUPS
-                xEventGroupSetBits(get_event_group(EventGroupType::CONTROL), WheelEventBit::STOP);
+                xEventGroupSetBits(get_event_group(EventGroupType::WHEEL), WheelEventBit::STOP);
 #else
                 xTaskNotify(get_task(TaskType::WHEEL),
                             WheelEventBit::STOP,
@@ -185,6 +184,18 @@ namespace segway {
 
             set_event_group(EventGroupType::CONTROL,
                             xEventGroupCreateStatic(&control_static_event_group));
+        }
+
+        inline void control_message_buffer_init() noexcept
+        {
+            constexpr auto CONTROL_MESSAGE_BUFFER_ITEM_SIZE = sizeof(ControlEvent);
+            constexpr auto CONTROL_MESSAGE_BUFFER_ITEMS = 100UL;
+            constexpr auto CONTROL_MESSAGE_BUFFER_STORAGE_SIZE =
+                CONTROL_MESSAGE_BUFFER_ITEM_SIZE * CONTROL_MESSAGE_BUFFER_ITEMS;
+
+            static auto control_static_message_buffer = StaticMessageBuffer_t{};
+            static auto control_message_buffer_storage =
+                std::array<std::uint8_t, CONTROL_MESSAGE_BUFFER_STORAGE_SIZE>{};
         }
 
         inline void control_queue_init() noexcept
