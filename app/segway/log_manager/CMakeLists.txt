@@ -7,11 +7,13 @@ target_sources(log_manager PRIVATE
 target_include_directories(log_manager PUBLIC 
     ${STM32CUBEMX_DIR}
     ${SEGWAY_DIR}/queue_manager
+    ${SEGWAY_DIR}/common
 )
 
 target_link_libraries(log_manager PRIVATE
     stm32cubemx
     queue_manager
+    common
 )
 
 target_compile_options(log_manager PUBLIC

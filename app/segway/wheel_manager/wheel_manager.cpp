@@ -175,11 +175,8 @@ namespace segway {
         {
             LOG(TAG, "process_event_group_bits");
 
-            auto event_bits = xEventGroupWaitBits(get_event_group(EventGroupType::WHEEL),
-                                                  WheelEventBit::ALL,
-                                                  pdTRUE,
-                                                  pdFALSE,
-                                                  pdMS_TO_TICKS(1));
+            auto event_bits = 0UL;
+            xTaskNotifyWait(0x00, WheelEventBit::ALL, &event_bits, pdMS_TO_TICKS(1));
 
             if ((event_bits & WheelEventBit::LEFT_STEP_TIMER) == WheelEventBit::LEFT_STEP_TIMER) {
                 process_left_step_timer();

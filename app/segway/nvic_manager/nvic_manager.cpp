@@ -1,8 +1,8 @@
 #include "FreeRTOS.h"
 #include "event_group_manager.hpp"
-#include "event_groups.h"
 #include "gpio.h"
 #include "i2c.h"
+#include "task_manager.hpp"
 #include "tim.h"
 #include <utility>
 
@@ -17,9 +17,10 @@ void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef* hi2c)
     auto task_woken = pdFALSE;
 
     if (hi2c->Instance == I2C1) {
-        xEventGroupSetBitsFromISR(get_event_group(EventGroupType::IMU),
-                                  IMUEventBit::TX_COMPLETE,
-                                  &task_woken);
+        xTaskNotifyFromISR(get_task(TaskType::IMU),
+                           IMUEventBit::TX_COMPLETE,
+                           eNotifyAction::eSetBits,
+                           &task_woken);
     }
 
     portYIELD_FROM_ISR(task_woken);
@@ -30,9 +31,10 @@ void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef* hi2c)
     auto task_woken = pdFALSE;
 
     if (hi2c->Instance == I2C1) {
-        xEventGroupSetBitsFromISR(get_event_group(EventGroupType::IMU),
-                                  IMUEventBit::RX_COMPLETE,
-                                  &task_woken);
+        xTaskNotifyFromISR(get_task(TaskType::IMU),
+                           IMUEventBit::RX_COMPLETE,
+                           eNotifyAction::eSetBits,
+                           &task_woken);
     }
 
     portYIELD_FROM_ISR(task_woken);
@@ -43,9 +45,10 @@ void HAL_I2C_ErrorCallback(I2C_HandleTypeDef* hi2c)
     auto task_woken = pdFALSE;
 
     if (hi2c->Instance == I2C1) {
-        xEventGroupSetBitsFromISR(get_event_group(EventGroupType::IMU),
-                                  IMUEventBit::I2C_ERROR,
-                                  &task_woken);
+        xTaskNotifyFromISR(get_task(TaskType::IMU),
+                           IMUEventBit::I2C_ERROR,
+                           eNotifyAction::eSetBits,
+                           &task_woken);
     }
 
     portYIELD_FROM_ISR(task_woken);
@@ -56,19 +59,23 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
     auto task_woken = pdFALSE;
 
     if (htim->Instance == TIM1) {
-        xEventGroupSetBitsFromISR(get_event_group(EventGroupType::WHEEL),
-                                  WheelEventBit::LEFT_STEP_TIMER,
-                                  &task_woken);
+        xTaskNotifyFromISR(get_task(TaskType::WHEEL),
+                           WheelEventBit::LEFT_STEP_TIMER,
+                           eNotifyAction::eSetBits,
+                           &task_woken);
     } else if (htim->Instance == TIM2) {
-        xEventGroupSetBitsFromISR(get_event_group(EventGroupType::IMU),
-                                  IMUEventBit::DATA_READY,
-                                  &task_woken);
+        xTaskNotifyFromISR(get_task(TaskType::IMU),
+                           IMUEventBit::DATA_READY,
+                           eNotifyAction::eSetBits,
+                           &task_woken);
     } else if (htim->Instance == TIM3) {
-        xEventGroupSetBitsFromISR(get_event_group(EventGroupType::WHEEL),
-                                  WheelEventBit::RIGHT_STEP_TIMER,
-                                  &task_woken);
+        xTaskNotifyFromISR(get_task(TaskType::WHEEL),
+                           WheelEventBit::RIGHT_STEP_TIMER,
+                           eNotifyAction::eSetBits,
+                           &task_woken);
     } else if (htim->Instance == TIM4) {
         HAL_IncTick();
+        task_woken = true;
     }
 
     portYIELD_FROM_ISR(task_woken);
@@ -79,9 +86,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     auto task_woken = pdFALSE;
 
     if (GPIO_Pin == (1 << 6)) {
-        xEventGroupSetBitsFromISR(get_event_group(EventGroupType::IMU),
-                                  IMUEventBit::DATA_READY,
-                                  &task_woken);
+        xTaskNotifyFromISR(get_task(TaskType::IMU),
+                           IMUEventBit::DATA_READY,
+                           eNotifyAction::eSetBits,
+                           &task_woken);
     }
 
     portYIELD_FROM_ISR(task_woken);

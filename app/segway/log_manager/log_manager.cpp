@@ -1,5 +1,6 @@
 #include "log_manager.hpp"
 #include "FreeRTOS.h"
+#include "log.hpp"
 #include "queue_manager.hpp"
 #include "semphr.h"
 #include "task.h"
@@ -12,9 +13,13 @@ namespace segway {
 
     namespace {
 
+        constexpr auto TAG = "log_manager";
+
         void log_task(void*) noexcept
         {
             auto event = LogEvent{};
+
+            LOG(TAG, "log_task start");
 
             while (1) {
                 while (uxQueueMessagesWaiting(get_queue(QueueType::LOG))) {
@@ -29,6 +34,8 @@ namespace segway {
 
                 vTaskDelay(pdMS_TO_TICKS(50));
             }
+
+            LOG(TAG, "log_task end");
         }
 
         inline void log_queue_init() noexcept
@@ -71,6 +78,7 @@ namespace segway {
     void log_manager_init() noexcept
     {
 #ifdef DEBUG
+        puts("HELLO WORLDS\n\r");
         log_queue_init();
         log_task_init();
 #endif
