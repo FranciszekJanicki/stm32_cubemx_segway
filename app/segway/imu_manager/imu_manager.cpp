@@ -27,16 +27,25 @@ namespace segway {
             bool is_running;
         } ctx;
 
+        void process_imu_queue_events() noexcept
+        {
+            LOG(TAG, "process_imu_queue_events");
+        }
+
         void process_start() noexcept
         {
             LOG(TAG, "process_start");
 
             if (!ctx.is_running) {
                 ctx.is_running = true;
-
-                auto event = ControlEvent{.type = ControlEventType::START};
-                xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(1));
-
+#ifdef USE_EVENT_GROUPS
+                xEventGroupSetBits(get_event_group(EventGroupType::CONTROL),
+                                   ControlEventBit::START);
+#else
+                xTaskNotify(get_task(TaskType::CONTROL),
+                            ControlEventBit::START,
+                            eNotifyAction::eSetBits);
+#endif
                 HAL_TIM_Base_Start_IT(&htim2);
             }
         }
@@ -47,29 +56,14 @@ namespace segway {
 
             if (ctx.is_running) {
                 ctx.is_running = false;
-
-                auto event = ControlEvent{.type = ControlEventType::STOP};
-                xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(1));
-
+#ifdef USE_EVENT_GROUPS
+                xEventGroupSetBits(get_event_group(EventGroupType::CONTROL), ControlEventBit::STOP);
+#else
+                xTaskNotify(get_task(TaskType::CONTROL),
+                            ControlEventBit::STOP,
+                            eNotifyAction::eSetBits);
+#endif
                 HAL_TIM_Base_Stop_IT(&htim2);
-            }
-        }
-
-        void process_imu_queue_events() noexcept
-        {
-            auto event = IMUEvent{};
-
-            while (uxQueueMessagesWaiting(get_queue(QueueType::IMU))) {
-                if (xQueueReceive(get_queue(QueueType::IMU), &event, pdMS_TO_TICKS(1))) {
-                    switch (event.type) {
-                        case IMUEventType::START:
-                            process_start();
-                            break;
-                        case IMUEventType::STOP:
-                            process_stop();
-                            break;
-                    }
-                }
             }
         }
 
@@ -91,7 +85,7 @@ namespace segway {
 
             auto queue = get_queue(QueueType::CONTROL);
 
-            if (!xQueueSend(queue, &event, pdMS_TO_TICKS(1))) {
+            if (!xQueueSend(queue, &event, pdMS_TO_TICKS(10))) {
                 LOG(TAG, "Failed sending to queue!");
             }
 
@@ -129,11 +123,23 @@ namespace segway {
         {
             LOG(TAG, "process_imu_event_group_bits");
 
-            auto event_bits = xEventGroupWaitBits(get_event_group(EventGroupType::IMU),
-                                                  IMUEventBit::ALL,
-                                                  pdTRUE,
-                                                  pdFALSE,
-                                                  pdMS_TO_TICKS(1));
+            auto event_bits = 0UL;
+#ifdef USE_EVENT_GROUPS
+            xEventGroupWaitBits(get_event_group(EventGroupType::IMU),
+                                IMUEventBit::ALL,
+                                pdTRUE,
+                                pdFALSE,
+                                pdMS_TO_TICKS(10));
+#else
+            xTaskNotifyWait(0x00, IMUEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
+#endif
+            if ((event_bits & IMUEventBit::START) == IMUEventBit::START) {
+                process_start();
+            }
+
+            if ((event_bits & IMUEventBit::STOP) == IMUEventBit::STOP) {
+                process_stop();
+            }
 
             if ((event_bits & IMUEventBit::DATA_READY) == IMUEventBit::DATA_READY) {
                 process_data_ready();
@@ -159,7 +165,7 @@ namespace segway {
             while (1) {
                 process_imu_event_group_bits();
                 process_imu_queue_events();
-                vTaskDelay(pdMS_TO_TICKS(1));
+                vTaskDelay(pdMS_TO_TICKS(10));
             }
 
             LOG(TAG, "imu_task end");
@@ -265,5 +271,4 @@ namespace segway {
         imu_event_group_init();
         imu_task_init();
     }
-
 }; // namespace segway

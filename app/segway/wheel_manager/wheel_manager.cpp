@@ -44,30 +44,6 @@ namespace segway {
             return it->driver;
         }
 
-        void process_start() noexcept
-        {
-            LOG(TAG, "process_start");
-
-            if (!ctx.is_running) {
-                ctx.is_running = true;
-
-                // HAL_TIM_Base_Start_IT(&htim1);
-                // HAL_TIM_Base_Start_IT(&htim3);
-            }
-        }
-
-        void process_stop() noexcept
-        {
-            LOG(TAG, "process_stop");
-
-            if (ctx.is_running) {
-                ctx.is_running = false;
-
-                // HAL_TIM_Base_Stop_IT(&htim1);
-                // HAL_TIM_Base_Stop_IT(&htim3);
-            }
-        }
-
         void start_wheels() noexcept
         {
             LOG(TAG, "start_wheels!");
@@ -124,22 +100,38 @@ namespace segway {
 
             auto event = WheelEvent{};
 
-            while (uxQueueMessagesWaiting(get_queue(QueueType::WHEEL))) {
-                if (xQueueReceive(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(1))) {
-                    switch (event.type) {
-                        case WheelEventType::START:
-                            process_start();
-                            break;
-                        case WheelEventType::STOP:
-                            process_stop();
-                            break;
-                        case WheelEventType::CONTROL_DATA:
-                            process_control_data(event.payload);
-                            break;
-                        default:
-                            break;
-                    }
+            while (xQueueReceive(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10))) {
+                switch (event.type) {
+                    case WheelEventType::CONTROL_DATA:
+                        process_control_data(event.payload);
+                        break;
+                    default:
+                        break;
                 }
+            }
+        }
+
+        void process_start() noexcept
+        {
+            LOG(TAG, "process_start");
+
+            if (!ctx.is_running) {
+                ctx.is_running = true;
+
+                // HAL_TIM_Base_Start_IT(&htim1);
+                // HAL_TIM_Base_Start_IT(&htim3);
+            }
+        }
+
+        void process_stop() noexcept
+        {
+            LOG(TAG, "process_stop");
+
+            if (ctx.is_running) {
+                ctx.is_running = false;
+
+                // HAL_TIM_Base_Stop_IT(&htim1);
+                // HAL_TIM_Base_Stop_IT(&htim3);
             }
         }
 
@@ -176,7 +168,22 @@ namespace segway {
             LOG(TAG, "process_event_group_bits");
 
             auto event_bits = 0UL;
-            xTaskNotifyWait(0x00, WheelEventBit::ALL, &event_bits, pdMS_TO_TICKS(1));
+#ifdef USE_EVENT_GROUPS
+            event_bits = xEventGroupWaitBits(get_event_group(EventGroupType::WHEEL),
+                                             WheelEventBit::ALL,
+                                             pdTRUE,
+                                             pdFALSE,
+                                             pdMS_TO_TICKS(10));
+#else
+            xTaskNotifyWait(0x00, WheelEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
+#endif
+            if ((event_bits & WheelEventBit::START) == WheelEventBit::START) {
+                process_start();
+            }
+
+            if ((event_bits & WheelEventBit::STOP) == WheelEventBit::STOP) {
+                process_stop();
+            }
 
             if ((event_bits & WheelEventBit::LEFT_STEP_TIMER) == WheelEventBit::LEFT_STEP_TIMER) {
                 process_left_step_timer();
@@ -194,7 +201,7 @@ namespace segway {
             while (1) {
                 process_wheel_queue_events();
                 process_wheel_event_group_bits();
-                vTaskDelay(pdMS_TO_TICKS(1));
+                vTaskDelay(pdMS_TO_TICKS(10));
             }
 
             LOG(TAG, "wheel_task end");
@@ -374,5 +381,4 @@ namespace segway {
         wheel_event_group_init();
         wheel_task_init();
     }
-
 }; // namespace segway

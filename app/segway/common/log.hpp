@@ -18,8 +18,8 @@ namespace segway {
 #ifdef DEBUG
         auto event = LogEvent{};
 
-        auto* buf = event.buffer;
-        auto buf_len = sizeof(event.buffer);
+        auto* buf = event.buf;
+        auto buf_len = sizeof(event.buf);
         auto alloc_buf = false;
 
         auto tag_len = std::strlen(tag) + std::strlen(": ");

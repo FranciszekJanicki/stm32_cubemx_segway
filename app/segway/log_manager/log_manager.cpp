@@ -22,14 +22,12 @@ namespace segway {
             LOG(TAG, "log_task start");
 
             while (1) {
-                while (uxQueueMessagesWaiting(get_queue(QueueType::LOG))) {
-                    if (xQueueReceive(get_queue(QueueType::LOG), &event, pdMS_TO_TICKS(1))) {
-                        auto msg = reinterpret_cast<std::uint8_t*>(event.buffer);
-                        auto msg_len = std::strlen(event.buffer);
+                while (xQueueReceive(get_queue(QueueType::LOG), &event, portMAX_DELAY)) {
+                    auto msg = reinterpret_cast<std::uint8_t*>(event.buf);
+                    auto msg_len = std::strlen(event.buf);
 
-                        HAL_UART_Transmit(&huart2, msg, msg_len, 100);
-                        // CDC_Transmit_FS(msg, msg_len);
-                    }
+                    HAL_UART_Transmit(&huart2, msg, msg_len, HAL_MAX_DELAY);
+                    // CDC_Transmit_FS(msg, msg_len);
                 }
 
                 vTaskDelay(pdMS_TO_TICKS(50));
@@ -78,7 +76,6 @@ namespace segway {
     void log_manager_init() noexcept
     {
 #ifdef DEBUG
-        puts("HELLO WORLDS\n\r");
         log_queue_init();
         log_task_init();
 #endif

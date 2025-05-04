@@ -1,9 +1,10 @@
 #include "main_manager.hpp"
 #include "FreeRTOS.h"
+#include "event_group_manager.hpp"
 #include "event_groups.h"
 #include "log.hpp"
-#include "queue_manager.hpp"
 #include "task.h"
+#include "task_manager.hpp"
 #include "tim.h"
 #include <cassert>
 
@@ -17,9 +18,11 @@ namespace segway {
         {
             LOG(TAG, "main_task start");
 
-            auto event = IMUEvent{.type = IMUEventType::START};
-            xQueueSend(get_queue(QueueType::IMU), &event, pdMS_TO_TICKS(1));
-
+#ifdef USE_EVENT_GROUPS
+            xEventGroupSetBits(get_event_group(EventGroupType::IMU), IMUEventBit::START);
+#else
+            xTaskNotify(get_task(TaskType::IMU), IMUEventBit::START, eNotifyAction::eSetBits);
+#endif
             LOG(TAG, "main_task end");
 
             vTaskDelete(nullptr);

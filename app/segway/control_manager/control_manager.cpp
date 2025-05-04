@@ -29,30 +29,6 @@ namespace segway {
             bool is_running;
         } ctx;
 
-        void process_start() noexcept
-        {
-            LOG(TAG, "process_start");
-
-            if (!ctx.is_running) {
-                ctx.is_running = true;
-
-                auto event = WheelEvent{.type = WheelEventType::START};
-                xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(1));
-            }
-        }
-
-        void process_stop() noexcept
-        {
-            LOG(TAG, "process_stop");
-
-            if (ctx.is_running) {
-                ctx.is_running = false;
-
-                auto event = WheelEvent{.type = WheelEventType::STOP};
-                xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(1));
-            }
-        }
-
         void process_imu_data(ControlEventPayload const& payload) noexcept
         {
             if (!ctx.is_running) {
@@ -91,7 +67,7 @@ namespace segway {
                 event.payload.control_data.right_speed,
                 event.payload.control_data.dt);
 
-            if (!xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(1))) {
+            if (!xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10))) {
                 LOG(TAG, "Failed sending to queue!");
             }
         }
@@ -102,28 +78,72 @@ namespace segway {
 
             auto event = ControlEvent{};
 
-            while (uxQueueMessagesWaiting(get_queue(QueueType::CONTROL))) {
-                if (xQueueReceive(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(1))) {
-                    switch (event.type) {
-                        case ControlEventType::START:
-                            process_start();
-                            break;
-                        case ControlEventType::STOP:
-                            process_stop();
-                            break;
-                        case ControlEventType::IMU_DATA:
-                            process_imu_data(event.payload);
-                            break;
-                        default:
-                            break;
-                    }
+            while (xQueueReceive(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10))) {
+                switch (event.type) {
+                    case ControlEventType::IMU_DATA:
+                        process_imu_data(event.payload);
+                        break;
+                    default:
+                        break;
                 }
+            }
+        }
+
+        void process_start() noexcept
+        {
+            LOG(TAG, "process_start");
+
+            if (!ctx.is_running) {
+                ctx.is_running = true;
+
+#ifdef USE_EVENT_GROUPS
+                xEventGroupSetBits(get_event_group(EventGroupType::CONTROL), WheelEventBit::START);
+#else
+                xTaskNotify(get_task(TaskType::WHEEL),
+                            WheelEventBit::START,
+                            eNotifyAction::eSetBits);
+#endif
+            }
+        }
+
+        void process_stop() noexcept
+        {
+            LOG(TAG, "process_stop");
+
+            if (ctx.is_running) {
+                ctx.is_running = false;
+
+#ifdef USE_EVENT_GROUPS
+                xEventGroupSetBits(get_event_group(EventGroupType::CONTROL), WheelEventBit::STOP);
+#else
+                xTaskNotify(get_task(TaskType::WHEEL),
+                            WheelEventBit::STOP,
+                            eNotifyAction::eSetBits);
+#endif
             }
         }
 
         void process_control_event_group_bits() noexcept
         {
             LOG(TAG, "process_control_event_group_bits");
+
+            auto event_bits = 0UL;
+#ifdef USE_EVENT_GROUPS
+            event_bits = xEventGroupWaitBits(get_event_group(EventGroupType::CONTROL),
+                                             ControlEventBit::ALL,
+                                             pdTRUE,
+                                             pdFALSE,
+                                             pdMS_TO_TICKS(10));
+#else
+            xTaskNotifyWait(0x00, ControlEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
+#endif
+            if ((event_bits & ControlEventBit::START) == ControlEventBit::START) {
+                process_start();
+            }
+
+            if ((event_bits & ControlEventBit::STOP) == ControlEventBit::STOP) {
+                process_stop();
+            }
         }
 
         void control_task(void*) noexcept
@@ -133,7 +153,7 @@ namespace segway {
             while (1) {
                 process_control_queue_events();
                 process_control_event_group_bits();
-                vTaskDelay(pdMS_TO_TICKS(1));
+                vTaskDelay(pdMS_TO_TICKS(10));
             }
 
             LOG(TAG, "control_task end");
@@ -157,6 +177,14 @@ namespace segway {
                                        CONTROL_TASK_PRIORITY,
                                        control_task_stack.data(),
                                        &control_static_task));
+        }
+
+        inline void control_event_group_init() noexcept
+        {
+            static auto control_static_event_group = StaticEventGroup_t{};
+
+            set_event_group(EventGroupType::CONTROL,
+                            xEventGroupCreateStatic(&control_static_event_group));
         }
 
         inline void control_queue_init() noexcept
@@ -214,6 +242,7 @@ namespace segway {
         control_config_init();
         control_regulator_init();
         control_queue_init();
+        control_event_group_init();
         control_task_init();
     }
 

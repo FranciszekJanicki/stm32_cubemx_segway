@@ -11,6 +11,7 @@ namespace segway {
     enum struct EventGroupType : std::uint8_t {
         IMU,
         WHEEL,
+        CONTROL,
         EVENT_GROUP_NUM,
     };
 
