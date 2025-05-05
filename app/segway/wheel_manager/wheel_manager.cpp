@@ -69,7 +69,7 @@ namespace segway {
                                        pdMS_TO_TICKS(10));
 #else
             auto event_bits = 0UL;
-            xTaskNotifyWait(0x0000, WheelEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
+            xTaskNotifyWait(0x00, WheelEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
             return event_bits;
 #endif
         }
@@ -351,10 +351,8 @@ namespace segway {
                                                 .pin_enable = EN_2};
 
             auto a4988_gpio_write_pin = [](void* user, std::uint16_t pin, bool state) {
-                if (pin) {
-                    auto port = static_cast<GPIO_TypeDef*>(user);
-                    HAL_GPIO_WritePin(port, pin, static_cast<GPIO_PinState>(state));
-                }
+                auto port = static_cast<GPIO_TypeDef*>(user);
+                HAL_GPIO_WritePin(port, pin, static_cast<GPIO_PinState>(state));
             };
 
             auto a4988_pulse_set_freq = [](void* user, std::uint32_t freq) {

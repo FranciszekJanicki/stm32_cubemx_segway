@@ -66,7 +66,7 @@ namespace segway {
                                        pdMS_TO_TICKS(10));
 #else
             auto event_bits = 0UL;
-            xTaskNotifyWait(0x0000, ControlEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
+            xTaskNotifyWait(0x00, ControlEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
             return event_bits;
 #endif
         }
@@ -251,7 +251,7 @@ namespace segway {
 
         inline void control_regulator_init() noexcept
         {
-            constexpr auto PID_KP = 15.0F64;
+            constexpr auto PID_KP = 10.0F64;
             constexpr auto PID_KI = 0.0F64;
             constexpr auto PID_KD = 0.0F64;
             constexpr auto PID_KC = 0.0F64;

@@ -63,7 +63,7 @@ namespace segway {
                                        pdMS_TO_TICKS(10));
 #else
             auto event_bits = 0UL;
-            xTaskNotifyWait(0x0000, IMUEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
+            xTaskNotifyWait(0x00, IMUEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
             return event_bits;
 #endif
         }
@@ -266,10 +266,8 @@ namespace segway {
 
             auto mpu6050 = mpu6050::MPU6050{.interface = std::move(mpu6050_interface)};
 
-            auto mpu6050_dmp = mpu6050::MPU6050_DMP{.mpu6050 = std::move(mpu6050)};
-            mpu6050_dmp.initialize(mpu6050_config);
-
-            ctx.imu = std::move(mpu6050_dmp);
+            ctx.imu = mpu6050::MPU6050_DMP{.mpu6050 = std::move(mpu6050)};
+            ctx.imu.initialize(mpu6050_config);
         }
 
     }; // namespace
@@ -283,4 +281,5 @@ namespace segway {
         imu_event_group_init();
         imu_task_init();
     }
+
 }; // namespace segway
