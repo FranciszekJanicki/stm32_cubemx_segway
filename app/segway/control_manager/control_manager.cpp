@@ -187,7 +187,7 @@ namespace segway {
 
         inline void control_task_init() noexcept
         {
-            constexpr auto CONTROL_TASK_PRIORITY = 1UL;
+            constexpr auto CONTROL_TASK_PRIORITY = 2UL;
             constexpr auto CONTROL_TASK_STACK_DEPTH = 1024UL;
             constexpr auto CONTROL_TASK_NAME = "control_task";
             constexpr auto CONTROL_TASK_ARG = nullptr;

@@ -200,8 +200,8 @@ namespace segway {
 
         inline void imu_task_init() noexcept
         {
-            constexpr auto IMU_TASK_PRIORITY = 1UL;
-            constexpr auto IMU_TASK_STACK_DEPTH = 2 * 1024UL;
+            constexpr auto IMU_TASK_PRIORITY = 2UL;
+            constexpr auto IMU_TASK_STACK_DEPTH = 1024UL;
             constexpr auto IMU_TASK_NAME = "imu_task";
             constexpr auto IMU_TASK_ARG = nullptr;
 

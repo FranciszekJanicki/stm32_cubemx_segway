@@ -74,8 +74,25 @@ namespace segway {
 #endif
         }
 
+        void init_wheels() noexcept
+        {
+            if (ctx.is_running) {
+                return;
+            }
+
+            LOG(TAG, "init_wheels");
+
+            for (auto& [type, driver] : ctx.periph.wheels) {
+                driver.initialize();
+            }
+        }
+
         void start_wheels() noexcept
         {
+            if (!ctx.is_running) {
+                return;
+            }
+
             LOG(TAG, "start_wheels!");
 
             for (auto& [type, driver] : ctx.periph.wheels) {
@@ -85,6 +102,10 @@ namespace segway {
 
         void stop_wheels() noexcept
         {
+            if (!ctx.is_running) {
+                return;
+            }
+
             LOG(TAG, "stop_wheels!");
 
             for (auto& [type, driver] : ctx.periph.wheels) {
@@ -149,8 +170,8 @@ namespace segway {
             LOG(TAG, "process_start");
 
             ctx.is_running = true;
-            // HAL_TIM_Base_Start_IT(&htim1);
-            // HAL_TIM_Base_Start_IT(&htim3);
+            HAL_TIM_Base_Start_IT(&htim1);
+            HAL_TIM_Base_Start_IT(&htim3);
         }
 
         void process_stop() noexcept
@@ -163,8 +184,8 @@ namespace segway {
 
             LOG(TAG, "process_stop");
 
-            // HAL_TIM_Base_Stop_IT(&htim1);
-            // HAL_TIM_Base_Stop_IT(&htim3);
+            HAL_TIM_Base_Stop_IT(&htim1);
+            HAL_TIM_Base_Stop_IT(&htim3);
         }
 
         void process_left_step_timer() noexcept
@@ -178,7 +199,7 @@ namespace segway {
             get_wheel_driver(WheelType::LEFT).update_step_count();
 
             HAL_GPIO_TogglePin(GPIOA, 1 << 6);
-            //   HAL_TIM_Base_Start_IT(&htim1);
+            HAL_TIM_Base_Start_IT(&htim1);
         };
 
         void process_right_step_timer() noexcept
@@ -192,7 +213,7 @@ namespace segway {
             get_wheel_driver(WheelType::RIGHT).update_step_count();
 
             HAL_GPIO_TogglePin(GPIOA, 1 << 8);
-            // HAL_TIM_Base_Start_IT(&htim3);
+            HAL_TIM_Base_Start_IT(&htim3);
         };
 
         void process_wheel_event_group_bits() noexcept
@@ -233,7 +254,7 @@ namespace segway {
 
         inline void wheel_task_init() noexcept
         {
-            constexpr auto WHEEL_TASK_PRIORITY = 1UL;
+            constexpr auto WHEEL_TASK_PRIORITY = 2UL;
             constexpr auto WHEEL_TASK_STACK_DEPTH = 1024UL;
             constexpr auto WHEEL_TASK_NAME = "wheel_task";
             constexpr auto WHEEL_TASK_ARG = nullptr;
@@ -295,17 +316,17 @@ namespace segway {
 
         inline void wheel_periph_init() noexcept
         {
-            constexpr auto MS1_1 = 1 << 11;
-            constexpr auto MS2_1 = 1 << 10;
-            constexpr auto MS3_1 = 1 << 9;
+            constexpr auto MS1_1 = 1 << 0;
+            constexpr auto MS2_1 = 1 << 0;
+            constexpr auto MS3_1 = 1 << 0;
             constexpr auto DIR_1 = 1 << 15;
             constexpr auto EN_1 = 1 << 0;
             constexpr auto SLEEP_1 = 1 << 0;
             constexpr auto RESET_1 = 1 << 0;
 
-            constexpr auto MS1_2 = 1 << 3;
-            constexpr auto MS2_2 = 1 << 4;
-            constexpr auto MS3_2 = 1 << 5;
+            constexpr auto MS1_2 = 1 << 0;
+            constexpr auto MS2_2 = 1 << 0;
+            constexpr auto MS3_2 = 1 << 0;
             constexpr auto DIR_2 = 1 << 7;
             constexpr auto EN_2 = 1 << 0;
             constexpr auto SLEEP_2 = 1 << 0;
@@ -330,18 +351,12 @@ namespace segway {
                                                 .pin_enable = EN_2};
 
             auto a4988_gpio_write_pin = [](void* user, std::uint16_t pin, bool state) {
-                auto port = static_cast<GPIO_TypeDef*>(user);
-                HAL_GPIO_WritePin(port, pin, static_cast<GPIO_PinState>(state));
+                if (pin) {
+                    auto port = static_cast<GPIO_TypeDef*>(user);
+                    HAL_GPIO_WritePin(port, pin, static_cast<GPIO_PinState>(state));
+                }
             };
 
-            auto a4988_pulse_start = [](void* user) {
-                auto handle = static_cast<TIM_HandleTypeDef*>(user);
-                assert(HAL_OK == HAL_TIM_Base_Start_IT(handle));
-            };
-            auto a4988_pulse_stop = [](void* user) {
-                auto handle = static_cast<TIM_HandleTypeDef*>(user);
-                assert(HAL_OK == HAL_TIM_Base_Stop_IT(handle));
-            };
             auto a4988_pulse_set_freq = [](void* user, std::uint32_t freq) {
                 if (freq > 0UL) {
                     auto handle = static_cast<TIM_HandleTypeDef*>(user);
@@ -361,16 +376,24 @@ namespace segway {
             };
 
             auto a4988_1_interface = a4988::Interface{.gpio_user = GPIOA,
+                                                      .gpio_init = nullptr,
+                                                      .gpio_deinit = nullptr,
                                                       .gpio_write_pin = a4988_gpio_write_pin,
                                                       .pulse_user = &htim1,
-                                                      .pulse_start = a4988_pulse_start,
-                                                      .pulse_stop = a4988_pulse_stop,
+                                                      .pulse_init = nullptr,
+                                                      .pulse_deinit = nullptr,
+                                                      .pulse_start = nullptr,
+                                                      .pulse_stop = nullptr,
                                                       .pulse_set_freq = a4988_pulse_set_freq};
             auto a4988_2_interface = a4988::Interface{.gpio_user = GPIOA,
+                                                      .gpio_init = nullptr,
+                                                      .gpio_deinit = nullptr,
                                                       .gpio_write_pin = a4988_gpio_write_pin,
                                                       .pulse_user = &htim3,
-                                                      .pulse_start = a4988_pulse_start,
-                                                      .pulse_stop = a4988_pulse_stop,
+                                                      .pulse_init = nullptr,
+                                                      .pulse_deinit = nullptr,
+                                                      .pulse_start = nullptr,
+                                                      .pulse_stop = nullptr,
                                                       .pulse_set_freq = a4988_pulse_set_freq};
 
             auto a4988_1 = a4988::A4988{.config = std::move(a4988_1_config),
@@ -383,20 +406,17 @@ namespace segway {
             auto step_driver_2 = step_driver::StepDriver{.driver = std::move(a4988_2),
                                                          .steps_per_360 = STEPS_PER_360};
 
-            auto left_wheel =
+            ctx.periph.wheels[0] =
                 segway::Wheel{.type = segway::WheelType::LEFT,
                               .driver = segway::WheelDriver{.driver = std::move(step_driver_1),
                                                             .wheel_radius = WHEEL_RADIUS}};
-            auto right_wheel =
+
+            ctx.periph.wheels[1] =
                 segway::Wheel{.type = segway::WheelType::RIGHT,
                               .driver = segway::WheelDriver{.driver = std::move(step_driver_2),
                                                             .wheel_radius = WHEEL_RADIUS}};
 
-            left_wheel.driver.initialize();
-            right_wheel.driver.initialize();
-
-            ctx.periph.wheels[0] = std::move(left_wheel);
-            ctx.periph.wheels[1] = std::move(right_wheel);
+            //  init_wheels();
         }
 
         inline void wheel_config_init() noexcept

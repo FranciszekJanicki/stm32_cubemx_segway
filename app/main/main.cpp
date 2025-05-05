@@ -82,10 +82,12 @@ void HAL_I2C_ErrorCallback(I2C_HandleTypeDef* hi2c)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
     if (htim->Instance == TIM1) {
+        HAL_GPIO_TogglePin(GPIOA, 1 << 6);
         portYIELD_FROM_ISR(set_wheel_event_bits_from_isr(WheelEventBit::LEFT_STEP_TIMER));
     } else if (htim->Instance == TIM2) {
         portYIELD_FROM_ISR(set_imu_event_bits_from_isr(IMUEventBit::DATA_READY));
     } else if (htim->Instance == TIM3) {
+        HAL_GPIO_TogglePin(GPIOA, 1 << 6);
         portYIELD_FROM_ISR(set_wheel_event_bits_from_isr(WheelEventBit::RIGHT_STEP_TIMER));
     } else if (htim->Instance == TIM4) {
         HAL_IncTick();
@@ -116,10 +118,10 @@ int main()
     MX_USART2_UART_Init();
     //  MX_USB_DEVICE_Init();
 
-    segway::log_manager_init();
-    segway::control_manager_init();
     segway::wheel_manager_init();
     segway::main_manager_init();
+    segway::log_manager_init();
+    segway::control_manager_init();
     segway::imu_manager_init();
 
     vTaskStartScheduler();
