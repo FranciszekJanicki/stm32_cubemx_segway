@@ -3,7 +3,6 @@
 
 #include "FreeRTOS.h"
 #include "queue.h"
-#include "queue_event.hpp"
 #include <cstdint>
 
 namespace segway {

@@ -1,5 +1,5 @@
-#ifndef SEGWAY_EVENT_BIT_HPP
-#define SEGWAY_EVENT_BIT_HPP
+#ifndef SEGWAY_EVENT_BITS_HPP
+#define SEGWAY_EVENT_BITS_HPP
 
 #include <cstdint>
 #include <utility>
@@ -40,4 +40,4 @@ namespace segway {
 
 }; // namespace segway
 
-#endif // SEGWAY_EVENT_BIT_HPP
+#endif // SEGWAY_EVENT_BITS_HPP

@@ -2,7 +2,6 @@
 #define SEGWAY_EVENT_GROUP_MANAGER_HPP
 
 #include "FreeRTOS.h"
-#include "event_group_bit.hpp"
 #include "event_groups.h"
 #include <cstdint>
 

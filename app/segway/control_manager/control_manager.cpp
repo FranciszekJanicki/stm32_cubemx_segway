@@ -1,6 +1,8 @@
 #include "control_manager.hpp"
 #include "FreeRTOS.h"
+#include "event_bits.hpp"
 #include "event_group_manager.hpp"
+#include "events.hpp"
 #include "log.hpp"
 #include "message_buffer_manager.hpp"
 #include "pid.hpp"
@@ -54,7 +56,7 @@ namespace segway {
 #endif
         }
 
-        inline EventBits_t wait_control_event_bits() noexcept
+        inline std::uint32_t wait_control_event_bits() noexcept
         {
 #ifdef USE_EVENT_GROUPS
             return xEventGroupWaitBits(get_event_group(EventGroupType::CONTROL),
@@ -69,7 +71,7 @@ namespace segway {
 #endif
         }
 
-        inline void set_wheel_event_bits(EventBits_t const event_bits) noexcept
+        inline void set_wheel_event_bits(std::uint32_t const event_bits) noexcept
         {
 #ifdef USE_EVENT_GROUPS
             xEventGroupSetBits(get_event_group(EventGroupType::WHEEL), event_bits);

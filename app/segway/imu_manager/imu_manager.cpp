@@ -1,4 +1,5 @@
 #include "imu_manager.hpp"
+#include "event_bits.hpp"
 #include "event_group_manager.hpp"
 #include "i2c.h"
 #include "log.hpp"
@@ -52,7 +53,7 @@ namespace segway {
 #endif
         }
 
-        inline EventBits_t wait_imu_event_bits() noexcept
+        inline std::uint32_t wait_imu_event_bits() noexcept
         {
 #ifdef USE_EVENT_GROUPS
             return xEventGroupWaitBits(get_event_group(EventGroupType::IMU),
@@ -67,7 +68,7 @@ namespace segway {
 #endif
         }
 
-        inline void set_control_event_bits(EventBits_t const event_bits) noexcept
+        inline void set_control_event_bits(std::uint32_t const event_bits) noexcept
         {
 #ifdef USE_EVENT_GROUPS
             xEventGroupSetBits(get_event_group(EventGroupType::CONTROL), event_bits);

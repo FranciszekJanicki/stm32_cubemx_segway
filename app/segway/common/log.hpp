@@ -1,6 +1,7 @@
 #ifndef SEGWAY_LOG_HPP
 #define SEGWAY_LOG_HPP
 
+#include "events.hpp"
 #include "queue_manager.hpp"
 #include "usart.h"
 #include "usbd_cdc_if.h"
@@ -9,7 +10,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#define DEBUG
+// #define DEBUG
 
 namespace segway {
 

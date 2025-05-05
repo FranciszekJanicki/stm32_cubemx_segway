@@ -1,6 +1,7 @@
 #include "main.h"
 #include "FreeRTOS.h"
 #include "control_manager.hpp"
+#include "event_bits.hpp"
 #include "event_group_manager.hpp"
 #include "gpio.h"
 #include "i2c.h"
@@ -21,9 +22,9 @@ using namespace segway;
 extern "C" {
 #endif
 
-inline BaseType_t set_control_event_bits_from_isr(EventBits_t const event_bits) noexcept
+inline bool set_control_event_bits_from_isr(std::uint32_t const event_bits) noexcept
 {
-    BaseType_t task_woken = pdFALSE;
+    auto task_woken = pdFALSE;
 #ifdef USE_EVENT_GROUPS
     xEventGroupSetBitsFromISR(get_event_group(EventGroupType::CONTROL), event_bits, &task_woken);
 #else
@@ -35,9 +36,9 @@ inline BaseType_t set_control_event_bits_from_isr(EventBits_t const event_bits) 
     return task_woken;
 }
 
-inline BaseType_t set_imu_event_bits_from_isr(EventBits_t const event_bits) noexcept
+inline bool set_imu_event_bits_from_isr(std::uint32_t const event_bits) noexcept
 {
-    BaseType_t task_woken = pdFALSE;
+    auto task_woken = pdFALSE;
 #ifdef USE_EVENT_GROUPS
     xEventGroupSetBitsFromISR(get_event_group(EventGroupType::IMU), event_bits, &task_woken);
 #else
@@ -46,9 +47,9 @@ inline BaseType_t set_imu_event_bits_from_isr(EventBits_t const event_bits) noex
     return task_woken;
 }
 
-inline BaseType_t set_wheel_event_bits_from_isr(EventBits_t const event_bits) noexcept
+inline bool set_wheel_event_bits_from_isr(std::uint32_t const event_bits) noexcept
 {
-    BaseType_t task_woken = pdFALSE;
+    auto task_woken = pdFALSE;
 #ifdef USE_EVENT_GROUPS
     xEventGroupSetBitsFromISR(get_event_group(EventGroupType::WHEEL), event_bits, &task_woken);
 #else

@@ -1,16 +1,17 @@
-#ifndef SEGWAY_QUEUE_EVENT_HPP
-#define SEGWAY_QUEUE_EVENT_HPP
+#ifndef SEGWAY_EVENTS_HPP
+#define SEGWAY_EVENTS_HPP
 
 #include <array>
 #include <cstdint>
 #include <stdfloat>
 
-#define USE_QUEUE
+// #define USE_QUEUES
 
 namespace segway {
 
     enum struct ControlEventType : std::uint8_t {
         IMU_DATA,
+        CONTROL_DATA,
         WHEEL_DATA,
     };
 
@@ -62,4 +63,4 @@ namespace segway {
 
 }; // namespace segway
 
-#endif // SEGWAY_QUEUE_EVENT_HPP
+#endif // SEGWAY_EVENTS_HPP

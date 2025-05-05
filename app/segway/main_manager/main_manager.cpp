@@ -1,5 +1,6 @@
 #include "main_manager.hpp"
 #include "FreeRTOS.h"
+#include "event_bits.hpp"
 #include "event_group_manager.hpp"
 #include "event_groups.h"
 #include "log.hpp"
