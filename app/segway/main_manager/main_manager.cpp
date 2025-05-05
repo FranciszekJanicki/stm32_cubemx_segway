@@ -14,15 +14,21 @@ namespace segway {
 
         constexpr auto TAG = "main_manager";
 
+        inline void set_imu_event_bits(EventBits_t const event_bits) noexcept
+        {
+#ifdef USE_EVENT_GROUPS
+            xEventGroupSetBits(get_event_group(EventGroupType::IMU), event_bits);
+#else
+            xTaskNotify(get_task(TaskType::IMU), event_bits, eNotifyAction::eSetBits);
+#endif
+        }
+
         void main_task(void*) noexcept
         {
             LOG(TAG, "main_task start");
 
-#ifdef USE_EVENT_GROUPS
-            xEventGroupSetBits(get_event_group(EventGroupType::IMU), IMUEventBit::START);
-#else
-            xTaskNotify(get_task(TaskType::IMU), IMUEventBit::START, eNotifyAction::eSetBits);
-#endif
+            set_imu_event_bits(IMUEventBit::START);
+
             LOG(TAG, "main_task end");
 
             vTaskDelete(nullptr);

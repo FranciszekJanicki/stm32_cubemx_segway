@@ -45,6 +45,33 @@ namespace segway {
             return it->driver;
         }
 
+        inline bool receive_wheel_event(WheelEvent& event) noexcept
+        {
+#ifdef USE_QUEUES
+            return xQueueReceive(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10));
+#else
+            return xMessageBufferReceive(get_message_buffer(MessageBufferType::WHEEL),
+                                         &event,
+                                         sizeof(event),
+                                         pdMS_TO_TICKS(10)) == sizeof(event);
+#endif
+        }
+
+        inline EventBits_t wait_wheel_event_bits() noexcept
+        {
+#ifdef USE_EVENT_GROUPS
+            return xEventGroupWaitBits(get_event_group(EventGroupType::WHEEL),
+                                       WheelEventBit::ALL,
+                                       pdTRUE,
+                                       pdFALSE,
+                                       pdMS_TO_TICKS(10));
+#else
+            auto event_bits = 0UL;
+            xTaskNotifyWait(0x0000, WheelEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
+            return event_bits;
+#endif
+        }
+
         void start_wheels() noexcept
         {
             LOG(TAG, "start_wheels!");
@@ -100,8 +127,7 @@ namespace segway {
             LOG(TAG, "process_wheel_queue_events");
 
             auto event = WheelEvent{};
-#ifdef USE_QUEUES
-            while (xQueueReceive(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10))) {
+            while (receive_wheel_event(event)) {
                 switch (event.type) {
                     case WheelEventType::CONTROL_DATA:
                         process_control_data(event.payload);
@@ -110,44 +136,33 @@ namespace segway {
                         break;
                 }
             }
-#else
-            while (xMessageBufferReceive(get_message_buffer(MessageBufferType::WHEEL),
-                                         &event,
-                                         sizeof(event),
-                                         pdMS_TO_TICKS(10))) {
-                switch (event.type) {
-                    case WheelEventType::CONTROL_DATA:
-                        process_control_data(event.payload);
-                        break;
-                    default:
-                        break;
-                }
-            }
-#endif
         }
 
         void process_start() noexcept
         {
+            if (ctx.is_running) {
+                return;
+            }
+
             LOG(TAG, "process_start");
 
-            if (!ctx.is_running) {
-                ctx.is_running = true;
-
-                // HAL_TIM_Base_Start_IT(&htim1);
-                // HAL_TIM_Base_Start_IT(&htim3);
-            }
+            ctx.is_running = true;
+            // HAL_TIM_Base_Start_IT(&htim1);
+            // HAL_TIM_Base_Start_IT(&htim3);
         }
 
         void process_stop() noexcept
         {
+            if (!ctx.is_running) {
+                return;
+            }
+
+            ctx.is_running = false;
+
             LOG(TAG, "process_stop");
 
-            if (ctx.is_running) {
-                ctx.is_running = false;
-
-                // HAL_TIM_Base_Stop_IT(&htim1);
-                // HAL_TIM_Base_Stop_IT(&htim3);
-            }
+            // HAL_TIM_Base_Stop_IT(&htim1);
+            // HAL_TIM_Base_Stop_IT(&htim3);
         }
 
         void process_left_step_timer() noexcept
@@ -182,16 +197,8 @@ namespace segway {
         {
             LOG(TAG, "process_event_group_bits");
 
-            auto event_bits = 0UL;
-#ifdef USE_EVENT_GROUPS
-            event_bits = xEventGroupWaitBits(get_event_group(EventGroupType::WHEEL),
-                                             WheelEventBit::ALL,
-                                             pdTRUE,
-                                             pdFALSE,
-                                             pdMS_TO_TICKS(10));
-#else
-            xTaskNotifyWait(0x0000, 0xFFFF, &event_bits, pdMS_TO_TICKS(10));
-#endif
+            auto event_bits = wait_wheel_event_bits();
+
             if ((event_bits & WheelEventBit::START) == WheelEventBit::START) {
                 process_start();
             }
@@ -242,25 +249,6 @@ namespace segway {
                                        &wheel_static_task));
         }
 
-        inline void wheel_message_buffer_init() noexcept
-        {
-#ifndef USE_QUEUES
-            constexpr auto WHEEL_MESSAGE_BUFFER_ITEM_SIZE = sizeof(ControlEvent);
-            constexpr auto WHEEL_MESSAGE_BUFFER_ITEMS = 10UL;
-            constexpr auto WHEEL_MESSAGE_BUFFER_STORAGE_SIZE =
-                WHEEL_MESSAGE_BUFFER_ITEM_SIZE * WHEEL_MESSAGE_BUFFER_ITEMS;
-
-            static auto wheel_static_message_buffer = StaticMessageBuffer_t{};
-            static auto wheel_message_buffer_storage =
-                std::array<std::uint8_t, WHEEL_MESSAGE_BUFFER_STORAGE_SIZE>{};
-
-            set_message_buffer(MessageBufferType::WHEEL,
-                               xMessageBufferCreateStatic(wheel_message_buffer_storage.size(),
-                                                          wheel_message_buffer_storage.data(),
-                                                          &wheel_static_message_buffer));
-#endif
-        }
-
         inline void wheel_queue_init() noexcept
         {
 #ifdef USE_QUEUES
@@ -276,6 +264,20 @@ namespace segway {
                                          WHEEL_QUEUE_ITEM_SIZE,
                                          wheel_queue_storage.data(),
                                          &wheel_static_queue));
+#else
+            constexpr auto WHEEL_MESSAGE_BUFFER_ITEM_SIZE = sizeof(ControlEvent);
+            constexpr auto WHEEL_MESSAGE_BUFFER_ITEMS = 10UL;
+            constexpr auto WHEEL_MESSAGE_BUFFER_STORAGE_SIZE =
+                WHEEL_MESSAGE_BUFFER_ITEM_SIZE * WHEEL_MESSAGE_BUFFER_ITEMS;
+
+            static auto wheel_static_message_buffer = StaticMessageBuffer_t{};
+            static auto wheel_message_buffer_storage =
+                std::array<std::uint8_t, WHEEL_MESSAGE_BUFFER_STORAGE_SIZE>{};
+
+            set_message_buffer(MessageBufferType::WHEEL,
+                               xMessageBufferCreateStatic(wheel_message_buffer_storage.size(),
+                                                          wheel_message_buffer_storage.data(),
+                                                          &wheel_static_message_buffer));
 #endif
         }
 
@@ -415,7 +417,6 @@ namespace segway {
 
         wheel_periph_init();
         wheel_config_init();
-        wheel_message_buffer_init();
         wheel_queue_init();
         wheel_event_group_init();
         wheel_task_init();

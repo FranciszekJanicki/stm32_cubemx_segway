@@ -16,7 +16,7 @@ namespace segway {
 
         constexpr auto TAG = "imu_manager";
 
-        struct Context {
+        struct IMUManagerCtx {
             mpu6050::MPU6050_DMP imu;
 
             struct Config {
@@ -28,39 +28,78 @@ namespace segway {
             bool is_running;
         } ctx;
 
+        inline bool send_control_event(ControlEvent const& event) noexcept
+        {
+#ifdef USE_QUEUES
+            return xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10));
+#else
+            return xMessageBufferSend(get_message_buffer(MessageBufferType::CONTROL),
+                                      &event,
+                                      sizeof(event),
+                                      pdMS_TO_TICKS(10)) != sizeof(event);
+#endif
+        }
+
+        inline bool receive_imu_event(IMUEvent& event) noexcept
+        {
+#ifdef USE_QUEUES
+            return xQueueReceive(get_queue(QueueType::IMU), &event, pdMS_TO_TICKS(10));
+#else
+            return xMessageBufferReceive(get_message_buffer(MessageBufferType::IMU),
+                                         &event,
+                                         sizeof(event),
+                                         pdMS_TO_TICKS(10)) == sizeof(event);
+#endif
+        }
+
+        inline EventBits_t wait_imu_event_bits() noexcept
+        {
+#ifdef USE_EVENT_GROUPS
+            return xEventGroupWaitBits(get_event_group(EventGroupType::IMU),
+                                       IMUEventBit::ALL,
+                                       pdTRUE,
+                                       pdFALSE,
+                                       pdMS_TO_TICKS(10));
+#else
+            auto event_bits = 0UL;
+            xTaskNotifyWait(0x0000, IMUEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
+            return event_bits;
+#endif
+        }
+
+        inline void set_control_event_bits(EventBits_t const event_bits) noexcept
+        {
+#ifdef USE_EVENT_GROUPS
+            xEventGroupSetBits(get_event_group(EventGroupType::CONTROL), event_bits);
+#else
+            xTaskNotify(get_task(TaskType::CONTROL), event_bits, eNotifyAction::eSetBits);
+#endif
+        }
+
         void process_start() noexcept
         {
+            if (ctx.is_running) {
+                return;
+            }
+
             LOG(TAG, "process_start");
 
-            if (!ctx.is_running) {
-                ctx.is_running = true;
-#ifdef USE_EVENT_GROUPS
-                xEventGroupSetBits(get_event_group(EventGroupType::CONTROL),
-                                   ControlEventBit::START);
-#else
-                xTaskNotify(get_task(TaskType::CONTROL),
-                            ControlEventBit::START,
-                            eNotifyAction::eSetBits);
-#endif
-                HAL_TIM_Base_Start_IT(&htim2);
-            }
+            ctx.is_running = true;
+            set_control_event_bits(ControlEventBit::START);
+            HAL_TIM_Base_Start_IT(&htim2);
         }
 
         void process_stop() noexcept
         {
+            if (ctx.is_running) {
+                return;
+            }
+
             LOG(TAG, "process_stop");
 
-            if (ctx.is_running) {
-                ctx.is_running = false;
-#ifdef USE_EVENT_GROUPS
-                xEventGroupSetBits(get_event_group(EventGroupType::CONTROL), ControlEventBit::STOP);
-#else
-                xTaskNotify(get_task(TaskType::CONTROL),
-                            ControlEventBit::STOP,
-                            eNotifyAction::eSetBits);
-#endif
-                HAL_TIM_Base_Stop_IT(&htim2);
-            }
+            ctx.is_running = false;
+            set_control_event_bits(ControlEventBit::STOP);
+            HAL_TIM_Base_Stop_IT(&htim2);
         }
 
         void process_data_ready() noexcept
@@ -79,18 +118,7 @@ namespace segway {
             event.payload.imu_data.yaw = utility::radians_to_degrees(rpy.z);
             event.payload.imu_data.dt = ctx.config.sampling_time;
 
-#ifdef USE_QUEUES
-            if (!xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10))) {
-                LOG(TAG, "Failed sending to queue!");
-            }
-#else
-            if (xMessageBufferSend(get_message_buffer(MessageBufferType::CONTROL),
-                                   &event,
-                                   sizeof(event),
-                                   pdMS_TO_TICKS(10)) != sizeof(event)) {
-                LOG(TAG, "Failed sending to queue!");
-            }
-#endif
+            send_control_event(event);
 
             HAL_TIM_Base_Start_IT(&htim2);
         }
@@ -126,16 +154,8 @@ namespace segway {
         {
             LOG(TAG, "process_imu_event_group_bits");
 
-            auto event_bits = 0UL;
-#ifdef USE_EVENT_GROUPS
-            xEventGroupWaitBits(get_event_group(EventGroupType::IMU),
-                                IMUEventBit::ALL,
-                                pdTRUE,
-                                pdFALSE,
-                                pdMS_TO_TICKS(10));
-#else
-            xTaskNotifyWait(0x0000, 0xFFFF, &event_bits, pdMS_TO_TICKS(10));
-#endif
+            auto event_bits = wait_imu_event_bits();
+
             if ((event_bits & IMUEventBit::START) == IMUEventBit::START) {
                 process_start();
             }
@@ -258,5 +278,4 @@ namespace segway {
         imu_event_group_init();
         imu_task_init();
     }
-
 }; // namespace segway

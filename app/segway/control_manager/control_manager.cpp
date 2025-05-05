@@ -16,7 +16,7 @@ namespace segway {
 
         constexpr auto TAG = "control_manager";
 
-        struct Context {
+        struct ControlManagerCtx {
             struct {
                 utility::PID<std::float64_t> pid;
             } regulator;
@@ -29,6 +29,54 @@ namespace segway {
 
             bool is_running;
         } ctx;
+
+        inline bool send_wheel_event(WheelEvent const& event) noexcept
+        {
+#ifdef USE_QUEUES
+            return xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10));
+#else
+            return xMessageBufferSend(get_message_buffer(MessageBufferType::WHEEL),
+                                      &event,
+                                      sizeof(event),
+                                      pdMS_TO_TICKS(10)) != sizeof(event);
+#endif
+        }
+
+        inline bool receive_control_event(ControlEvent& event) noexcept
+        {
+#ifdef USE_QUEUES
+            return xQueueReceive(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10));
+#else
+            return xMessageBufferReceive(get_message_buffer(MessageBufferType::CONTROL),
+                                         &event,
+                                         sizeof(event),
+                                         pdMS_TO_TICKS(10)) == sizeof(event);
+#endif
+        }
+
+        inline EventBits_t wait_control_event_bits() noexcept
+        {
+#ifdef USE_EVENT_GROUPS
+            return xEventGroupWaitBits(get_event_group(EventGroupType::CONTROL),
+                                       ControlEventBit::ALL,
+                                       pdTRUE,
+                                       pdFALSE,
+                                       pdMS_TO_TICKS(10));
+#else
+            auto event_bits = 0UL;
+            xTaskNotifyWait(0x0000, ControlEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
+            return event_bits;
+#endif
+        }
+
+        inline void set_wheel_event_bits(EventBits_t const event_bits) noexcept
+        {
+#ifdef USE_EVENT_GROUPS
+            xEventGroupSetBits(get_event_group(EventGroupType::WHEEL), event_bits);
+#else
+            xTaskNotify(get_task(TaskType::WHEEL), event_bits, eNotifyAction::eSetBits);
+#endif
+        }
 
         void process_imu_data(ControlEventPayload const& payload) noexcept
         {
@@ -49,37 +97,20 @@ namespace segway {
 
             auto tilt = payload.imu_data.roll;
 
-            // if (std::abs(tilt) > ctx.config.tilt_fault_thresh_high ||
-            //     std::abs(tilt) < ctx.config.tilt_fault_thresh_low) {
-            //     event.payload.control_data.should_run = false;
-            // } else {
-            auto error_tilt = ctx.config.tilt_ref - tilt;
-            auto speed = ctx.regulator.pid.get_sat_u(error_tilt, payload.imu_data.dt);
+            if (std::abs(tilt) > ctx.config.tilt_fault_thresh_high ||
+                std::abs(tilt) < ctx.config.tilt_fault_thresh_low) {
+                event.payload.control_data.should_run = false;
+            } else {
+                auto error_tilt = ctx.config.tilt_ref - tilt;
+                auto speed = ctx.regulator.pid.get_sat_u(error_tilt, payload.imu_data.dt);
 
-            event.payload.control_data.left_speed = speed;
-            event.payload.control_data.right_speed = -speed;
-            event.payload.control_data.dt = payload.imu_data.dt;
-            event.payload.control_data.should_run = true;
-            // }
-
-            LOG(TAG,
-                "L speed: %f, R speed: %f, dt: %f",
-                event.payload.control_data.left_speed,
-                event.payload.control_data.right_speed,
-                event.payload.control_data.dt);
-
-#ifdef USE_QUEUES
-            if (!xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10))) {
-                LOG(TAG, "Failed sending to queue!");
+                event.payload.control_data.left_speed = speed;
+                event.payload.control_data.right_speed = -speed;
+                event.payload.control_data.dt = payload.imu_data.dt;
+                event.payload.control_data.should_run = true;
             }
-#else
-            if (xMessageBufferSend(get_message_buffer(MessageBufferType::WHEEL),
-                                   &event,
-                                   sizeof(event),
-                                   pdMS_TO_TICKS(10)) != sizeof(event)) {
-                LOG(TAG, "Failed sending to queue!");
-            }
-#endif
+
+            send_wheel_event(event);
         }
 
         void process_control_queue_events() noexcept
@@ -87,8 +118,7 @@ namespace segway {
             LOG(TAG, "process_control_queue_events");
 
             auto event = ControlEvent{};
-#ifdef USE_QUEUES
-            while (xQueueReceive(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10))) {
+            while (receive_control_event(event)) {
                 switch (event.type) {
                     case ControlEventType::IMU_DATA:
                         process_imu_data(event.payload);
@@ -97,69 +127,38 @@ namespace segway {
                         break;
                 }
             }
-#else
-            while (xMessageBufferReceive(get_message_buffer(MessageBufferType::CONTROL),
-                                         &event,
-                                         sizeof(event),
-                                         pdMS_TO_TICKS(10)) == sizeof(event)) {
-                switch (event.type) {
-                    case ControlEventType::IMU_DATA:
-                        process_imu_data(event.payload);
-                        break;
-                    default:
-                        break;
-                }
-            }
-#endif
         }
 
         void process_start() noexcept
         {
+            if (ctx.is_running) {
+                return;
+            }
+
             LOG(TAG, "process_start");
 
-            if (!ctx.is_running) {
-                ctx.is_running = true;
-#ifdef USE_EVENT_GROUPS
-                xEventGroupSetBits(get_event_group(EventGroupType::WHEEL), WheelEventBit::START);
-#else
-                xTaskNotify(get_task(TaskType::WHEEL),
-                            WheelEventBit::START,
-                            eNotifyAction::eSetBits);
-#endif
-            }
+            set_wheel_event_bits(WheelEventBit::START);
+            ctx.is_running = true;
         }
 
         void process_stop() noexcept
         {
+            if (!ctx.is_running) {
+                return;
+            }
+
             LOG(TAG, "process_stop");
 
-            if (ctx.is_running) {
-                ctx.is_running = false;
-
-#ifdef USE_EVENT_GROUPS
-                xEventGroupSetBits(get_event_group(EventGroupType::WHEEL), WheelEventBit::STOP);
-#else
-                xTaskNotify(get_task(TaskType::WHEEL),
-                            WheelEventBit::STOP,
-                            eNotifyAction::eSetBits);
-#endif
-            }
+            set_wheel_event_bits(WheelEventBit::STOP);
+            ctx.is_running = false;
         }
 
         void process_control_event_group_bits() noexcept
         {
             LOG(TAG, "process_control_event_group_bits");
 
-            auto event_bits = 0UL;
-#ifdef USE_EVENT_GROUPS
-            event_bits = xEventGroupWaitBits(get_event_group(EventGroupType::CONTROL),
-                                             ControlEventBit::ALL,
-                                             pdTRUE,
-                                             pdFALSE,
-                                             pdMS_TO_TICKS(10));
-#else
-            xTaskNotifyWait(0x0000, 0xFFFF, &event_bits, pdMS_TO_TICKS(10));
-#endif
+            auto event_bits = wait_control_event_bits();
+
             if ((event_bits & ControlEventBit::START) == ControlEventBit::START) {
                 process_start();
             }
@@ -212,25 +211,6 @@ namespace segway {
 #endif
         }
 
-        inline void control_message_buffer_init() noexcept
-        {
-#ifndef USE_QUEUES
-            constexpr auto CONTROL_MESSAGE_BUFFER_ITEM_SIZE = sizeof(ControlEvent);
-            constexpr auto CONTROL_MESSAGE_BUFFER_ITEMS = 10UL;
-            constexpr auto CONTROL_MESSAGE_BUFFER_STORAGE_SIZE =
-                CONTROL_MESSAGE_BUFFER_ITEM_SIZE * CONTROL_MESSAGE_BUFFER_ITEMS;
-
-            static auto control_static_message_buffer = StaticMessageBuffer_t{};
-            static auto control_message_buffer_storage =
-                std::array<std::uint8_t, CONTROL_MESSAGE_BUFFER_STORAGE_SIZE>{};
-
-            set_message_buffer(MessageBufferType::CONTROL,
-                               xMessageBufferCreateStatic(control_message_buffer_storage.size(),
-                                                          control_message_buffer_storage.data(),
-                                                          &control_static_message_buffer));
-#endif
-        }
-
         inline void control_queue_init() noexcept
         {
 #ifdef USE_QUEUES
@@ -248,6 +228,20 @@ namespace segway {
                                          CONTROL_QUEUE_ITEM_SIZE,
                                          control_queue_storage.data(),
                                          &control_static_queue));
+#else
+            constexpr auto CONTROL_MESSAGE_BUFFER_ITEM_SIZE = sizeof(ControlEvent);
+            constexpr auto CONTROL_MESSAGE_BUFFER_ITEMS = 10UL;
+            constexpr auto CONTROL_MESSAGE_BUFFER_STORAGE_SIZE =
+                CONTROL_MESSAGE_BUFFER_ITEM_SIZE * CONTROL_MESSAGE_BUFFER_ITEMS;
+
+            static auto control_static_message_buffer = StaticMessageBuffer_t{};
+            static auto control_message_buffer_storage =
+                std::array<std::uint8_t, CONTROL_MESSAGE_BUFFER_STORAGE_SIZE>{};
+
+            set_message_buffer(MessageBufferType::CONTROL,
+                               xMessageBufferCreateStatic(control_message_buffer_storage.size(),
+                                                          control_message_buffer_storage.data(),
+                                                          &control_static_message_buffer));
 #endif
         }
 
@@ -278,7 +272,6 @@ namespace segway {
 
             ctx.is_running = false;
         }
-
     }; // namespace
 
     void control_manager_init() noexcept
@@ -288,7 +281,6 @@ namespace segway {
         control_config_init();
         control_regulator_init();
         control_queue_init();
-        control_message_buffer_init();
         control_event_group_init();
         control_task_init();
     }
