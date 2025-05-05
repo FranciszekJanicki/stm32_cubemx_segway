@@ -97,18 +97,18 @@ namespace segway {
 
             auto tilt = payload.imu_data.roll;
 
-            if (std::abs(tilt) > ctx.config.tilt_fault_thresh_high ||
-                std::abs(tilt) < ctx.config.tilt_fault_thresh_low) {
-                event.payload.control_data.should_run = false;
-            } else {
-                auto error_tilt = ctx.config.tilt_ref - tilt;
-                auto speed = ctx.regulator.pid.get_sat_u(error_tilt, payload.imu_data.dt);
+            // if (std::abs(tilt) > ctx.config.tilt_fault_thresh_high ||
+            //     std::abs(tilt) < ctx.config.tilt_fault_thresh_low) {
+            //     event.payload.control_data.should_run = false;
+            // } else {
+            auto error_tilt = ctx.config.tilt_ref - tilt;
+            auto speed = ctx.regulator.pid.get_sat_u(error_tilt, payload.imu_data.dt);
 
-                event.payload.control_data.left_speed = speed;
-                event.payload.control_data.right_speed = -speed;
-                event.payload.control_data.dt = payload.imu_data.dt;
-                event.payload.control_data.should_run = true;
-            }
+            event.payload.control_data.left_speed = speed;
+            event.payload.control_data.right_speed = -speed;
+            event.payload.control_data.dt = payload.imu_data.dt;
+            event.payload.control_data.should_run = true;
+            // }
 
             send_wheel_event(event);
         }

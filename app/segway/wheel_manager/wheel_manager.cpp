@@ -343,16 +343,17 @@ namespace segway {
             auto a4988_pulse_set_freq = [](void* user, std::uint32_t freq) {
                 if (freq > 0UL) {
                     auto handle = static_cast<TIM_HandleTypeDef*>(user);
-                    auto prescaler = 0UL;
+                    auto psc = 0UL;
                     auto period = 0UL;
                     utility::frequency_to_prescaler_and_period(freq,
                                                                84000000,
                                                                0,
                                                                0xFFFF,
                                                                0xFFFF,
-                                                               prescaler,
+                                                               psc,
                                                                period);
-                    handle->Instance->PSC = prescaler;
+                    LOG(TAG, "Frequency: %ld, prescaler: %ld, period: %ld", freq, psc, period);
+                    handle->Instance->PSC = psc;
                     handle->Instance->ARR = period;
                 }
             };
