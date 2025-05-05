@@ -38,7 +38,7 @@ namespace segway {
             return xMessageBufferSend(get_message_buffer(MessageBufferType::WHEEL),
                                       &event,
                                       sizeof(event),
-                                      pdMS_TO_TICKS(10)) != sizeof(event);
+                                      pdMS_TO_TICKS(10)) == sizeof(event);
 #endif
         }
 
@@ -110,7 +110,9 @@ namespace segway {
             event.payload.control_data.should_run = true;
             // }
 
-            send_wheel_event(event);
+            if (!send_wheel_event(event)) {
+                LOG(TAG, "Failed send_wheel_event");
+            }
         }
 
         void process_control_queue_events() noexcept
@@ -215,7 +217,7 @@ namespace segway {
         {
 #ifdef USE_QUEUES
             constexpr auto CONTROL_QUEUE_ITEM_SIZE = sizeof(ControlEvent);
-            constexpr auto CONTROL_QUEUE_ITEMS = 10UL;
+            constexpr auto CONTROL_QUEUE_ITEMS = 50UL;
             constexpr auto CONTROL_QUEUE_STORAGE_SIZE =
                 CONTROL_QUEUE_ITEM_SIZE * CONTROL_QUEUE_ITEMS;
 
@@ -230,7 +232,7 @@ namespace segway {
                                          &control_static_queue));
 #else
             constexpr auto CONTROL_MESSAGE_BUFFER_ITEM_SIZE = sizeof(ControlEvent);
-            constexpr auto CONTROL_MESSAGE_BUFFER_ITEMS = 10UL;
+            constexpr auto CONTROL_MESSAGE_BUFFER_ITEMS = 50UL;
             constexpr auto CONTROL_MESSAGE_BUFFER_STORAGE_SIZE =
                 CONTROL_MESSAGE_BUFFER_ITEM_SIZE * CONTROL_MESSAGE_BUFFER_ITEMS;
 

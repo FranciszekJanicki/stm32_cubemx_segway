@@ -253,7 +253,7 @@ namespace segway {
         {
 #ifdef USE_QUEUES
             constexpr auto WHEEL_QUEUE_ITEM_SIZE = sizeof(WheelEvent);
-            constexpr auto WHEEL_QUEUE_ITEMS = 10UL;
+            constexpr auto WHEEL_QUEUE_ITEMS = 50UL;
             constexpr auto WHEEL_QUEUE_STORAGE_SIZE = WHEEL_QUEUE_ITEM_SIZE * WHEEL_QUEUE_ITEMS;
 
             static auto wheel_static_queue = StaticQueue_t{};
@@ -266,7 +266,7 @@ namespace segway {
                                          &wheel_static_queue));
 #else
             constexpr auto WHEEL_MESSAGE_BUFFER_ITEM_SIZE = sizeof(ControlEvent);
-            constexpr auto WHEEL_MESSAGE_BUFFER_ITEMS = 10UL;
+            constexpr auto WHEEL_MESSAGE_BUFFER_ITEMS = 50UL;
             constexpr auto WHEEL_MESSAGE_BUFFER_STORAGE_SIZE =
                 WHEEL_MESSAGE_BUFFER_ITEM_SIZE * WHEEL_MESSAGE_BUFFER_ITEMS;
 

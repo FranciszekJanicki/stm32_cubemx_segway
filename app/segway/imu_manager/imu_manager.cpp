@@ -36,7 +36,7 @@ namespace segway {
             return xMessageBufferSend(get_message_buffer(MessageBufferType::CONTROL),
                                       &event,
                                       sizeof(event),
-                                      pdMS_TO_TICKS(10)) != sizeof(event);
+                                      pdMS_TO_TICKS(10)) == sizeof(event);
 #endif
         }
 
@@ -86,6 +86,7 @@ namespace segway {
 
             ctx.is_running = true;
             set_control_event_bits(ControlEventBit::START);
+
             HAL_TIM_Base_Start_IT(&htim2);
         }
 
@@ -99,6 +100,7 @@ namespace segway {
 
             ctx.is_running = false;
             set_control_event_bits(ControlEventBit::STOP);
+
             HAL_TIM_Base_Stop_IT(&htim2);
         }
 
@@ -118,7 +120,9 @@ namespace segway {
             event.payload.imu_data.yaw = utility::radians_to_degrees(rpy.z);
             event.payload.imu_data.dt = ctx.config.sampling_time;
 
-            send_control_event(event);
+            if (!send_control_event(event)) {
+                LOG(TAG, "Failed send_control_event");
+            }
 
             HAL_TIM_Base_Start_IT(&htim2);
         }
