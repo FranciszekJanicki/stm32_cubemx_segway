@@ -30,7 +30,7 @@ namespace segway {
                     // CDC_Transmit_FS(msg, msg_len);
                 }
 
-                vTaskDelay(pdMS_TO_TICKS(50));
+                vTaskDelay(pdMS_TO_TICKS(100));
             }
 
             LOG(TAG, "log_task end");

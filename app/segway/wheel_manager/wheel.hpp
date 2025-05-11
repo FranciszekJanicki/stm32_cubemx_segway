@@ -8,10 +8,9 @@ namespace segway {
 
     using Driver = step_driver::StepDriver;
 
-    enum struct WheelType : std::uint8_t {
-        LEFT,
-        RIGHT,
-        NONE,
+    enum WheelType : std::uint8_t {
+        WHEEL_LEFT,
+        WHEEL_RIGHT,
     };
 
     char const* wheel_type_to_string(WheelType const wheel_type) noexcept;
@@ -39,11 +38,6 @@ namespace segway {
 
         Driver driver = {};
         std::float64_t wheel_radius = 0.0F;
-    };
-
-    struct Wheel {
-        WheelType type = {};
-        WheelDriver driver = {};
     };
 
 }; // namespace segway

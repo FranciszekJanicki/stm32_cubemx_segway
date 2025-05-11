@@ -32,24 +32,24 @@ namespace segway {
         inline bool send_control_event(ControlEvent const& event) noexcept
         {
 #ifdef USE_QUEUES
-            return xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10));
+            return xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(1));
 #else
             return xMessageBufferSend(get_message_buffer(MessageBufferType::CONTROL),
                                       &event,
                                       sizeof(event),
-                                      pdMS_TO_TICKS(10)) == sizeof(event);
+                                      pdMS_TO_TICKS(1)) == sizeof(event);
 #endif
         }
 
         inline bool receive_imu_event(IMUEvent& event) noexcept
         {
 #ifdef USE_QUEUES
-            return xQueueReceive(get_queue(QueueType::IMU), &event, pdMS_TO_TICKS(10));
+            return xQueueReceive(get_queue(QueueType::IMU), &event, pdMS_TO_TICKS(1));
 #else
             return xMessageBufferReceive(get_message_buffer(MessageBufferType::IMU),
                                          &event,
                                          sizeof(event),
-                                         pdMS_TO_TICKS(10)) == sizeof(event);
+                                         pdMS_TO_TICKS(1)) == sizeof(event);
 #endif
         }
 
@@ -60,10 +60,10 @@ namespace segway {
                                        IMUEventBit::ALL,
                                        pdTRUE,
                                        pdFALSE,
-                                       pdMS_TO_TICKS(10));
+                                       pdMS_TO_TICKS(1));
 #else
             auto event_bits = 0UL;
-            xTaskNotifyWait(0x00, IMUEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
+            xTaskNotifyWait(0x00, IMUEventBit::ALL, &event_bits, pdMS_TO_TICKS(1));
             return event_bits;
 #endif
         }
@@ -192,7 +192,7 @@ namespace segway {
 
             while (1) {
                 process_imu_event_group_bits();
-                vTaskDelay(pdMS_TO_TICKS(10));
+                vTaskDelay(pdMS_TO_TICKS(1));
             }
 
             LOG(TAG, "imu_task end");

@@ -35,24 +35,24 @@ namespace segway {
         inline bool send_wheel_event(WheelEvent const& event) noexcept
         {
 #ifdef USE_QUEUES
-            return xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(10));
+            return xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(1));
 #else
             return xMessageBufferSend(get_message_buffer(MessageBufferType::WHEEL),
                                       &event,
                                       sizeof(event),
-                                      pdMS_TO_TICKS(10)) == sizeof(event);
+                                      pdMS_TO_TICKS(1)) == sizeof(event);
 #endif
         }
 
         inline bool receive_control_event(ControlEvent& event) noexcept
         {
 #ifdef USE_QUEUES
-            return xQueueReceive(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(10));
+            return xQueueReceive(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(1));
 #else
             return xMessageBufferReceive(get_message_buffer(MessageBufferType::CONTROL),
                                          &event,
                                          sizeof(event),
-                                         pdMS_TO_TICKS(10)) == sizeof(event);
+                                         pdMS_TO_TICKS(1)) == sizeof(event);
 #endif
         }
 
@@ -63,10 +63,10 @@ namespace segway {
                                        ControlEventBit::ALL,
                                        pdTRUE,
                                        pdFALSE,
-                                       pdMS_TO_TICKS(10));
+                                       pdMS_TO_TICKS(1));
 #else
             auto event_bits = 0UL;
-            xTaskNotifyWait(0x00, ControlEventBit::ALL, &event_bits, pdMS_TO_TICKS(10));
+            xTaskNotifyWait(0x00, ControlEventBit::ALL, &event_bits, pdMS_TO_TICKS(1));
             return event_bits;
 #endif
         }
@@ -106,8 +106,8 @@ namespace segway {
             auto error_tilt = ctx.config.tilt_ref - tilt;
             auto speed = ctx.regulator.pid.get_sat_u(error_tilt, payload.imu_data.dt);
 
-            event.payload.control_data.left_speed = speed;
-            event.payload.control_data.right_speed = -speed;
+            event.payload.control_data.left_speed = -speed;
+            event.payload.control_data.right_speed = speed;
             event.payload.control_data.dt = payload.imu_data.dt;
             event.payload.control_data.should_run = true;
             // }
@@ -122,7 +122,7 @@ namespace segway {
             LOG(TAG, "process_control_queue_events");
 
             auto event = ControlEvent{};
-            while (receive_control_event(event)) {
+            if (receive_control_event(event)) {
                 switch (event.type) {
                     case ControlEventType::IMU_DATA:
                         process_imu_data(event.payload);
@@ -179,7 +179,7 @@ namespace segway {
             while (1) {
                 process_control_queue_events();
                 process_control_event_group_bits();
-                vTaskDelay(pdMS_TO_TICKS(10));
+                vTaskDelay(pdMS_TO_TICKS(1));
             }
 
             LOG(TAG, "control_task end");
@@ -251,11 +251,11 @@ namespace segway {
 
         inline void control_regulator_init() noexcept
         {
-            constexpr auto PID_KP = 10.0F64;
+            constexpr auto PID_KP = 50.0F64;
             constexpr auto PID_KI = 0.0F64;
             constexpr auto PID_KD = 0.0F64;
             constexpr auto PID_KC = 0.0F64;
-            constexpr auto PID_TD = 0.0001F64;
+            constexpr auto PID_TD = 0.0F64;
             constexpr auto PID_SAT = 1000.0F64;
 
             ctx.regulator.pid.kP = PID_KP;

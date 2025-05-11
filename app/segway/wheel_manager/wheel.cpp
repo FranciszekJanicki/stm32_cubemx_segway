@@ -66,12 +66,10 @@ namespace segway {
     char const* wheel_type_to_string(WheelType const wheel_type) noexcept
     {
         switch (wheel_type) {
-            case WheelType::LEFT:
+            case WheelType::WHEEL_LEFT:
                 return "LEFT WHEEL";
-            case WheelType::RIGHT:
+            case WheelType::WHEEL_RIGHT:
                 return "RIGHT WHEEL";
-            default:
-                return "NONE WHEEL";
         }
     }
 

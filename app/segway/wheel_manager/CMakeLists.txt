@@ -15,6 +15,7 @@ target_include_directories(wheel_manager PUBLIC
     ${APP_DIR}/utility
     ${STM32CUBEMX_DIR}
     ${SEGWAY_DIR}/message_buffer_manager
+    ${APP_DIR}/hal
 )
 
 target_link_libraries(wheel_manager PRIVATE
@@ -27,6 +28,7 @@ target_link_libraries(wheel_manager PRIVATE
     utility
     stm32cubemx
     message_buffer_manager
+    hal
 )
 
 target_compile_options(wheel_manager PUBLIC
