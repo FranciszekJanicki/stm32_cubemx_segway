@@ -1,10 +1,12 @@
 #include "imu_manager.hpp"
+#include "FreeRTOS.h"
 #include "event_bits.hpp"
 #include "event_group_manager.hpp"
 #include "i2c.h"
 #include "log.hpp"
 #include "message_buffer_manager.hpp"
 #include "mpu6050_dmp.hpp"
+#include "queue.h"
 #include "queue_manager.hpp"
 #include "task_manager.hpp"
 #include "tim.h"
@@ -32,7 +34,7 @@ namespace segway {
         inline bool send_control_event(ControlEvent const& event) noexcept
         {
 #ifdef USE_QUEUES
-            return xQueueSend(get_queue(QueueType::CONTROL), &event, pdMS_TO_TICKS(1));
+            return xQueueOverwrite(get_queue(QueueType::CONTROL), &event);
 #else
             return xMessageBufferSend(get_message_buffer(MessageBufferType::CONTROL),
                                       &event,
@@ -231,7 +233,7 @@ namespace segway {
         {
             constexpr auto FAULT_THRESH_LOW = 160.0F64;
             constexpr auto FAULT_THRESH_HIGH = 180.0F64;
-            constexpr auto SAMPLING_TIME = 0.01F64;
+            constexpr auto SAMPLING_TIME = 0.02F64;
 
             ctx.config.fault_thresh_high = FAULT_THRESH_HIGH;
             ctx.config.fault_thresh_low = FAULT_THRESH_LOW;

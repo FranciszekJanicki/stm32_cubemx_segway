@@ -91,5 +91,6 @@ dkms.conf
 CMakeFiles
 CMakeCache.txt
 
+app/utility/
+app/utility/*
 app/utility
-app/stm32_utility

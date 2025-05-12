@@ -35,7 +35,7 @@ namespace segway {
         inline bool send_wheel_event(WheelEvent const& event) noexcept
         {
 #ifdef USE_QUEUES
-            return xQueueSend(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(1));
+            return xQueueOverwrite(get_queue(QueueType::WHEEL), &event);
 #else
             return xMessageBufferSend(get_message_buffer(MessageBufferType::WHEEL),
                                       &event,
@@ -219,7 +219,7 @@ namespace segway {
         {
 #ifdef USE_QUEUES
             constexpr auto CONTROL_QUEUE_ITEM_SIZE = sizeof(ControlEvent);
-            constexpr auto CONTROL_QUEUE_ITEMS = 50UL;
+            constexpr auto CONTROL_QUEUE_ITEMS = 1UL;
             constexpr auto CONTROL_QUEUE_STORAGE_SIZE =
                 CONTROL_QUEUE_ITEM_SIZE * CONTROL_QUEUE_ITEMS;
 
@@ -234,7 +234,7 @@ namespace segway {
                                          &control_static_queue));
 #else
             constexpr auto CONTROL_MESSAGE_BUFFER_ITEM_SIZE = sizeof(ControlEvent);
-            constexpr auto CONTROL_MESSAGE_BUFFER_ITEMS = 50UL;
+            constexpr auto CONTROL_MESSAGE_BUFFER_ITEMS = 1UL;
             constexpr auto CONTROL_MESSAGE_BUFFER_STORAGE_SIZE =
                 CONTROL_MESSAGE_BUFFER_ITEM_SIZE * CONTROL_MESSAGE_BUFFER_ITEMS;
 
