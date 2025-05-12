@@ -233,7 +233,7 @@ namespace segway {
         {
             constexpr auto FAULT_THRESH_LOW = 160.0F64;
             constexpr auto FAULT_THRESH_HIGH = 180.0F64;
-            constexpr auto SAMPLING_TIME = 0.02F64;
+            constexpr auto SAMPLING_TIME = 0.005F64;
 
             ctx.config.fault_thresh_high = FAULT_THRESH_HIGH;
             ctx.config.fault_thresh_low = FAULT_THRESH_LOW;

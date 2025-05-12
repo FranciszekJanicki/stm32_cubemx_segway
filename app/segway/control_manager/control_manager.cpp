@@ -251,12 +251,12 @@ namespace segway {
 
         inline void control_regulator_init() noexcept
         {
-            constexpr auto PID_KP = 50.0F64;
+            constexpr auto PID_KP = 75.0F64;
             constexpr auto PID_KI = 0.0F64;
             constexpr auto PID_KD = 0.0F64;
             constexpr auto PID_KC = 0.0F64;
             constexpr auto PID_TD = 0.0F64;
-            constexpr auto PID_SAT = 1000.0F64;
+            constexpr auto PID_SAT = 100.0F64;
 
             ctx.regulator.pid.kP = PID_KP;
             ctx.regulator.pid.kI = PID_KI;
