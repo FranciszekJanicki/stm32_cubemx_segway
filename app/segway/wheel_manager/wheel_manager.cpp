@@ -50,7 +50,7 @@ namespace segway {
         inline bool receive_wheel_event(WheelEvent& event) noexcept
         {
 #ifdef USE_QUEUES
-            return xQueueReceive(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(1));
+            return xQueuePeek(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(1));
 #else
             return xMessageBufferReceive(get_message_buffer(MessageBufferType::WHEEL),
                                          &event,
