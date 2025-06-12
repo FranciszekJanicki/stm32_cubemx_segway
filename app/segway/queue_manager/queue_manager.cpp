@@ -7,9 +7,9 @@ namespace segway {
 
     namespace {
 
-        constexpr auto QUEUE_NUM = std::to_underlying(QueueType::QUEUE_NUM);
+        constexpr std::size_t QUEUE_NUM = std::to_underlying(QueueType::QUEUE_NUM);
 
-        auto queues = std::array<QueueHandle_t, QUEUE_NUM>{};
+        std::array<QueueHandle_t, QUEUE_NUM> queues = {};
 
     }; // namespace
 
@@ -17,7 +17,7 @@ namespace segway {
     {
         assert(handle);
 
-        auto const index = std::to_underlying(type);
+        auto index = std::to_underlying(type);
         assert(index < QUEUE_NUM);
         assert(!queues[index]);
 
@@ -26,8 +26,7 @@ namespace segway {
 
     QueueHandle_t get_queue(QueueType const type) noexcept
     {
-        auto const index = std::to_underlying(type);
-
+        auto index = std::to_underlying(type);
         assert(index < QUEUE_NUM);
         assert(queues[index]);
 

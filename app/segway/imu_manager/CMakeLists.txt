@@ -13,7 +13,7 @@ target_include_directories(imu_manager PUBLIC
     ${SEGWAY_DIR}/task_manager
     ${APP_DIR}/utility
     ${STM32CUBEMX_DIR}
-    ${SEGWAY_DIR}/message_buffer_manager
+    ${SEGWAY_DIR}/message_buf_manager
 )
 
 target_link_libraries(imu_manager PRIVATE

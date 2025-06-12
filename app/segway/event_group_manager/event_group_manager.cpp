@@ -7,9 +7,9 @@ namespace segway {
 
     namespace {
 
-        constexpr auto EVENT_GROUP_NUM = std::to_underlying(EventGroupType::EVENT_GROUP_NUM);
+        constexpr std::size_t EVENT_GROUP_NUM = std::to_underlying(EventGroupType::EVENT_GROUP_NUM);
 
-        auto event_groups = std::array<EventGroupHandle_t, EVENT_GROUP_NUM>{};
+        std::array<EventGroupHandle_t, EVENT_GROUP_NUM> event_groups = {};
 
     }; // namespace
 
@@ -17,7 +17,7 @@ namespace segway {
     {
         assert(handle);
 
-        auto const index = std::to_underlying(type);
+        auto index = std::to_underlying(type);
         assert(index < EVENT_GROUP_NUM);
         assert(!event_groups[index]);
 
@@ -26,8 +26,7 @@ namespace segway {
 
     EventGroupHandle_t get_event_group(EventGroupType const type) noexcept
     {
-        auto const index = std::to_underlying(type);
-
+        auto index = std::to_underlying(type);
         assert(index < EVENT_GROUP_NUM);
         assert(event_groups[index]);
 

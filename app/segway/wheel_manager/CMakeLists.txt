@@ -14,7 +14,7 @@ target_include_directories(wheel_manager PUBLIC
     ${APP_DIR}/a4988
     ${APP_DIR}/utility
     ${STM32CUBEMX_DIR}
-    ${SEGWAY_DIR}/message_buffer_manager
+    ${SEGWAY_DIR}/message_buf_manager
     ${APP_DIR}/hal
 )
 
@@ -27,7 +27,7 @@ target_link_libraries(wheel_manager PRIVATE
     a4988
     utility
     stm32cubemx
-    message_buffer_manager
+    message_buf_manager
     hal
 )
 

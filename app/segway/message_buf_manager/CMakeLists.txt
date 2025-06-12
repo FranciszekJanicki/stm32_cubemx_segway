@@ -1,24 +1,18 @@
-add_library(main_manager STATIC)
+add_library(message_buf_manager STATIC)
 
-target_sources(main_manager PRIVATE 
-    "main_manager.cpp"
+target_sources(message_buf_manager PRIVATE 
+    "message_buf_manager.cpp"
 )
 
-target_include_directories(main_manager PUBLIC 
+target_include_directories(message_buf_manager PUBLIC 
     ${STM32CUBEMX_DIR}
-    ${SEGWAY_DIR}/event_group_manager
-    ${SEGWAY_DIR}/common
-    ${SEGWAY_DIR}/task_manager
 )
 
-target_link_libraries(main_manager PRIVATE
+target_link_libraries(message_buf_manager PRIVATE
     stm32cubemx
-    event_group_manager
-    common
-    task_manager
 )
 
-target_compile_options(main_manager PUBLIC
+target_compile_options(message_buf_manager PUBLIC
     -std=c++23
     -Wall
     -Wextra

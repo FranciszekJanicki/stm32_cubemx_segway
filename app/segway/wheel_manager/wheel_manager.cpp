@@ -7,7 +7,7 @@
 #include "gpio.h"
 #include "gpio.hpp"
 #include "log.hpp"
-#include "message_buffer_manager.hpp"
+#include "message_buf_manager.hpp"
 #include "queue.h"
 #include "queue_manager.hpp"
 #include "task.h"
@@ -24,27 +24,15 @@ namespace segway {
         constexpr auto TAG = "wheel_manager";
 
         struct WheelManagerCtx {
-            struct {
-                std::array<WheelDriver, 2U> wheel_drivers;
-                bool has_started;
-            } periph;
-
-            struct {
-                std::float64_t fault_thresh_low;
-                std::float64_t fault_thresh_high;
-                std::float64_t wheel_distance;
-            } config;
-
+            std::array<WheelDriver, 2U> wheel_drivers;
+            std::float64_t wheel_distance;
+            bool has_started;
             bool is_running;
         } ctx;
 
         WheelDriver& get_wheel_driver(WheelType const type) noexcept
         {
-            // auto* it = std::find_if(ctx.periph.wheels.begin(),
-            //                         ctx.periph.wheels.end(),
-            //                         [type](Wheel const& wheel) { return wheel.type == type; });
-
-            return ctx.periph.wheel_drivers[std::to_underlying(type)];
+            return ctx.wheel_drivers[std::to_underlying(type)];
         }
 
         inline bool receive_wheel_event(WheelEvent& event) noexcept
@@ -52,7 +40,7 @@ namespace segway {
 #ifdef USE_QUEUES
             return xQueuePeek(get_queue(QueueType::WHEEL), &event, pdMS_TO_TICKS(1));
 #else
-            return xMessageBufferReceive(get_message_buffer(MessageBufferType::WHEEL),
+            return xMessageBufferReceive(get_message_buf(MessageBufType::WHEEL),
                                          &event,
                                          sizeof(event),
                                          pdMS_TO_TICKS(1)) == sizeof(event);
@@ -63,13 +51,13 @@ namespace segway {
         {
 #ifdef USE_EVENT_GROUPS
             return xEventGroupWaitBits(get_event_group(EventGroupType::WHEEL),
-                                       WheelEventBit::ALL,
+                                       WHEEL_EVENT_BIT_ALL,
                                        pdTRUE,
                                        pdFALSE,
                                        pdMS_TO_TICKS(1));
 #else
             auto event_bits = 0UL;
-            xTaskNotifyWait(0x00, WheelEventBit::ALL, &event_bits, pdMS_TO_TICKS(1));
+            xTaskNotifyWait(0x00, WHEEL_EVENT_BIT_ALL, &event_bits, pdMS_TO_TICKS(1));
             return event_bits;
 #endif
         }
@@ -92,19 +80,6 @@ namespace segway {
 
             LOG(TAG, "process_control_data");
 
-            // if (!ctx.periph.has_started && payload.control_data.should_run) {
-            //     ctx.periph_has_started = true;
-            //     for (auto& wheel_driver : ctx.periph.wheel_drivers) {
-            //         wheel_driver.start();
-            //     }
-            // } else if (ctx.periph.has_started && !payload.control_data.should_run) {
-            //     ctx.periph.has_started = false;
-            //     for (auto& wheel_driver : ctx.periph.wheel_drivers) {
-            //         wheel_driver.stop();
-            //     }
-            //     return;
-            // }
-
             set_wheels_speed(payload.control_data.left_speed,
                              payload.control_data.right_speed,
                              payload.control_data.dt);
@@ -114,15 +89,9 @@ namespace segway {
         {
             LOG(TAG, "process_wheel_queue_events");
 
-            auto event = WheelEvent{};
+            WheelEvent event = {};
             if (receive_wheel_event(event)) {
-                switch (event.type) {
-                    case WheelEventType::CONTROL_DATA:
-                        process_control_data(event.payload);
-                        break;
-                    default:
-                        break;
-                }
+                process_control_data(event.payload);
             }
         }
 
@@ -163,7 +132,7 @@ namespace segway {
 
             get_wheel_driver(WheelType::WHEEL_LEFT).update_step_count();
 
-            // HAL_GPIO_TogglePin(GPIOA, 1 << 8);
+            HAL_GPIO_TogglePin(GPIOA, 1 << 8);
             HAL_TIM_Base_Start_IT(&htim1);
         };
 
@@ -177,7 +146,7 @@ namespace segway {
 
             get_wheel_driver(WheelType::WHEEL_RIGHT).update_step_count();
 
-            //   HAL_GPIO_TogglePin(GPIOA, 1 << 6);
+            HAL_GPIO_TogglePin(GPIOA, 1 << 6);
             HAL_TIM_Base_Start_IT(&htim3);
         };
 
@@ -187,34 +156,31 @@ namespace segway {
 
             auto event_bits = wait_wheel_event_bits();
 
-            if ((event_bits & WheelEventBit::START) == WheelEventBit::START) {
+            if ((event_bits & WHEEL_EVENT_BIT_START) == WHEEL_EVENT_BIT_START) {
                 process_start();
             }
 
-            if ((event_bits & WheelEventBit::STOP) == WheelEventBit::STOP) {
+            if ((event_bits & WHEEL_EVENT_BIT_STOP) == WHEEL_EVENT_BIT_STOP) {
                 process_stop();
             }
 
-            if ((event_bits & WheelEventBit::LEFT_STEP_TIMER) == WheelEventBit::LEFT_STEP_TIMER) {
+            if ((event_bits & WHEEL_EVENT_BIT_LEFT_STEP_TIMER) == WHEEL_EVENT_BIT_LEFT_STEP_TIMER) {
                 process_left_step_timer();
             }
 
-            if ((event_bits & WheelEventBit::RIGHT_STEP_TIMER) == WheelEventBit::RIGHT_STEP_TIMER) {
+            if ((event_bits & WHEEL_EVENT_BIT_RIGHT_STEP_TIMER) ==
+                WHEEL_EVENT_BIT_RIGHT_STEP_TIMER) {
                 process_right_step_timer();
             }
         };
 
         void wheel_task(void*) noexcept
         {
-            LOG(TAG, "wheel_task start");
-
             while (1) {
                 process_wheel_queue_events();
                 process_wheel_event_group_bits();
                 vTaskDelay(pdMS_TO_TICKS(1));
             }
-
-            LOG(TAG, "wheel_task end");
         }
 
         inline void wheel_task_init() noexcept
@@ -224,8 +190,8 @@ namespace segway {
             constexpr auto WHEEL_TASK_NAME = "wheel_task";
             constexpr auto WHEEL_TASK_ARG = nullptr;
 
-            static auto wheel_static_task = StaticTask_t{};
-            static auto wheel_task_stack = std::array<StackType_t, WHEEL_TASK_STACK_DEPTH>{};
+            static StaticTask_t wheel_task_buffer = {};
+            static std::array<StackType_t, WHEEL_TASK_STACK_DEPTH> wheel_task_stack = {};
 
             set_task(TaskType::WHEEL,
                      xTaskCreateStatic(&wheel_task,
@@ -234,7 +200,7 @@ namespace segway {
                                        WHEEL_TASK_ARG,
                                        WHEEL_TASK_PRIORITY,
                                        wheel_task_stack.data(),
-                                       &wheel_static_task));
+                                       &wheel_task_buffer));
         }
 
         inline void wheel_queue_init() noexcept
@@ -244,38 +210,38 @@ namespace segway {
             constexpr auto WHEEL_QUEUE_ITEMS = 1UL;
             constexpr auto WHEEL_QUEUE_STORAGE_SIZE = WHEEL_QUEUE_ITEM_SIZE * WHEEL_QUEUE_ITEMS;
 
-            static auto wheel_static_queue = StaticQueue_t{};
-            static auto wheel_queue_storage = std::array<std::uint8_t, WHEEL_QUEUE_STORAGE_SIZE>{};
+            static StaticQueue_t wheel_queue_buffer = {};
+            static std::array<std::uint8_t, WHEEL_QUEUE_STORAGE_SIZE> wheel_queue_storage = {};
 
             set_queue(QueueType::WHEEL,
                       xQueueCreateStatic(WHEEL_QUEUE_ITEMS,
                                          WHEEL_QUEUE_ITEM_SIZE,
                                          wheel_queue_storage.data(),
-                                         &wheel_static_queue));
+                                         &wheel_queue_buffer));
 #else
             constexpr auto WHEEL_MESSAGE_BUFFER_ITEM_SIZE = sizeof(ControlEvent);
             constexpr auto WHEEL_MESSAGE_BUFFER_ITEMS = 1UL;
             constexpr auto WHEEL_MESSAGE_BUFFER_STORAGE_SIZE =
                 WHEEL_MESSAGE_BUFFER_ITEM_SIZE * WHEEL_MESSAGE_BUFFER_ITEMS;
 
-            static auto wheel_static_message_buffer = StaticMessageBuffer_t{};
-            static auto wheel_message_buffer_storage =
-                std::array<std::uint8_t, WHEEL_MESSAGE_BUFFER_STORAGE_SIZE>{};
+            static StaticMessageBuffer_t wheel_message_buf_buffer = {};
+            static std::array<std::uint8_t, WHEEL_MESSAGE_BUFFER_STORAGE_SIZE>
+                wheel_message_buf_storage = {};
 
-            set_message_buffer(MessageBufferType::WHEEL,
-                               xMessageBufferCreateStatic(wheel_message_buffer_storage.size(),
-                                                          wheel_message_buffer_storage.data(),
-                                                          &wheel_static_message_buffer));
+            set_message_buf(MessageBufType::WHEEL,
+                            xMessageBufferCreateStatic(wheel_message_buf_storage.size(),
+                                                       wheel_message_buf_storage.data(),
+                                                       &wheel_message_buf_buffer));
 #endif
         }
 
         inline void wheel_event_group_init() noexcept
         {
 #ifdef USE_EVENT_GROUPS
-            static auto wheel_static_event_group = StaticEventGroup_t{};
+            static StaticEventGroup_t wheel_event_group_buffer = {};
 
             set_event_group(EventGroupType::WHEEL,
-                            xEventGroupCreateStatic(&wheel_static_event_group));
+                            xEventGroupCreateStatic(&wheel_event_group_buffer));
 #endif
         }
 
@@ -324,78 +290,64 @@ namespace segway {
                 }
             };
 
-            auto a4988_configs = std::array<a4988::Config, 2UL>{};
+            a4988::Config a4988_configs[] = {[WheelType::WHEEL_LEFT] = {.pin_ms1 = MS1_1,
+                                                                        .pin_ms2 = MS2_1,
+                                                                        .pin_ms3 = MS3_1,
+                                                                        .pin_reset = RESET_1,
+                                                                        .pin_sleep = SLEEP_1,
+                                                                        .pin_dir = DIR_1,
+                                                                        .pin_enable = EN_1},
+                                             [WheelType::WHEEL_RIGHT] = {.pin_ms1 = MS1_2,
+                                                                         .pin_ms2 = MS2_2,
+                                                                         .pin_ms3 = MS3_2,
+                                                                         .pin_reset = RESET_2,
+                                                                         .pin_sleep = SLEEP_2,
+                                                                         .pin_dir = DIR_2,
+                                                                         .pin_enable = EN_2}};
 
-            a4988_configs[WheelType::WHEEL_LEFT] = {.pin_ms1 = MS1_1,
-                                                    .pin_ms2 = MS2_1,
-                                                    .pin_ms3 = MS3_1,
-                                                    .pin_reset = RESET_1,
-                                                    .pin_sleep = SLEEP_1,
-                                                    .pin_dir = DIR_1,
-                                                    .pin_enable = EN_1};
+            a4988::Interface a4988_interfaces[] = {
+                [WheelType::WHEEL_LEFT] = {.gpio_user = nullptr,
+                                           .gpio_init = nullptr,
+                                           .gpio_deinit = nullptr,
+                                           .gpio_write_pin = a4988_gpio_write_pin,
+                                           .pulse_user = &htim1,
+                                           .pulse_init = nullptr,
+                                           .pulse_deinit = nullptr,
+                                           .pulse_start = nullptr,
+                                           .pulse_stop = nullptr,
+                                           .pulse_set_freq = a4988_pulse_set_freq},
+                [WheelType::WHEEL_RIGHT] = {.gpio_user = nullptr,
+                                            .gpio_init = nullptr,
+                                            .gpio_deinit = nullptr,
+                                            .gpio_write_pin = a4988_gpio_write_pin,
+                                            .pulse_user = &htim3,
+                                            .pulse_init = nullptr,
+                                            .pulse_deinit = nullptr,
+                                            .pulse_start = nullptr,
+                                            .pulse_stop = nullptr,
+                                            .pulse_set_freq = a4988_pulse_set_freq}};
 
-            a4988_configs[WheelType::WHEEL_RIGHT] = {.pin_ms1 = MS1_2,
-                                                     .pin_ms2 = MS2_2,
-                                                     .pin_ms3 = MS3_2,
-                                                     .pin_reset = RESET_2,
-                                                     .pin_sleep = SLEEP_2,
-                                                     .pin_dir = DIR_2,
-                                                     .pin_enable = EN_2};
+            a4988::A4988 a4988s[] = {
+                [WheelType::WHEEL_LEFT] = {.config = a4988_configs[WheelType::WHEEL_LEFT],
+                                           .interface = a4988_interfaces[WheelType::WHEEL_LEFT]},
+                [WheelType::WHEEL_RIGHT] = {.config = a4988_configs[WheelType::WHEEL_RIGHT],
+                                            .interface = a4988_interfaces[WheelType::WHEEL_RIGHT]}};
 
-            auto a4988_interfaces = std::array<a4988::Interface, 2UL>{};
+            step_driver::StepDriver step_drivers[] = {
+                [WheelType::WHEEL_LEFT] = {.driver = a4988s[WheelType::WHEEL_LEFT],
+                                           .steps_per_360 = STEPS_PER_360},
+                [WheelType::WHEEL_RIGHT] = {.driver = a4988s[WheelType::WHEEL_RIGHT],
+                                            .steps_per_360 = STEPS_PER_360}};
 
-            a4988_interfaces[WheelType::WHEEL_LEFT] = {.gpio_user = nullptr,
-                                                       .gpio_init = nullptr,
-                                                       .gpio_deinit = nullptr,
-                                                       .gpio_write_pin = a4988_gpio_write_pin,
-                                                       .pulse_user = &htim1,
-                                                       .pulse_init = nullptr,
-                                                       .pulse_deinit = nullptr,
-                                                       .pulse_start = nullptr,
-                                                       .pulse_stop = nullptr,
-                                                       .pulse_set_freq = a4988_pulse_set_freq};
-
-            a4988_interfaces[WheelType::WHEEL_RIGHT] = {.gpio_user = nullptr,
-                                                        .gpio_init = nullptr,
-                                                        .gpio_deinit = nullptr,
-                                                        .gpio_write_pin = a4988_gpio_write_pin,
-                                                        .pulse_user = &htim3,
-                                                        .pulse_init = nullptr,
-                                                        .pulse_deinit = nullptr,
-                                                        .pulse_start = nullptr,
-                                                        .pulse_stop = nullptr,
-                                                        .pulse_set_freq = a4988_pulse_set_freq};
-
-            auto a4988s = std::array<a4988::A4988, 2UL>{};
-
-            a4988s[WheelType::WHEEL_LEFT] = {.config =
-                                                 std::move(a4988_configs[WheelType::WHEEL_LEFT]),
-                                             .interface = std::move(
-                                                 a4988_interfaces[WheelType::WHEEL_LEFT])},
-
-            a4988s[WheelType::WHEEL_RIGHT] = {
-                .config = std::move(a4988_configs[WheelType::WHEEL_RIGHT]),
-                .interface = std::move(a4988_interfaces[WheelType::WHEEL_RIGHT])};
-
-            auto step_drivers = std::array<step_driver::StepDriver, 2UL>{};
-
-            step_drivers[WheelType::WHEEL_LEFT] = {.driver =
-                                                       std::move(a4988s[WheelType::WHEEL_LEFT]),
-                                                   .steps_per_360 = STEPS_PER_360};
-
-            step_drivers[WheelType::WHEEL_RIGHT] = {.driver =
-                                                        std::move(a4988s[WheelType::WHEEL_RIGHT]),
-                                                    .steps_per_360 = STEPS_PER_360};
-
-            ctx.periph.wheel_drivers[WheelType::WHEEL_LEFT] =
-                WheelDriver{.driver = std::move(step_drivers[WheelType::WHEEL_LEFT]),
+            ctx.wheel_drivers[WheelType::WHEEL_LEFT] =
+                WheelDriver{.driver = step_drivers[WheelType::WHEEL_LEFT],
                             .wheel_radius = WHEEL_RADIUS};
 
-            ctx.periph.wheel_drivers[WheelType::WHEEL_RIGHT] =
-                WheelDriver{.driver = std::move(step_drivers[WheelType::WHEEL_RIGHT]),
+            ctx.wheel_drivers[WheelType::WHEEL_RIGHT] =
+                WheelDriver{.driver = step_drivers[WheelType::WHEEL_RIGHT],
                             .wheel_radius = WHEEL_RADIUS};
 
-            for (auto& wheel_driver : ctx.periph.wheel_drivers) {
+            for (auto& wheel_driver : ctx.wheel_drivers) {
                 wheel_driver.initialize();
             }
         }
@@ -403,15 +355,11 @@ namespace segway {
         inline void wheel_config_init() noexcept
         {
             constexpr auto WHEEL_DIST = 10.0F64;
-            constexpr auto FAULT_THRESH_HIGH = 1000.0F64;
-            constexpr auto FAULT_THRESH_LOW = 800.0F64;
 
-            ctx.config.fault_thresh_high = FAULT_THRESH_HIGH;
-            ctx.config.fault_thresh_low = FAULT_THRESH_LOW;
-            ctx.config.wheel_distance = WHEEL_DIST;
-
+            ctx.wheel_distance = WHEEL_DIST;
             ctx.is_running = false;
         }
+
     }; // namespace
 
     void wheel_manager_init() noexcept
@@ -424,4 +372,5 @@ namespace segway {
         wheel_event_group_init();
         wheel_task_init();
     }
+
 }; // namespace segway

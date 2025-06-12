@@ -2,40 +2,34 @@
 #define SEGWAY_EVENT_BITS_HPP
 
 #include <cstdint>
-#include <utility>
-
-// #define USE_EVENT_GROUPS
 
 namespace segway {
 
-    struct IMUEventBit {
-        enum : std::uint32_t {
-            START = 1 << 0,
-            STOP = 1 << 1,
-            DATA_READY = 1 << 2,
-            I2C_ERROR = 1 << 3,
-            TX_COMPLETE = 1 << 4,
-            RX_COMPLETE = 1 << 5,
-            ALL = (START | STOP | DATA_READY | I2C_ERROR | TX_COMPLETE | RX_COMPLETE),
-        };
+    enum ImuEventBit : std::uint32_t {
+        IMU_EVENT_BIT_START = 1 << 0,
+        IMU_EVENT_BIT_STOP = 1 << 1,
+        IMU_EVENT_BIT_DATA_READY = 1 << 2,
+        IMU_EVENT_BIT_I2C_ERROR = 1 << 3,
+        IMU_EVENT_BIT_TX_COMPLETE = 1 << 4,
+        IMU_EVENT_BIT_RX_COMPLETE = 1 << 5,
+        IMU_EVENT_BIT_ALL =
+            (IMU_EVENT_BIT_START | IMU_EVENT_BIT_STOP | IMU_EVENT_BIT_DATA_READY |
+             IMU_EVENT_BIT_I2C_ERROR | IMU_EVENT_BIT_TX_COMPLETE | IMU_EVENT_BIT_RX_COMPLETE),
     };
 
-    struct ControlEventBit {
-        enum : std::uint32_t {
-            START = 1 << 0,
-            STOP = 1 << 1,
-            ALL = (START | STOP),
-        };
+    enum ControlEventBit : std::uint32_t {
+        CONTROL_EVENT_BIT_START = 1 << 0,
+        CONTROL_EVENT_BIT_STOP = 1 << 1,
+        CONTROL_EVENT_BIT_ALL = (CONTROL_EVENT_BIT_START | CONTROL_EVENT_BIT_STOP),
     };
 
-    struct WheelEventBit {
-        enum : std::uint32_t {
-            START = 1 << 0,
-            STOP = 1 << 1,
-            LEFT_STEP_TIMER = 1 << 2,
-            RIGHT_STEP_TIMER = 1 << 3,
-            ALL = (START | STOP | LEFT_STEP_TIMER | RIGHT_STEP_TIMER),
-        };
+    enum WheelEventBit : std::uint32_t {
+        WHEEL_EVENT_BIT_START = 1 << 0,
+        WHEEL_EVENT_BIT_STOP = 1 << 1,
+        WHEEL_EVENT_BIT_LEFT_STEP_TIMER = 1 << 2,
+        WHEEL_EVENT_BIT_RIGHT_STEP_TIMER = 1 << 3,
+        WHEEL_EVENT_BIT_ALL = (WHEEL_EVENT_BIT_START | WHEEL_EVENT_BIT_STOP |
+                               WHEEL_EVENT_BIT_LEFT_STEP_TIMER | WHEEL_EVENT_BIT_RIGHT_STEP_TIMER),
     };
 
 }; // namespace segway

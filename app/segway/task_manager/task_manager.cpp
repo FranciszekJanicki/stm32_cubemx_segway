@@ -8,24 +8,17 @@ namespace segway {
 
     namespace {
 
-        constexpr auto TASK_NUM = std::to_underlying(TaskType::TASK_NUM);
+        constexpr std::size_t TASK_NUM = std::to_underlying(TaskType::TASK_NUM);
 
-        auto tasks = std::array<TaskHandle_t, TASK_NUM>{};
+        std::array<TaskHandle_t, TASK_NUM> tasks = {};
 
     }; // namespace
-
-    extern "C" void vApplicationStackOverflowHook(TaskHandle_t xTask, char* pcTaskName)
-    {
-        LOG("RTOS", "Stack overflow in task %s", pcTaskName);
-        while (1)
-            ; // Stop here for debugging
-    }
 
     void set_task(TaskType const type, TaskHandle_t const handle) noexcept
     {
         assert(handle);
 
-        auto const index = std::to_underlying(type);
+        auto index = std::to_underlying(type);
         assert(index < TASK_NUM);
         assert(!tasks[index]);
 
@@ -34,8 +27,7 @@ namespace segway {
 
     TaskHandle_t get_task(TaskType const type) noexcept
     {
-        auto const index = std::to_underlying(type);
-
+        auto index = std::to_underlying(type);
         assert(index < TASK_NUM);
         assert(tasks[index]);
 

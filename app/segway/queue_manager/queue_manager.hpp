@@ -9,7 +9,6 @@ namespace segway {
 
     enum struct QueueType : std::uint8_t {
         CONTROL,
-        IMU,
         WHEEL,
         LOG,
         QUEUE_NUM,

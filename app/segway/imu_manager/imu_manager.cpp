@@ -4,7 +4,7 @@
 #include "event_group_manager.hpp"
 #include "i2c.h"
 #include "log.hpp"
-#include "message_buffer_manager.hpp"
+#include "message_buf_manager.hpp"
 #include "mpu6050_dmp.hpp"
 #include "queue.h"
 #include "queue_manager.hpp"
@@ -21,13 +21,7 @@ namespace segway {
 
         struct IMUManagerCtx {
             mpu6050::MPU6050_DMP imu;
-
-            struct Config {
-                std::float64_t fault_thresh_low;
-                std::float64_t fault_thresh_high;
-                std::float64_t sampling_time;
-            } config;
-
+            std::float64_t sampling_time;
             bool is_running;
         } ctx;
 
@@ -36,22 +30,10 @@ namespace segway {
 #ifdef USE_QUEUES
             return xQueueOverwrite(get_queue(QueueType::CONTROL), &event);
 #else
-            return xMessageBufferSend(get_message_buffer(MessageBufferType::CONTROL),
+            return xMessageBufferSend(get_message_buf(MessageBufType::CONTROL),
                                       &event,
                                       sizeof(event),
                                       pdMS_TO_TICKS(1)) == sizeof(event);
-#endif
-        }
-
-        inline bool receive_imu_event(IMUEvent& event) noexcept
-        {
-#ifdef USE_QUEUES
-            return xQueueReceive(get_queue(QueueType::IMU), &event, pdMS_TO_TICKS(1));
-#else
-            return xMessageBufferReceive(get_message_buffer(MessageBufferType::IMU),
-                                         &event,
-                                         sizeof(event),
-                                         pdMS_TO_TICKS(1)) == sizeof(event);
 #endif
         }
 
@@ -59,13 +41,13 @@ namespace segway {
         {
 #ifdef USE_EVENT_GROUPS
             return xEventGroupWaitBits(get_event_group(EventGroupType::IMU),
-                                       IMUEventBit::ALL,
+                                       IMU_EVENT_BIT_ALL,
                                        pdTRUE,
                                        pdFALSE,
                                        pdMS_TO_TICKS(1));
 #else
             auto event_bits = 0UL;
-            xTaskNotifyWait(0x00, IMUEventBit::ALL, &event_bits, pdMS_TO_TICKS(1));
+            xTaskNotifyWait(0x00, IMU_EVENT_BIT_ALL, &event_bits, pdMS_TO_TICKS(1));
             return event_bits;
 #endif
         }
@@ -88,7 +70,7 @@ namespace segway {
             LOG(TAG, "process_start");
 
             ctx.is_running = true;
-            set_control_event_bits(ControlEventBit::START);
+            set_control_event_bits(CONTROL_EVENT_BIT_START);
 
             HAL_TIM_Base_Start_IT(&htim2);
         }
@@ -102,7 +84,7 @@ namespace segway {
             LOG(TAG, "process_stop");
 
             ctx.is_running = false;
-            set_control_event_bits(ControlEventBit::STOP);
+            set_control_event_bits(CONTROL_EVENT_BIT_STOP);
 
             HAL_TIM_Base_Stop_IT(&htim2);
         }
@@ -117,11 +99,11 @@ namespace segway {
 
             auto rpy = ctx.imu.get_roll_pitch_yaw().value();
 
-            auto event = ControlEvent{.type = ControlEventType::IMU_DATA};
+            ControlEvent event = {.type = ControlEventType::IMU_DATA};
             event.payload.imu_data.roll = utility::radians_to_degrees(rpy.x);
             event.payload.imu_data.pitch = utility::radians_to_degrees(rpy.y);
             event.payload.imu_data.yaw = utility::radians_to_degrees(rpy.z);
-            event.payload.imu_data.dt = ctx.config.sampling_time;
+            event.payload.imu_data.dt = ctx.sampling_time;
 
             if (!send_control_event(event)) {
                 LOG(TAG, "Failed send_control_event");
@@ -163,41 +145,39 @@ namespace segway {
 
             auto event_bits = wait_imu_event_bits();
 
-            if ((event_bits & IMUEventBit::START) == IMUEventBit::START) {
+            if ((event_bits & IMU_EVENT_BIT_START) == IMU_EVENT_BIT_START) {
                 process_start();
             }
 
-            if ((event_bits & IMUEventBit::STOP) == IMUEventBit::STOP) {
+            if ((event_bits & IMU_EVENT_BIT_STOP) == IMU_EVENT_BIT_STOP) {
                 process_stop();
             }
 
-            if ((event_bits & IMUEventBit::DATA_READY) == IMUEventBit::DATA_READY) {
+            if ((event_bits & IMU_EVENT_BIT_DATA_READY) == IMU_EVENT_BIT_DATA_READY) {
                 process_data_ready();
             }
 
-            if ((event_bits & IMUEventBit::I2C_ERROR) == IMUEventBit::I2C_ERROR) {
+            if ((event_bits & IMU_EVENT_BIT_I2C_ERROR) == IMU_EVENT_BIT_I2C_ERROR) {
                 process_i2c_error();
             }
 
-            if ((event_bits & IMUEventBit::RX_COMPLETE) == IMUEventBit::RX_COMPLETE) {
+            if ((event_bits & IMU_EVENT_BIT_RX_COMPLETE) == IMU_EVENT_BIT_RX_COMPLETE) {
                 process_rx_complete();
             }
 
-            if ((event_bits & IMUEventBit::TX_COMPLETE) == IMUEventBit::TX_COMPLETE) {
+            if ((event_bits & IMU_EVENT_BIT_TX_COMPLETE) == IMU_EVENT_BIT_TX_COMPLETE) {
                 process_tx_complete();
             }
         }
 
         void imu_task(void*) noexcept
         {
-            LOG(TAG, "imu_task start");
+            process_start();
 
             while (1) {
                 process_imu_event_group_bits();
                 vTaskDelay(pdMS_TO_TICKS(1));
             }
-
-            LOG(TAG, "imu_task end");
         }
 
         inline void imu_task_init() noexcept
@@ -207,8 +187,8 @@ namespace segway {
             constexpr auto IMU_TASK_NAME = "imu_task";
             constexpr auto IMU_TASK_ARG = nullptr;
 
-            static auto imu_static_task = StaticTask_t{};
-            static auto imu_task_stack = std::array<StackType_t, IMU_TASK_STACK_DEPTH>{};
+            static StaticTask_t imu_task_buffer = {};
+            static std::array<StackType_t, IMU_TASK_STACK_DEPTH> imu_task_stack = {};
 
             set_task(TaskType::IMU,
                      xTaskCreateStatic(&imu_task,
@@ -217,34 +197,29 @@ namespace segway {
                                        IMU_TASK_ARG,
                                        IMU_TASK_PRIORITY,
                                        imu_task_stack.data(),
-                                       &imu_static_task));
+                                       &imu_task_buffer));
         }
 
         inline void imu_event_group_init() noexcept
         {
 #ifdef USE_EVENT_GROUPS
-            static auto imu_static_event_group = StaticEventGroup_t{};
+            static StaticEventGroup_t imu_event_group_buffer = {};
 
-            set_event_group(EventGroupType::IMU, xEventGroupCreateStatic(&imu_static_event_group));
+            set_event_group(EventGroupType::IMU, xEventGroupCreateStatic(&imu_event_group_buffer));
 #endif
         }
 
         inline void imu_config_init() noexcept
         {
-            constexpr auto FAULT_THRESH_LOW = 160.0F64;
-            constexpr auto FAULT_THRESH_HIGH = 180.0F64;
             constexpr auto SAMPLING_TIME = 0.005F64;
 
-            ctx.config.fault_thresh_high = FAULT_THRESH_HIGH;
-            ctx.config.fault_thresh_low = FAULT_THRESH_LOW;
-            ctx.config.sampling_time = SAMPLING_TIME;
-
+            ctx.sampling_time = SAMPLING_TIME;
             ctx.is_running = false;
         }
 
         inline void imu_periph_init() noexcept
         {
-            auto mpu6050_interface = mpu6050::Interface{
+            mpu6050::Interface mpu6050_interface = {
                 .user = &hi2c1,
                 .write_bytes =
                     [](void* user, std::uint8_t address, std::uint8_t* data, std::size_t size) {
@@ -260,15 +235,15 @@ namespace segway {
                     },
                 .delay_ms = [](void* user, std::uint32_t ms) { vTaskDelay(pdMS_TO_TICKS(ms)); }};
 
-            auto mpu6050_config = mpu6050::Config{.sampling_rate = 200UL,
-                                                  .gyro_range = mpu6050::GyroRange::GYRO_FS_250,
-                                                  .accel_range = mpu6050::AccelRange::ACCEL_FS_2,
-                                                  .dlpf_setting = mpu6050::DLPF::BW_42,
-                                                  .dhpf_setting = mpu6050::DHPF::DHPF_RESET};
+            mpu6050::Config mpu6050_config = {.sampling_rate = 200UL,
+                                              .gyro_range = mpu6050::GyroRange::GYRO_FS_250,
+                                              .accel_range = mpu6050::AccelRange::ACCEL_FS_2,
+                                              .dlpf_setting = mpu6050::DLPF::BW_42,
+                                              .dhpf_setting = mpu6050::DHPF::DHPF_RESET};
 
-            auto mpu6050 = mpu6050::MPU6050{.interface = std::move(mpu6050_interface)};
+            mpu6050::MPU6050 mpu6050 = {.interface = mpu6050_interface};
 
-            ctx.imu = mpu6050::MPU6050_DMP{.mpu6050 = std::move(mpu6050)};
+            ctx.imu = mpu6050::MPU6050_DMP{.mpu6050 = mpu6050};
             ctx.imu.initialize(mpu6050_config);
         }
 

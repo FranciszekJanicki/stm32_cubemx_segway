@@ -43,14 +43,14 @@ namespace segway {
             constexpr auto LOG_QUEUE_ITEMS = 10UL;
             constexpr auto LOG_QUEUE_STORAGE_SIZE = LOG_QUEUE_ITEM_SIZE * LOG_QUEUE_ITEMS;
 
-            static auto log_static_queue = StaticQueue_t{};
+            static auto log_queue_buffer = StaticQueue_t{};
             static auto log_queue_storage = std::array<std::uint8_t, LOG_QUEUE_STORAGE_SIZE>{};
 
             set_queue(QueueType::LOG,
                       xQueueCreateStatic(LOG_QUEUE_ITEMS,
                                          LOG_QUEUE_ITEM_SIZE,
                                          log_queue_storage.data(),
-                                         &log_static_queue));
+                                         &log_queue_buffer));
 #endif
         }
 
