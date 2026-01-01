@@ -13,7 +13,7 @@ target_link_libraries(control_manager PRIVATE
     task_manager
     queue_manager
     utility
-    stm32cubemx
+    cubemx
     event_group_manager
     message_buf_manager
 )

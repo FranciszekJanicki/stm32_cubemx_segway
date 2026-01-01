@@ -9,7 +9,7 @@ target_include_directories(message_buf_manager PUBLIC
 )
 
 target_link_libraries(message_buf_manager PUBLIC
-    stm32cubemx
+    cubemx
 )
 
 target_compile_options(message_buf_manager PUBLIC

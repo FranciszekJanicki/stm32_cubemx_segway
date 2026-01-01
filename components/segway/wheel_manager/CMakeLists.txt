@@ -17,7 +17,7 @@ target_link_libraries(wheel_manager PUBLIC
     step_driver
     a4988
     utility
-    stm32cubemx
+    cubemx
     message_buf_manager
     gpio
 )

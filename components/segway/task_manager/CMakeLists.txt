@@ -9,7 +9,7 @@ target_include_directories(task_manager PUBLIC
 )
 
 target_link_libraries(task_manager PUBLIC
-    stm32cubemx
+    cubemx
     common
 )
 

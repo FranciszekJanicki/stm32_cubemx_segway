@@ -9,7 +9,7 @@ target_include_directories(gpio PUBLIC
 )
 
 target_link_libraries(gpio PUBLIC
-    stm32cubemx
+    cubemx
 )
 
 target_compile_options(gpio PUBLIC

@@ -15,7 +15,7 @@ target_link_libraries(imu_manager PUBLIC
     mpu6050
     queue_manager
     nvic_manager
-    stm32cubemx
+    cubemx
     utility
     message_buf_manager
 )

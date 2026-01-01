@@ -9,7 +9,7 @@ target_include_directories(event_group_manager PUBLIC
 )
 
 target_link_libraries(event_group_manager PRIVATE
-    stm32cubemx
+    cubemx
     common
 )
 

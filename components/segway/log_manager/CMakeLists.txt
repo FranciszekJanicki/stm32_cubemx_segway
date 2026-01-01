@@ -9,7 +9,7 @@ target_include_directories(log_manager PUBLIC
 )
 
 target_link_libraries(log_manager PUBLIC
-    stm32cubemx
+    cubemx
     queue_manager
     common
 )

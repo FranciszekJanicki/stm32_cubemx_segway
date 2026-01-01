@@ -9,7 +9,7 @@ target_include_directories(queue_manager PUBLIC
 )
 
 target_link_libraries(queue_manager PUBLIC
-    stm32cubemx
+    cubemx
 )
 
 target_compile_options(queue_manager PUBLIC

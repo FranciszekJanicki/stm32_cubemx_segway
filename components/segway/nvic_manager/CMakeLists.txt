@@ -9,7 +9,7 @@ target_include_directories(nvic_manager PUBLIC
 )
 
 target_link_libraries(nvic_manager PUBLIC
-    stm32cubemx
+    cubemx
     event_group_manager
     task_manager
     common

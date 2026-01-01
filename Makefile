@@ -17,7 +17,7 @@ setup:
 
 .PHONY: all
 all:
-	$(MAKE) lint
 	$(MAKE) build
 	$(MAKE) flash
+	@sleep 1 
 	$(MAKE) monitor
